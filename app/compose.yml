@@ -18,7 +18,7 @@ services:
         target: /root/.cache/go-build
     environment:
       DATABASE_URL: postgres://dev-user:pswd@db:5432/dev-db?sslmode=disable
-      PORT: "8080"
+      HTTP_PORT: "8080"
     depends_on:
       - db
   db:
