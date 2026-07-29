@@ -1,7 +1,8 @@
 COMPOSE := docker compose -f app/compose.yml
 COMPOSE_EXEC := $(COMPOSE) exec app
 
-.PHONY: dev.up dev.down dev.restart dev.build dev.logs dev.sh wire.gen
+.PHONY: dev.up dev.down dev.restart dev.build dev.logs dev.sh wire.gen \
+	migrate.up migrate.down migrate.version migrate.create schema.dump
 
 # ---- docker for development ----
 dev.up:
@@ -25,3 +26,31 @@ dev.sh:
 # ---- wire (DI) ----
 wire.gen:
 	$(COMPOSE_EXEC) go run github.com/google/wire/cmd/wire@latest gen ./...
+
+# ---- migration ----
+MIGRATIONS_DIR := ./app/driver/db/migrations
+SCHEMA_FILE := ./app/driver/db/schema.sql
+LOCAL_DATABASE_URL := postgres://dev-user:pswd@localhost:5432/dev-db?sslmode=disable
+
+migrate.up:
+	migrate -path=$(MIGRATIONS_DIR) -database="$(LOCAL_DATABASE_URL)" up
+	$(MAKE) schema.dump
+
+migrate.down:
+	migrate -path=$(MIGRATIONS_DIR) -database="$(LOCAL_DATABASE_URL)" down 1
+	$(MAKE) schema.dump
+
+migrate.version:
+	migrate -path=$(MIGRATIONS_DIR) -database="$(LOCAL_DATABASE_URL)" version
+
+migrate.create:
+	@[ -n "$(NAME)" ] || (echo "Usage: make migrate.create NAME=<name>"; exit 1)
+	@mkdir -p $(MIGRATIONS_DIR)
+	migrate create -ext sql -dir $(MIGRATIONS_DIR) -seq $(NAME)
+
+schema.dump:
+	atlas schema inspect \
+		-u "$(LOCAL_DATABASE_URL)" \
+		--exclude "schema_migrations" \
+		--format '{{ sql . }}' \
+		> $(SCHEMA_FILE)
