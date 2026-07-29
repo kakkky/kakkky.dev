@@ -30,3 +30,9 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+
+# air 中間生成物
+app/tmp/
+
+# Tailwind ビルド成果物
+app/assets/dist/
