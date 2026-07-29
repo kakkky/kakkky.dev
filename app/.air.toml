@@ -1,0 +1,14 @@
+root = "/app"
+
+[build]
+cmd = "tailwindcss -i assets/main.css -o assets/dist/main.css && templ generate && go build -o ./tmp/main ./cmd/service"
+bin = "./tmp/main"
+include_ext = ["go", "templ", "css"]
+exclude_dir = ["tmp", "assets/dist"]
+delay = 500
+poll = true
+poll_interval = 500
+stop_on_error = false
+
+[log]
+time = true

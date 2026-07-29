@@ -1,0 +1,16 @@
+FROM golang:1.26
+
+# air
+RUN go install github.com/air-verse/air@latest
+
+# templ
+RUN go install github.com/a-h/templ/cmd/templ@latest
+
+# Tailwind CSS standalone CLI
+RUN curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-arm64 && \
+    chmod +x tailwindcss-linux-arm64 && \
+    mv tailwindcss-linux-arm64 /usr/local/bin/tailwindcss
+
+WORKDIR /app
+EXPOSE 8080
+CMD ["air", "-c", ".air.toml"]

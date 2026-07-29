@@ -1,0 +1,40 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - type: bind
+        source: ./
+        target: /app
+        consistency: cached
+      - type: volume
+        source: go_mod_cache
+        target: /go/pkg/mod
+      - type: volume
+        source: go_build_cache
+        target: /root/.cache/go-build
+    environment:
+      DATABASE_URL: postgres://dev-user:pswd@db:5432/dev-db?sslmode=disable
+      PORT: "8080"
+    depends_on:
+      - db
+  db:
+    image: postgres:17
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: dev-user
+      POSTGRES_PASSWORD: pswd
+      POSTGRES_DB: dev-db
+    volumes:
+      - type: volume
+        source: db_data
+        target: /var/lib/postgresql/data
+
+volumes:
+  db_data:
+  go_mod_cache:
+  go_build_cache:
