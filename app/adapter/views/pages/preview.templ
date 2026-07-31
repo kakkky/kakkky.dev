@@ -1,0 +1,277 @@
+package pages
+
+import "strconv"
+
+// TODO(admin): 管理画面は "/admin" 配下を予約する予定。
+//   - "/admin"          ダッシュボード
+//   - "/admin/articles" 記事 CRUD
+//   - "/admin/series"   連載 CRUD
+//   - "/admin/tags"     タグ CRUD
+// 動線 (ヘッダーリンク等) はプレビュー段階では出さない。
+
+type Tag struct {
+	Slug string
+	Name string
+}
+
+type Article struct {
+	Title       string
+	Summary     string
+	PublishedAt string
+	Tags        []Tag
+}
+
+type Series struct {
+	Title        string
+	Description  string
+	Status       string
+	ArticleCount int
+	PublishedAt  string
+	Tags         []Tag
+}
+
+var (
+	tagGo   = Tag{"go", "Go"}
+	tagDDD  = Tag{"ddd", "DDD"}
+	tagPg   = Tag{"postgres", "PostgreSQL"}
+	tagArch = Tag{"architecture", "Architecture"}
+	tagTest = Tag{"testing", "Testing"}
+	tagWeb  = Tag{"web", "Web"}
+)
+
+var mockTags = []Tag{tagGo, tagDDD, tagPg, tagArch, tagTest, tagWeb}
+
+var mockArticles = []Article{
+	{"net/http ServeMux の使い所と限界", "Go 1.22 で拡張された ServeMux のパスマッチングと、ミドルウェア設計における現実的な選択肢を整理する。", "2026-07-28", []Tag{tagGo, tagWeb}},
+	{"PostgreSQL の partial index 実践", "published_at IS NOT NULL の記事にだけ効かせたい index を、partial index でどう表現するか。", "2026-07-15", []Tag{tagPg}},
+	{"DDD における集約設計の再整理", "集約の境界をどこに引くか、実装 5 年目の視点で改めて言語化してみる。", "2026-06-30", []Tag{tagDDD, tagArch}},
+	{"templ + Tailwind v4 で最小構成のブログを作る", "静的 HTML との比較で、templ を選ぶメリットとビルド構成の勘所。", "2026-06-10", []Tag{tagGo, tagWeb}},
+	{"table-driven test の温度感", "テーブル駆動テストが逆に読みにくくなるケースと、境界の見極め。", "2026-05-22", []Tag{tagTest, tagGo}},
+}
+
+var mockSeries = []Series{
+	{"Go でつくる自作 ORM 入門", "reflect と database/sql から段階的に、最小構成の ORM をつくりながら内部構造を追う。", "ongoing", 5, "2026-07-20", []Tag{tagGo, tagPg}},
+	{"DDD 再入門", "エヴァンス本を今の目線で読み直す全 8 回シリーズ。", "completed", 8, "2026-06-01", []Tag{tagDDD, tagArch}},
+}
+
+func seriesStatusLabel(status string) string {
+	switch status {
+	case "ongoing":
+		return "連載中"
+	case "completed":
+		return "完結"
+	}
+	return status
+}
+
+templ Preview() {
+	<!DOCTYPE html>
+	<html lang="ja">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<title>kakkky.dev</title>
+			<link rel="stylesheet" href="/assets/main.css"/>
+		</head>
+		<body class="min-h-screen bg-white text-gray-900 font-sans antialiased">
+			@header()
+			<main class="mx-auto max-w-4xl px-6">
+				@articlesSection()
+				@aboutSection()
+			</main>
+			@footer()
+		</body>
+	</html>
+}
+
+templ header() {
+	<header class="sticky top-0 z-10 border-b border-gray-200 bg-white/80 backdrop-blur">
+		<div class="mx-auto max-w-4xl px-6 h-14 flex items-center justify-between">
+			<a href="/" class="flex items-center gap-2">
+				<span class="inline-flex h-7 w-7 items-center justify-center rounded-md bg-gray-900 text-white text-xs font-bold">k</span>
+				<span class="text-sm font-semibold tracking-tight">kakkky.dev</span>
+			</a>
+			<nav class="flex items-center gap-6 text-sm text-gray-700">
+				<a href="#articles" class="hover:text-gray-900">Articles</a>
+				<a href="#about" class="hover:text-gray-900">About me</a>
+				<span class="h-4 w-px bg-gray-200" aria-hidden="true"></span>
+				<a href="/feed.xml" aria-label="RSS" class="text-gray-500 hover:text-gray-900">
+					@rssIcon()
+				</a>
+			</nav>
+		</div>
+	</header>
+}
+
+templ footer() {
+	<footer class="mt-16 border-t border-gray-200">
+		<div class="mx-auto max-w-4xl px-6 py-8 text-xs text-gray-500">
+			© 2026 kakkky.dev
+		</div>
+	</footer>
+}
+
+templ articlesSection() {
+	<section id="articles" class="py-16">
+		<div class="flex items-baseline justify-between">
+			<h2 class="text-2xl font-semibold tracking-tight">Articles</h2>
+			<p class="text-xs text-gray-500">Articles &amp; Series</p>
+		</div>
+		<div class="mt-6">
+			@tagFilter()
+		</div>
+		<ul class="mt-8 grid grid-cols-1 gap-4">
+			for _, s := range mockSeries {
+				@seriesCard(s)
+			}
+			for _, a := range mockArticles {
+				@articleCard(a)
+			}
+		</ul>
+	</section>
+}
+
+templ tagFilter() {
+	<section class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+		<form class="flex flex-col gap-3" action="#articles" method="get">
+			<div class="flex gap-2">
+				<input
+					type="search"
+					name="q"
+					placeholder="キーワードで検索"
+					class="flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+				/>
+				<button type="submit" class="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm hover:bg-gray-100">
+					検索
+				</button>
+			</div>
+			<div class="flex flex-wrap gap-1.5">
+				for _, t := range mockTags {
+					<label class="cursor-pointer">
+						<input type="checkbox" name="tag" value={ t.Slug } class="peer sr-only"/>
+						<span class="inline-flex items-center rounded-full border border-gray-300 bg-white px-2.5 py-1 text-xs text-gray-700 hover:bg-gray-100 peer-checked:border-gray-900 peer-checked:bg-gray-900 peer-checked:text-white transition-colors">
+							#{ t.Name }
+						</span>
+					</label>
+				}
+			</div>
+		</form>
+	</section>
+}
+
+templ articleCard(a Article) {
+	<li class="group rounded-lg border border-gray-200 bg-white p-6 hover:border-gray-300 hover:bg-gray-50 transition-colors">
+		<div class="flex items-center gap-2 text-xs text-gray-500">
+			<time datetime={ a.PublishedAt }>{ a.PublishedAt }</time>
+			<span aria-hidden="true">·</span>
+			<span>記事</span>
+		</div>
+		<h3 class="mt-2 text-lg font-medium text-gray-900 group-hover:underline">
+			{ a.Title }
+		</h3>
+		<p class="mt-2 text-sm text-gray-600 line-clamp-2">
+			{ a.Summary }
+		</p>
+		<div class="mt-4 flex flex-wrap gap-1.5">
+			for _, t := range a.Tags {
+				@tagBadge(t)
+			}
+		</div>
+	</li>
+}
+
+templ seriesCard(s Series) {
+	<li class="group rounded-lg border border-gray-200 border-l-4 border-l-gray-900 bg-white p-6 hover:bg-gray-50 transition-colors">
+		<div class="flex items-center gap-2 text-xs text-gray-500">
+			<span class="font-medium text-gray-700">連載</span>
+			<span aria-hidden="true">·</span>
+			<span>{ seriesStatusLabel(s.Status) }</span>
+		</div>
+		<div class="mt-2 flex items-start justify-between gap-4">
+			<h3 class="text-lg font-medium text-gray-900 group-hover:underline">
+				{ s.Title }
+			</h3>
+			<span class="shrink-0 inline-flex items-center rounded-md bg-gray-900 px-2 py-0.5 text-xs text-white">
+				+{ strconv.Itoa(s.ArticleCount) }件の記事
+			</span>
+		</div>
+		<p class="mt-2 text-sm text-gray-600 line-clamp-2">
+			{ s.Description }
+		</p>
+		<div class="mt-4 flex flex-wrap gap-1.5">
+			for _, t := range s.Tags {
+				@tagBadge(t)
+			}
+		</div>
+	</li>
+}
+
+templ tagBadge(t Tag) {
+	<span class="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2.5 py-0.5 text-xs text-gray-700">
+		#{ t.Name }
+	</span>
+}
+
+templ aboutSection() {
+	<section id="about" class="py-16 border-t border-gray-200">
+		<h2 class="text-2xl font-semibold tracking-tight">About me</h2>
+		<div class="mt-8 flex flex-col sm:flex-row gap-8">
+			<div class="shrink-0">
+				<div class="h-28 w-28 rounded-full bg-gray-200 border border-gray-300 flex items-center justify-center text-gray-500 text-xs">
+					photo
+				</div>
+			</div>
+			<div class="flex-1">
+				<p class="text-base font-medium text-gray-900">kakkky</p>
+				<p class="mt-1 text-sm text-gray-500">Backend engineer / Go, DDD, PostgreSQL</p>
+				<p class="mt-4 text-sm leading-relaxed text-gray-700">
+					Go を中心にバックエンドを書いています。DDD やアーキテクチャ、テスト戦略に関する内容を中心に、日々の学びをこのブログで少しずつ整理していきます。
+				</p>
+				<ul class="mt-6 flex gap-4">
+					<li>
+						<a href="https://github.com/kakkky" aria-label="GitHub" class="text-gray-500 hover:text-gray-900">
+							@githubIcon()
+						</a>
+					</li>
+					<li>
+						<a href="#" aria-label="X" class="text-gray-500 hover:text-gray-900">
+							@xIcon()
+						</a>
+					</li>
+					<li>
+						<a href="#" aria-label="Zenn" class="text-gray-500 hover:text-gray-900">
+							@zennIcon()
+						</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</section>
+}
+
+templ rssIcon() {
+	<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+		<path d="M4 11a9 9 0 0 1 9 9"></path>
+		<path d="M4 4a16 16 0 0 1 16 16"></path>
+		<circle cx="5" cy="19" r="1"></circle>
+	</svg>
+}
+
+templ githubIcon() {
+	<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+		<path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55v-2.14c-3.2.7-3.87-1.36-3.87-1.36-.52-1.32-1.28-1.67-1.28-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.7 1.25 3.36.96.11-.75.4-1.25.72-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.29 1.18-3.09-.12-.29-.51-1.47.11-3.06 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.21-1.49 3.18-1.18 3.18-1.18.62 1.59.23 2.77.11 3.06.73.8 1.18 1.83 1.18 3.09 0 4.41-2.69 5.38-5.25 5.67.41.36.77 1.06.77 2.14v3.17c0 .31.21.67.8.55A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"></path>
+	</svg>
+}
+
+templ xIcon() {
+	<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+		<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+	</svg>
+}
+
+templ zennIcon() {
+	<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+		<path d="M.264 23.771h4.984c.264 0 .498-.147.645-.352L19.614.874c.176-.293-.029-.645-.381-.645h-4.72c-.235 0-.44.117-.557.323L.03 23.361c-.088.176.029.41.234.41z"></path>
+		<path d="M17.44 23.419l6.475-10.408c.176-.293-.029-.674-.381-.674h-4.691c-.235 0-.44.117-.557.323l-6.505 10.643c-.176.293.029.645.381.645h4.72c.235.029.44-.088.557-.264z"></path>
+	</svg>
+}
