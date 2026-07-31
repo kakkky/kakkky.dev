@@ -2,7 +2,8 @@ COMPOSE := docker compose -f app/compose.yml
 COMPOSE_EXEC := $(COMPOSE) exec app
 
 .PHONY: dev.up dev.down dev.restart dev.build dev.logs dev.sh wire.gen \
-	migrate.up migrate.down migrate.version migrate.create schema.dump
+	migrate.up migrate.down migrate.version migrate.create schema.dump \
+	seed
 
 # ---- docker for development ----
 dev.up:
@@ -54,3 +55,9 @@ schema.dump:
 		--exclude "schema_migrations" \
 		--format '{{ sql . }}' \
 		> $(SCHEMA_FILE)
+
+# ---- seed (開発環境専用) ----
+SEED_FILE := ./app/driver/db/seeds/seed.sql
+
+seed:
+	psql "$(LOCAL_DATABASE_URL)" -f $(SEED_FILE)
