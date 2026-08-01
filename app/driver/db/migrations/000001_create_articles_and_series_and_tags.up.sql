@@ -1,8 +1,8 @@
 -- series
 CREATE TABLE series (
     id           UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-    slug         VARCHAR(100) NOT NULL UNIQUE,
-    title        VARCHAR(200) NOT NULL,
+    slug         VARCHAR(20)  NOT NULL UNIQUE,
+    title        VARCHAR(100) NOT NULL,
     description  TEXT,
     status       VARCHAR(20)  NOT NULL DEFAULT 'ongoing'
                  CHECK (status IN ('ongoing', 'completed')),
@@ -13,8 +13,8 @@ CREATE TABLE series (
 -- articles
 CREATE TABLE articles (
     id            UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-    slug          VARCHAR(100) NOT NULL UNIQUE,
-    title         VARCHAR(200) NOT NULL,
+    slug          VARCHAR(20)  NOT NULL UNIQUE,
+    title         VARCHAR(100) NOT NULL,
     body          TEXT         NOT NULL,
     summary       TEXT,
     status        VARCHAR(20)  NOT NULL DEFAULT 'draft'
@@ -40,7 +40,7 @@ CREATE TABLE series_articles (
 -- tags
 CREATE TABLE tags (
     id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-    slug        VARCHAR(50)  NOT NULL UNIQUE,
+    slug        VARCHAR(20)  NOT NULL UNIQUE,
     name        VARCHAR(50)  NOT NULL,
     created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
     updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
