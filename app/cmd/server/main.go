@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"time"
 )
 
 func main() {
@@ -14,9 +15,14 @@ func main() {
 }
 
 func run() error {
-	srv, err := InitServer()
+	initCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	srv, dbCleanup, err := InitServer(initCtx)
 	if err != nil {
 		return err
 	}
+	defer dbCleanup()
+
 	return srv.Run(context.Background())
 }

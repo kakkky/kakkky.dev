@@ -1,11 +1,19 @@
 package handler
 
-import "net/http"
+import (
+	"net/http"
 
-type Handler struct{}
+	"github.com/kakkky/kakkky.dev/domain"
+)
 
-func NewHandler() *Handler {
-	return &Handler{}
+type Handler struct {
+	repo domain.Repository
+}
+
+func NewHandler(repo domain.Repository) *Handler {
+	return &Handler{
+		repo: repo,
+	}
 }
 
 type Route struct {
