@@ -12,6 +12,8 @@ const (
 	ArticleSummaryMaxLength = 200
 )
 
+type ArticleID string
+
 type ArticleStatus string
 
 const (
@@ -20,6 +22,7 @@ const (
 )
 
 type Article struct {
+	ID          ArticleID
 	Slug        Slug
 	Title       string
 	Body        string
