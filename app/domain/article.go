@@ -2,6 +2,7 @@ package domain
 
 import (
 	"fmt"
+	"slices"
 	"time"
 	"unicode/utf8"
 )
@@ -10,6 +11,7 @@ const (
 	ArticleTitleMaxLength   = 100
 	ArticleBodyMaxLength    = 50000
 	ArticleSummaryMaxLength = 200
+	ArticleMaxTags          = 5
 )
 
 type ArticleID string
@@ -29,6 +31,7 @@ type Article struct {
 	Summary     string
 	Status      ArticleStatus
 	PublishedAt time.Time
+	TagIDs      []TagID
 }
 
 func NewArticle(slug Slug, title string, body string, summary string, status ArticleStatus, publishedAt time.Time) (*Article, error) {
@@ -58,4 +61,19 @@ func NewArticle(slug Slug, title string, body string, summary string, status Art
 		Status:      status,
 		PublishedAt: publishedAt,
 	}, nil
+}
+
+func (a *Article) AddTags(tagIDs []TagID) error {
+	for _, id := range tagIDs {
+		if slices.Contains(a.TagIDs, id) {
+			continue
+		}
+		if len(a.TagIDs) >= ArticleMaxTags {
+			return ErrInvalidArgument.With(
+				fmt.Sprintf("タグ は 最大 %d 個 です", ArticleMaxTags),
+			)
+		}
+		a.TagIDs = append(a.TagIDs, id)
+	}
+	return nil
 }

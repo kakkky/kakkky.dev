@@ -138,3 +138,94 @@ func TestNewArticle(t *testing.T) {
 		})
 	}
 }
+
+func TestArticleAddTags(t *testing.T) {
+	tests := []struct {
+		name       string
+		original    []domain.TagID
+		addTagIDs  []domain.TagID
+		wantTagIDs []domain.TagID
+		wantErr    error
+	}{
+		{
+			name:       "success: add one tag to empty",
+			original:    nil,
+			addTagIDs:  []domain.TagID{"t1"},
+			wantTagIDs: []domain.TagID{"t1"},
+			wantErr:    nil,
+		},
+		{
+			name:       "success: add up to max from empty",
+			original:    nil,
+			addTagIDs:  []domain.TagID{"t1", "t2", "t3", "t4", "t5"},
+			wantTagIDs: []domain.TagID{"t1", "t2", "t3", "t4", "t5"},
+			wantErr:    nil,
+		},
+		{
+			name:       "success: skip tag already in existing",
+			original:    []domain.TagID{"t1", "t2"},
+			addTagIDs:  []domain.TagID{"t1", "t3"},
+			wantTagIDs: []domain.TagID{"t1", "t2", "t3"},
+			wantErr:    nil,
+		},
+		{
+			name:       "success: skip duplicates within input",
+			original:    nil,
+			addTagIDs:  []domain.TagID{"t1", "t1", "t2"},
+			wantTagIDs: []domain.TagID{"t1", "t2"},
+			wantErr:    nil,
+		},
+		{
+			name:       "success: empty input keeps state unchanged",
+			original:    []domain.TagID{"t1"},
+			addTagIDs:  []domain.TagID{},
+			wantTagIDs: []domain.TagID{"t1"},
+			wantErr:    nil,
+		},
+		{
+			name:       "success: re-adding existing tag when at max is no-op",
+			original:    []domain.TagID{"t1", "t2", "t3", "t4", "t5"},
+			addTagIDs:  []domain.TagID{"t1"},
+			wantTagIDs: []domain.TagID{"t1", "t2", "t3", "t4", "t5"},
+			wantErr:    nil,
+		},
+		{
+			name:       "error: adding one to max exceeds limit",
+			original:    []domain.TagID{"t1", "t2", "t3", "t4", "t5"},
+			addTagIDs:  []domain.TagID{"t6"},
+			wantTagIDs: []domain.TagID{"t1", "t2", "t3", "t4", "t5"},
+			wantErr:    domain.ErrInvalidArgument,
+		},
+		{
+			name:       "error: partial append then limit exceeded",
+			original:    []domain.TagID{"t1", "t2", "t3", "t4"},
+			addTagIDs:  []domain.TagID{"t5", "t6"},
+			wantTagIDs: []domain.TagID{"t1", "t2", "t3", "t4", "t5"},
+			wantErr:    domain.ErrInvalidArgument,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a, err := domain.NewArticle(
+				domain.Slug("valid-slug"),
+				"タイトル",
+				"本文",
+				"要約",
+				domain.ArticleStatusDraft,
+				time.Time{},
+			)
+			assert.NoError(t, err)
+			a.TagIDs = tt.original
+
+			err = a.AddTags(tt.addTagIDs)
+			if tt.wantErr == nil {
+				assert.NoError(t, err)
+			} else {
+				assert.Error(t, err)
+				assert.True(t, errors.Is(err, tt.wantErr))
+			}
+			assert.Equal(t, tt.wantTagIDs, a.TagIDs)
+		})
+	}
+}
