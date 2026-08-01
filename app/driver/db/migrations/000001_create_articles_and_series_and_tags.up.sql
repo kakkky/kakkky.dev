@@ -4,11 +4,16 @@ CREATE TABLE series (
     slug         VARCHAR(20)  NOT NULL UNIQUE,
     title        VARCHAR(100) NOT NULL,
     description  TEXT,
-    status       VARCHAR(20)  NOT NULL DEFAULT 'ongoing'
-                 CHECK (status IN ('ongoing', 'completed')),
+    status       VARCHAR(20)  NOT NULL DEFAULT 'draft'
+                 CHECK (status IN ('draft', 'published_ongoing', 'published_completed')),
+    published_at TIMESTAMPTZ,
     created_at   TIMESTAMPTZ  NOT NULL DEFAULT now(),
     updated_at   TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
+
+CREATE INDEX series_published_recent_idx
+    ON series (published_at DESC)
+    WHERE status LIKE 'published_%';
 
 -- articles
 CREATE TABLE articles (
@@ -41,7 +46,7 @@ CREATE TABLE series_articles (
 CREATE TABLE tags (
     id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     slug        VARCHAR(20)  NOT NULL UNIQUE,
-    name        VARCHAR(50)  NOT NULL,
+    name        VARCHAR(30)  NOT NULL,
     created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
     updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
 );

@@ -29,7 +29,7 @@ CREATE TABLE "public"."schema_migrations" (
 CREATE TABLE "public"."tags" (
   "id" uuid NOT NULL DEFAULT gen_random_uuid(),
   "slug" character varying(20) NOT NULL,
-  "name" character varying(50) NOT NULL,
+  "name" character varying(30) NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT now(),
   "updated_at" timestamptz NOT NULL DEFAULT now(),
   PRIMARY KEY ("id"),
@@ -52,13 +52,16 @@ CREATE TABLE "public"."series" (
   "slug" character varying(20) NOT NULL,
   "title" character varying(100) NOT NULL,
   "description" text NULL,
-  "status" character varying(20) NOT NULL DEFAULT 'ongoing',
+  "status" character varying(20) NOT NULL DEFAULT 'draft',
+  "published_at" timestamptz NULL,
   "created_at" timestamptz NOT NULL DEFAULT now(),
   "updated_at" timestamptz NOT NULL DEFAULT now(),
   PRIMARY KEY ("id"),
   CONSTRAINT "series_slug_key" UNIQUE ("slug"),
-  CONSTRAINT "series_status_check" CHECK ((status)::text = ANY ((ARRAY['ongoing'::character varying, 'completed'::character varying])::text[]))
+  CONSTRAINT "series_status_check" CHECK ((status)::text = ANY ((ARRAY['draft'::character varying, 'published_ongoing'::character varying, 'published_completed'::character varying])::text[]))
 );
+-- Create index "series_published_recent_idx" to table: "series"
+CREATE INDEX "series_published_recent_idx" ON "public"."series" ("published_at" DESC) WHERE ((status)::text ~~ 'published_%'::text);
 -- Create "series_articles" table
 CREATE TABLE "public"."series_articles" (
   "series_id" uuid NOT NULL,
