@@ -11,6 +11,7 @@ require (
 	github.com/lib/pq v1.12.3
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.44.0
+	go.uber.org/mock v0.6.0
 )
 
 require (

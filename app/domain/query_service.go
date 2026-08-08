@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+//go:generate mockgen -source=$GOFILE -destination=../testhelper/mock/mock_query_service.go -package=mock
+
 type QueryService interface {
 	NewFeedQueryService() FeedQueryService
 }
