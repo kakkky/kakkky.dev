@@ -30,7 +30,7 @@ wire.gen:
 
 # ---- migration ----
 MIGRATIONS_DIR := ./app/driver/db/migrations
-SCHEMA_FILE := ./app/driver/db/schema.sql
+SCHEMA_FILE := ./app/driver/db/schema/schema.sql
 LOCAL_DATABASE_URL := postgres://dev-user:pswd@localhost:5432/dev-db?sslmode=disable
 
 migrate.up:
