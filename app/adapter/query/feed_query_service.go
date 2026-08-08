@@ -2,7 +2,6 @@ package query
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -82,7 +81,7 @@ WHERE s.status LIKE 'published_%'
 ORDER BY published_at DESC, id DESC
 LIMIT $3
 `, publishedAtArg, idArg, limit); err != nil {
-		return nil, fmt.Errorf("select feed items: %w", err)
+		return nil, domain.ErrInternal.Wrap(err, "select feed items")
 	}
 
 	items := make([]domain.FeedItem, len(rows))
