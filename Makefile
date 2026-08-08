@@ -3,7 +3,7 @@ COMPOSE_EXEC := $(COMPOSE) exec app
 
 .PHONY: dev.up dev.down dev.restart dev.build dev.logs dev.sh wire.gen \
 	migrate.up migrate.down migrate.version migrate.create schema.dump \
-	seed
+	seed test
 
 # ---- docker for development ----
 dev.up:
@@ -61,3 +61,9 @@ SEED_FILE := ./app/driver/db/seeds/seed.sql
 
 seed:
 	psql "$(LOCAL_DATABASE_URL)" -f $(SEED_FILE)
+
+# ---- test ----
+# testcontainers-go を使うため host で実行 (compose exec ではなく)。
+# -count=1 でテストキャッシュを無効化 (DB を触るテストの結果が使い回されるのを防ぐ)。
+test:
+	cd app && go test -count=1 ./...
