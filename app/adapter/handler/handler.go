@@ -3,16 +3,16 @@ package handler
 import (
 	"net/http"
 
-	"github.com/kakkky/kakkky.dev/domain"
+	"github.com/kakkky/kakkky.dev/usecase"
 )
 
 type Handler struct {
-	repo domain.Repository
+	usecase *usecase.UseCase
 }
 
-func NewHandler(repo domain.Repository) *Handler {
+func NewHandler(usecase *usecase.UseCase) *Handler {
 	return &Handler{
-		repo: repo,
+		usecase: usecase,
 	}
 }
 
@@ -24,10 +24,8 @@ type Route struct {
 func (h *Handler) PublicRoutes() []Route {
 	return []Route{
 		{
-			Pattern: "GET /hello",
-			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.Write([]byte("Hello, World!"))
-			}),
+			Pattern: "GET /feed",
+			Handler: NewFeedHandler(h.usecase.NewGetFeedUsecase()),
 		},
 	}
 }

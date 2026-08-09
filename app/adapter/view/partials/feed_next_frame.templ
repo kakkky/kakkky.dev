@@ -1,0 +1,25 @@
+package partials
+
+import (
+	"net/url"
+	"time"
+
+	"github.com/kakkky/hotwire-go/turbo"
+)
+
+const FeedNextID = "feed-next"
+
+templ FeedNextFrame(nextCursorID string, nextCursorAt time.Time) {
+	if nextCursorID != "" {
+		@turbo.Frame(FeedNextID, turbo.AttrSrc(feedNextURL(nextCursorID, nextCursorAt)), turbo.AttrLoadingLazy()) {
+			<div class="py-6 text-center text-sm text-gray-500">Loading...</div>
+		}
+	}
+}
+
+func feedNextURL(cursorID string, cursorAt time.Time) string {
+	v := url.Values{}
+	v.Set("cursor_id", cursorID)
+	v.Set("cursor_at", cursorAt.Format(time.RFC3339))
+	return "/feed?" + v.Encode()
+}

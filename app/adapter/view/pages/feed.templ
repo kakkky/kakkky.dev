@@ -1,0 +1,32 @@
+package pages
+
+import (
+	"time"
+
+	"github.com/kakkky/kakkky.dev/adapter/view/components"
+	"github.com/kakkky/kakkky.dev/adapter/view/layout"
+	"github.com/kakkky/kakkky.dev/adapter/view/partials"
+)
+
+type FeedViewModel struct {
+	Items        []components.FeedItemCardViewModel
+	NextCursorID string
+	NextCursorAt time.Time
+}
+
+templ Feed(vm FeedViewModel) {
+	@layout.Base("Feed") {
+		<section id="feed" class="py-16">
+			<div class="flex items-baseline justify-between">
+				<h2 class="text-2xl font-semibold tracking-tight">Feed</h2>
+				<p class="text-xs text-gray-500">Articles &amp; Series</p>
+			</div>
+			<div class="mt-8 flex flex-col gap-4">
+				for _, item := range vm.Items {
+					@components.FeedItemCard(item)
+				}
+				@partials.FeedNextFrame(vm.NextCursorID, vm.NextCursorAt)
+			</div>
+		</section>
+	}
+}

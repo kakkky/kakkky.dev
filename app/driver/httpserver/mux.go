@@ -11,6 +11,7 @@ func NewMux(h *handler.Handler, mw *middleware.Middleware) http.Handler {
 	mux := http.NewServeMux()
 	registerAdminRoutes(mux, h, mw)
 	registerPublicRoutes(mux, h, mw)
+	mux.Handle("GET /assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/dist"))))
 	return mux
 }
 

@@ -1,7 +1,7 @@
 COMPOSE := docker compose -f app/compose.yml
 COMPOSE_EXEC := $(COMPOSE) exec app
 
-.PHONY: dev.up dev.down dev.restart dev.build dev.logs dev.sh wire.gen \
+.PHONY: dev.up dev.down dev.restart dev.build dev.logs dev.sh wire.gen templ.gen \
 	migrate.up migrate.down migrate.version migrate.create schema.dump \
 	seed test
 
@@ -27,6 +27,10 @@ dev.sh:
 # ---- wire (DI) ----
 wire.gen:
 	$(COMPOSE_EXEC) go run github.com/google/wire/cmd/wire@latest gen ./...
+
+# ---- templ ----
+templ.gen:
+	$(COMPOSE_EXEC) templ generate
 
 # ---- migration ----
 MIGRATIONS_DIR := ./app/driver/db/migrations

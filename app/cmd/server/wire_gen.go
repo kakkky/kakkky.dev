@@ -10,10 +10,12 @@ import (
 	"context"
 	"github.com/kakkky/kakkky.dev/adapter/handler"
 	"github.com/kakkky/kakkky.dev/adapter/middleware"
+	"github.com/kakkky/kakkky.dev/adapter/query"
 	"github.com/kakkky/kakkky.dev/adapter/repository"
 	"github.com/kakkky/kakkky.dev/config"
 	"github.com/kakkky/kakkky.dev/driver/db"
 	"github.com/kakkky/kakkky.dev/driver/httpserver"
+	"github.com/kakkky/kakkky.dev/usecase"
 )
 
 // Injectors from wire.go:
@@ -28,7 +30,9 @@ func InitServer(ctx context.Context) (*Server, func(), error) {
 		return nil, nil, err
 	}
 	repositoryRepository := repository.NewRepository(sqlxDB)
-	handlerHandler := handler.NewHandler(repositoryRepository)
+	queryService := query.NewQueryService(sqlxDB)
+	useCase := usecase.NewUseCase(repositoryRepository, queryService)
+	handlerHandler := handler.NewHandler(useCase)
 	middlewareMiddleware := middleware.NewMiddleware()
 	httpHandler := httpserver.NewMux(handlerHandler, middlewareMiddleware)
 	httpServer := httpserver.NewHTTPServer(configConfig, httpHandler)
