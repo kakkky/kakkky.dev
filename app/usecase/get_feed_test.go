@@ -14,7 +14,7 @@ import (
 	"github.com/kakkky/kakkky.dev/testhelper/mock"
 )
 
-func TestGetFeed_Exec(t *testing.T) {
+func TestGetFeedUsecase_Exec(t *testing.T) {
 	ctx := context.Background()
 	baseTime := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 
@@ -50,14 +50,14 @@ func TestGetFeed_Exec(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		input   GetFeedInput
+		input   GetFeedUsecaseInput
 		mock    func(qs *mock.MockFeedQueryService, repo *mock.MockTagRepository)
-		want    *GetFeedOutput
+		want    *GetFeedUsecaseOutput
 		wantErr error
 	}{
 		{
 			name:  "enriches tags and sets NextCursor when items reach the limit",
-			input: GetFeedInput{Limit: 2},
+			input: GetFeedUsecaseInput{Limit: 2},
 			mock: func(qs *mock.MockFeedQueryService, repo *mock.MockTagRepository) {
 				qs.EXPECT().
 					ListFeedItems(ctx, domain.FeedItemID(""), time.Time{}, 2).
@@ -66,13 +66,13 @@ func TestGetFeed_Exec(t *testing.T) {
 					FindByIDs(ctx, []domain.TagID{tag1, tag2}).
 					Return([]*domain.Tag{&tag1Val, &tag2Val}, nil)
 			},
-			want: &GetFeedOutput{
+			want: &GetFeedUsecaseOutput{
 				Items: []domain.FeedItem{item1, item2},
 				Tags: map[domain.TagID]domain.Tag{
 					tag1: tag1Val,
 					tag2: tag2Val,
 				},
-				NextCursor: GetFeedCursor{
+				NextCursor: GetFeedUsecaseCursor{
 					AfterID:          item2.ID,
 					AfterPublishedAt: item2.PublishedAt,
 				},
@@ -80,7 +80,7 @@ func TestGetFeed_Exec(t *testing.T) {
 		},
 		{
 			name:  "leaves NextCursor zero when items are fewer than the limit",
-			input: GetFeedInput{Limit: 10},
+			input: GetFeedUsecaseInput{Limit: 10},
 			mock: func(qs *mock.MockFeedQueryService, repo *mock.MockTagRepository) {
 				qs.EXPECT().
 					ListFeedItems(ctx, domain.FeedItemID(""), time.Time{}, 10).
@@ -89,7 +89,7 @@ func TestGetFeed_Exec(t *testing.T) {
 					FindByIDs(ctx, []domain.TagID{tag1, tag2}).
 					Return([]*domain.Tag{&tag1Val, &tag2Val}, nil)
 			},
-			want: &GetFeedOutput{
+			want: &GetFeedUsecaseOutput{
 				Items: []domain.FeedItem{item1},
 				Tags: map[domain.TagID]domain.Tag{
 					tag1: tag1Val,
@@ -99,8 +99,8 @@ func TestGetFeed_Exec(t *testing.T) {
 		},
 		{
 			name: "passes cursor through to FeedQueryService.ListFeedItems",
-			input: GetFeedInput{
-				Cursor: GetFeedCursor{
+			input: GetFeedUsecaseInput{
+				Cursor: GetFeedUsecaseCursor{
 					AfterID:          item1ID,
 					AfterPublishedAt: baseTime,
 				},
@@ -114,7 +114,7 @@ func TestGetFeed_Exec(t *testing.T) {
 					FindByIDs(ctx, []domain.TagID{tag1}).
 					Return([]*domain.Tag{&tag1Val}, nil)
 			},
-			want: &GetFeedOutput{
+			want: &GetFeedUsecaseOutput{
 				Items: []domain.FeedItem{item2},
 				Tags: map[domain.TagID]domain.Tag{
 					tag1: tag1Val,
@@ -123,7 +123,7 @@ func TestGetFeed_Exec(t *testing.T) {
 		},
 		{
 			name:  "propagates error from FeedQueryService.ListFeedItems and skips tag fetch",
-			input: GetFeedInput{Limit: 10},
+			input: GetFeedUsecaseInput{Limit: 10},
 			mock: func(qs *mock.MockFeedQueryService, repo *mock.MockTagRepository) {
 				qs.EXPECT().
 					ListFeedItems(ctx, domain.FeedItemID(""), time.Time{}, 10).
@@ -133,7 +133,7 @@ func TestGetFeed_Exec(t *testing.T) {
 		},
 		{
 			name:  "propagates error from TagRepository.FindByIDs",
-			input: GetFeedInput{Limit: 10},
+			input: GetFeedUsecaseInput{Limit: 10},
 			mock: func(qs *mock.MockFeedQueryService, repo *mock.MockTagRepository) {
 				qs.EXPECT().
 					ListFeedItems(ctx, domain.FeedItemID(""), time.Time{}, 10).
@@ -160,7 +160,7 @@ func TestGetFeed_Exec(t *testing.T) {
 
 			tt.mock(fqs, tr)
 
-			gf := NewUseCase(repo, qs).NewGetFeed()
+			gf := NewUseCase(repo, qs).NewGetFeedUsecase()
 			got, err := gf.Exec(ctx, tt.input)
 
 			if tt.wantErr != nil {

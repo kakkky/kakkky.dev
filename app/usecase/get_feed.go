@@ -8,35 +8,35 @@ import (
 	"github.com/kakkky/kakkky.dev/domain"
 )
 
-type GetFeed struct {
+type GetFeedUsecase struct {
 	qs   domain.FeedQueryService
 	repo domain.TagRepository
 }
 
-func (us *UseCase) NewGetFeed() *GetFeed {
-	return &GetFeed{
+func (us *UseCase) NewGetFeedUsecase() *GetFeedUsecase {
+	return &GetFeedUsecase{
 		qs:   us.qs.NewFeedQueryService(),
 		repo: us.repo.NewTagRepository(),
 	}
 }
 
-type GetFeedInput struct {
-	Cursor GetFeedCursor
+type GetFeedUsecaseInput struct {
+	Cursor GetFeedUsecaseCursor
 	Limit  int
 }
 
-type GetFeedOutput struct {
+type GetFeedUsecaseOutput struct {
 	Items      []domain.FeedItem
 	Tags       map[domain.TagID]domain.Tag
-	NextCursor GetFeedCursor
+	NextCursor GetFeedUsecaseCursor
 }
 
-type GetFeedCursor struct {
+type GetFeedUsecaseCursor struct {
 	AfterID          domain.FeedItemID
 	AfterPublishedAt time.Time
 }
 
-func (us *GetFeed) Exec(ctx context.Context, in GetFeedInput) (*GetFeedOutput, error) {
+func (us *GetFeedUsecase) Exec(ctx context.Context, in GetFeedUsecaseInput) (*GetFeedUsecaseOutput, error) {
 	items, err := us.qs.ListFeedItems(ctx, in.Cursor.AfterID, in.Cursor.AfterPublishedAt, in.Limit)
 	if err != nil {
 		return nil, err
@@ -59,16 +59,16 @@ func (us *GetFeed) Exec(ctx context.Context, in GetFeedInput) (*GetFeedOutput, e
 		tagMap[t.ID] = *t
 	}
 
-	var next GetFeedCursor
+	var next GetFeedUsecaseCursor
 	if len(items) == in.Limit && in.Limit > 0 {
 		last := items[len(items)-1]
-		next = GetFeedCursor{
+		next = GetFeedUsecaseCursor{
 			AfterID:          last.ID,
 			AfterPublishedAt: last.PublishedAt,
 		}
 	}
 
-	return &GetFeedOutput{
+	return &GetFeedUsecaseOutput{
 		Items:      items,
 		Tags:       tagMap,
 		NextCursor: next,
