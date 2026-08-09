@@ -14,7 +14,7 @@ type FeedQueryService struct {
 	db sqlx.ExtContext
 }
 
-func (qs *QueryService) NewFeedQueryService() *FeedQueryService {
+func (qs *QueryService) NewFeedQueryService() domain.FeedQueryService {
 	return &FeedQueryService{db: qs.db}
 }
 
