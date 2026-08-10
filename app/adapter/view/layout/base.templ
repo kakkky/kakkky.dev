@@ -16,6 +16,7 @@ templ Base(subTitle string) {
 		</head>
 		<body class="min-h-screen bg-white text-gray-900 font-sans antialiased">
 			@Header()
+			<div id="flash" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2"></div>
 			<main class="mx-auto max-w-4xl px-6">
 				{ children... }
 			</main>

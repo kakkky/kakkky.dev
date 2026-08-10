@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -36,7 +35,7 @@ func (h *FeedHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if limitStr := q.Get("limit"); limitStr != "" {
 		limitInt, err := strconv.Atoi(limitStr)
 		if err != nil || limitInt <= 0 {
-			http.Error(rw, "invalid limit", http.StatusBadRequest)
+			RenderError(rw, r, domain.ErrInvalidArgument.With("limit は正の整数で指定してください"))
 			return
 		}
 		limit = limitInt
@@ -49,7 +48,7 @@ func (h *FeedHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	case cursorID != "" && cursorAt != "":
 		t, err := time.Parse(time.RFC3339, cursorAt)
 		if err != nil {
-			http.Error(rw, "invalid cursor_at", http.StatusBadRequest)
+			RenderError(rw, r, domain.ErrInvalidArgument.With("cursor_at は RFC3339 形式で指定してください"))
 			return
 		}
 		input.Cursor = usecase.GetFeedUsecaseCursor{
@@ -57,13 +56,13 @@ func (h *FeedHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 			AfterPublishedAt: t,
 		}
 	case cursorID != "" || cursorAt != "":
-		http.Error(rw, "cursor_id と cursor_at は同時に指定してください", http.StatusBadRequest)
+		RenderError(rw, r, domain.ErrInvalidArgument.With("cursor_id と cursor_at は同時に指定してください"))
 		return
 	}
 
 	out, err := h.getFeedUsecase.Exec(ctx, input)
 	if err != nil {
-		writeFeedError(rw, err)
+		RenderError(rw, r, err)
 		return
 	}
 
@@ -107,16 +106,4 @@ func feedItemHref(kind domain.FeedItemKind, slug domain.Slug) string {
 		return "/series/" + string(slug)
 	}
 	return "/articles/" + string(slug)
-}
-
-// TODO: エラー画面とかその辺は後で共通化ちゃんとやる。一旦適当。
-func writeFeedError(rw http.ResponseWriter, err error) {
-	switch {
-	case errors.Is(err, domain.ErrInvalidArgument):
-		http.Error(rw, "invalid argument", http.StatusBadRequest)
-	case errors.Is(err, domain.ErrNotFound):
-		http.Error(rw, "not found", http.StatusNotFound)
-	default:
-		http.Error(rw, "internal error", http.StatusInternalServerError)
-	}
 }

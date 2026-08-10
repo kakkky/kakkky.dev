@@ -1,0 +1,35 @@
+package partials
+
+import "github.com/kakkky/hotwire-go/turbo"
+
+type FlashKind string
+
+const (
+	FlashKindErr     FlashKind = "error"
+	FlashKindWarning FlashKind = "warning"
+	FlashKindInfo    FlashKind = "info"
+)
+
+type FlashViewModel struct {
+	Kind FlashKind
+	Msg  string
+}
+
+templ Flash(vm FlashViewModel) {
+	@turbo.StreamAppend("flash") {
+		<div class={ "rounded-md border px-4 py-3 text-sm shadow-lg", flashColorClass(vm.Kind) }>
+			{ vm.Msg }
+		</div>
+	}
+}
+
+func flashColorClass(kind FlashKind) string {
+	switch kind {
+	case FlashKindWarning:
+		return "bg-yellow-50 text-yellow-800 border-yellow-200"
+	case FlashKindInfo:
+		return "bg-blue-50 text-blue-800 border-blue-200"
+	default:
+		return "bg-red-50 text-red-800 border-red-200"
+	}
+}

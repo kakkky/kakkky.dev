@@ -1,0 +1,21 @@
+package pages
+
+import (
+	"strconv"
+
+	"github.com/kakkky/kakkky.dev/adapter/view/layout"
+)
+
+type ErrorViewModel struct {
+	Status int
+	Msg    string
+}
+
+templ Error(vm ErrorViewModel) {
+	@layout.Base("Error") {
+		<section class="flex min-h-[60vh] flex-col items-center justify-center py-16 text-center">
+			<p class="text-7xl font-bold tracking-tight text-gray-900">{ strconv.Itoa(vm.Status) }</p>
+			<p class="mt-6 text-lg text-gray-700">{ vm.Msg }</p>
+		</section>
+	}
+}

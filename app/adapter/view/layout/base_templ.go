@@ -62,7 +62,7 @@ func Base(subTitle string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<main class=\"mx-auto max-w-4xl px-6\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div id=\"flash\" class=\"fixed top-4 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2\"></div><main class=\"mx-auto max-w-4xl px-6\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
