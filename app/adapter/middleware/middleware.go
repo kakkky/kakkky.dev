@@ -17,3 +17,7 @@ func (m *Middleware) GlobalWraps() []func(http.Handler) http.Handler {
 func (m *Middleware) AdminWraps() []func(http.Handler) http.Handler {
 	return []func(http.Handler) http.Handler{}
 }
+
+func (m *Middleware) MuxWraps(mux *http.ServeMux) http.Handler {
+	return NotFound(mux)
+}

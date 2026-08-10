@@ -12,7 +12,7 @@ func NewMux(h *handler.Handler, mw *middleware.Middleware) http.Handler {
 	registerAdminRoutes(mux, h, mw)
 	registerPublicRoutes(mux, h, mw)
 	registerStaticRoutes(mux, h)
-	return mux
+	return mw.MuxWraps(mux)
 }
 
 func registerStaticRoutes(mux *http.ServeMux, h *handler.Handler) {
