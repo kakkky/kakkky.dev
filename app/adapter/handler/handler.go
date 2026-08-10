@@ -40,3 +40,12 @@ func (h *Handler) AdminRoutes() []Route {
 		},
 	}
 }
+
+func (h *Handler) StaticRoutes() []Route {
+	return []Route{
+		{
+			Pattern: "GET /assets/",
+			Handler: http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/dist"))),
+		},
+	}
+}
