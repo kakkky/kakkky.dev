@@ -32,103 +32,95 @@ INSERT INTO tags (id, slug, name) VALUES
 -- published_at は 2024-01-01 10:00:00+09 を起点に (n-1) * 8 日 ずつずらして時系列に散らす。
 
 -- Go: 001-025
-INSERT INTO articles (id, slug, title, body, summary, status, published_at)
+INSERT INTO articles (id, slug, title, body, status, published_at)
 SELECT
     ('22222222-2222-2222-2222-' || lpad(n::text, 12, '0'))::uuid,
     'go-tips-' || lpad(n::text, 3, '0'),
     'Go Tips #' || lpad(n::text, 3, '0'),
     E'# Go Tips #' || lpad(n::text, 3, '0') || E'\n\nGo に関する Tips 記事 (No.' || n || E')。\n\n```go\nfunc main() { fmt.Println("hello, go") }\n```\n',
-    'Go に関する ' || n || ' 本目の Tips 記事。',
     CASE WHEN n = ANY(ARRAY[5, 17]) THEN 'draft' ELSE 'published' END,
     CASE WHEN n = ANY(ARRAY[5, 17]) THEN NULL
          ELSE ('2024-01-01 10:00:00+09'::timestamptz + ((n - 1) * 8 || ' days')::interval) END
 FROM generate_series(1, 25) n;
 
 -- TypeScript: 026-045
-INSERT INTO articles (id, slug, title, body, summary, status, published_at)
+INSERT INTO articles (id, slug, title, body, status, published_at)
 SELECT
     ('22222222-2222-2222-2222-' || lpad(n::text, 12, '0'))::uuid,
     'ts-tips-' || lpad(n::text, 3, '0'),
     'TypeScript Tips #' || lpad(n::text, 3, '0'),
     E'# TypeScript Tips #' || lpad(n::text, 3, '0') || E'\n\nTypeScript に関する Tips 記事 (No.' || n || E')。\n\n```ts\nfunction pick<T, K extends keyof T>(o: T, k: K[]): Pick<T, K> { return {} as any }\n```\n',
-    'TypeScript に関する ' || n || ' 本目の Tips 記事。',
     CASE WHEN n = ANY(ARRAY[33, 42]) THEN 'draft' ELSE 'published' END,
     CASE WHEN n = ANY(ARRAY[33, 42]) THEN NULL
          ELSE ('2024-01-01 10:00:00+09'::timestamptz + ((n - 1) * 8 || ' days')::interval) END
 FROM generate_series(26, 45) n;
 
 -- React: 046-060
-INSERT INTO articles (id, slug, title, body, summary, status, published_at)
+INSERT INTO articles (id, slug, title, body, status, published_at)
 SELECT
     ('22222222-2222-2222-2222-' || lpad(n::text, 12, '0'))::uuid,
     'react-tips-' || lpad(n::text, 3, '0'),
     'React Tips #' || lpad(n::text, 3, '0'),
     E'# React Tips #' || lpad(n::text, 3, '0') || E'\n\nReact に関する Tips 記事 (No.' || n || E')。\n\n```tsx\nexport function Hello() { return <p>hi</p> }\n```\n',
-    'React に関する ' || n || ' 本目の Tips 記事。',
     CASE WHEN n = ANY(ARRAY[55]) THEN 'draft' ELSE 'published' END,
     CASE WHEN n = ANY(ARRAY[55]) THEN NULL
          ELSE ('2024-01-01 10:00:00+09'::timestamptz + ((n - 1) * 8 || ' days')::interval) END
 FROM generate_series(46, 60) n;
 
 -- PostgreSQL: 061-072
-INSERT INTO articles (id, slug, title, body, summary, status, published_at)
+INSERT INTO articles (id, slug, title, body, status, published_at)
 SELECT
     ('22222222-2222-2222-2222-' || lpad(n::text, 12, '0'))::uuid,
     'pg-tips-' || lpad(n::text, 3, '0'),
     'PostgreSQL Tips #' || lpad(n::text, 3, '0'),
     E'# PostgreSQL Tips #' || lpad(n::text, 3, '0') || E'\n\nPostgreSQL に関する Tips 記事 (No.' || n || E')。\n\n```sql\nSELECT count(*) FROM articles WHERE status = ''published'';\n```\n',
-    'PostgreSQL に関する ' || n || ' 本目の Tips 記事。',
     CASE WHEN n = ANY(ARRAY[66]) THEN 'draft' ELSE 'published' END,
     CASE WHEN n = ANY(ARRAY[66]) THEN NULL
          ELSE ('2024-01-01 10:00:00+09'::timestamptz + ((n - 1) * 8 || ' days')::interval) END
 FROM generate_series(61, 72) n;
 
 -- Docker: 073-082
-INSERT INTO articles (id, slug, title, body, summary, status, published_at)
+INSERT INTO articles (id, slug, title, body, status, published_at)
 SELECT
     ('22222222-2222-2222-2222-' || lpad(n::text, 12, '0'))::uuid,
     'docker-tips-' || lpad(n::text, 3, '0'),
     'Docker Tips #' || lpad(n::text, 3, '0'),
     E'# Docker Tips #' || lpad(n::text, 3, '0') || E'\n\nDocker に関する Tips 記事 (No.' || n || E')。\n\n```yaml\nservices:\n  app:\n    build: .\n```\n',
-    'Docker に関する ' || n || ' 本目の Tips 記事。',
     CASE WHEN n = ANY(ARRAY[78]) THEN 'draft' ELSE 'published' END,
     CASE WHEN n = ANY(ARRAY[78]) THEN NULL
          ELSE ('2024-01-01 10:00:00+09'::timestamptz + ((n - 1) * 8 || ' days')::interval) END
 FROM generate_series(73, 82) n;
 
 -- Next.js: 083-092
-INSERT INTO articles (id, slug, title, body, summary, status, published_at)
+INSERT INTO articles (id, slug, title, body, status, published_at)
 SELECT
     ('22222222-2222-2222-2222-' || lpad(n::text, 12, '0'))::uuid,
     'nextjs-tips-' || lpad(n::text, 3, '0'),
     'Next.js Tips #' || lpad(n::text, 3, '0'),
     E'# Next.js Tips #' || lpad(n::text, 3, '0') || E'\n\nNext.js に関する Tips 記事 (No.' || n || E')。\n\n```tsx\nexport default function Page() { return <main>hi</main> }\n```\n',
-    'Next.js に関する ' || n || ' 本目の Tips 記事。',
     CASE WHEN n = ANY(ARRAY[89]) THEN 'draft' ELSE 'published' END,
     CASE WHEN n = ANY(ARRAY[89]) THEN NULL
          ELSE ('2024-01-01 10:00:00+09'::timestamptz + ((n - 1) * 8 || ' days')::interval) END
 FROM generate_series(83, 92) n;
 
 -- AWS: 093-097
-INSERT INTO articles (id, slug, title, body, summary, status, published_at)
+INSERT INTO articles (id, slug, title, body, status, published_at)
 SELECT
     ('22222222-2222-2222-2222-' || lpad(n::text, 12, '0'))::uuid,
     'aws-tips-' || lpad(n::text, 3, '0'),
     'AWS Tips #' || lpad(n::text, 3, '0'),
     E'# AWS Tips #' || lpad(n::text, 3, '0') || E'\n\nAWS に関する Tips 記事 (No.' || n || E')。\n',
-    'AWS に関する ' || n || ' 本目の Tips 記事。',
     'published',
     ('2024-01-01 10:00:00+09'::timestamptz + ((n - 1) * 8 || ' days')::interval)
 FROM generate_series(93, 97) n;
 
 -- Testing: 098-100
-INSERT INTO articles (id, slug, title, body, summary, status, published_at)
+INSERT INTO articles (id, slug, title, body, status, published_at)
 SELECT
     ('22222222-2222-2222-2222-' || lpad(n::text, 12, '0'))::uuid,
     'testing-tips-' || lpad(n::text, 3, '0'),
     'Testing Tips #' || lpad(n::text, 3, '0'),
     E'# Testing Tips #' || lpad(n::text, 3, '0') || E'\n\nテストに関する Tips 記事 (No.' || n || E')。\n',
-    'テストに関する ' || n || ' 本目の Tips 記事。',
     'published',
     ('2024-01-01 10:00:00+09'::timestamptz + ((n - 1) * 8 || ' days')::interval)
 FROM generate_series(98, 100) n;

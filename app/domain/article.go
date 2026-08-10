@@ -8,10 +8,9 @@ import (
 )
 
 const (
-	ArticleTitleMaxLength   = 100
-	ArticleBodyMaxLength    = 50000
-	ArticleSummaryMaxLength = 200
-	ArticleMaxTags          = 5
+	ArticleTitleMaxLength = 100
+	ArticleBodyMaxLength  = 50000
+	ArticleMaxTags        = 5
 )
 
 type ArticleID string
@@ -28,13 +27,12 @@ type Article struct {
 	Slug        Slug
 	Title       string
 	Body        string
-	Summary     string
 	Status      ArticleStatus
 	PublishedAt time.Time
 	TagIDs      []TagID
 }
 
-func NewArticle(slug Slug, title string, body string, summary string, status ArticleStatus, publishedAt time.Time) (*Article, error) {
+func NewArticle(slug Slug, title string, body string, status ArticleStatus, publishedAt time.Time) (*Article, error) {
 	if title == "" {
 		return nil, ErrInvalidArgument.With("タイトル は 必須 です")
 	}
@@ -47,9 +45,6 @@ func NewArticle(slug Slug, title string, body string, summary string, status Art
 	if utf8.RuneCountInString(body) > ArticleBodyMaxLength {
 		return nil, ErrInvalidArgument.With(fmt.Sprintf("本文 は %d 文字以内 です", ArticleBodyMaxLength))
 	}
-	if utf8.RuneCountInString(summary) > ArticleSummaryMaxLength {
-		return nil, ErrInvalidArgument.With(fmt.Sprintf("要約 は %d 文字以内 です", ArticleSummaryMaxLength))
-	}
 	if status != ArticleStatusDraft && status != ArticleStatusPublished {
 		return nil, ErrInvalidArgument.With("ステータス は draft または published です")
 	}
@@ -57,7 +52,6 @@ func NewArticle(slug Slug, title string, body string, summary string, status Art
 		Slug:        slug,
 		Title:       title,
 		Body:        body,
-		Summary:     summary,
 		Status:      status,
 		PublishedAt: publishedAt,
 	}, nil

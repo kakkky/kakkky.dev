@@ -21,7 +21,6 @@ CREATE TABLE articles (
     slug          VARCHAR(20)  NOT NULL UNIQUE,
     title         VARCHAR(100) NOT NULL,
     body          TEXT         NOT NULL,
-    summary       TEXT,
     status        VARCHAR(20)  NOT NULL DEFAULT 'draft'
                   CHECK (status IN ('draft', 'published')),
     published_at  TIMESTAMPTZ,

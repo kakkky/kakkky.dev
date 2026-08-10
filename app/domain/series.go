@@ -10,7 +10,6 @@ import (
 const (
 	SeriesTitleMaxLength       = 100
 	SeriesDescriptionMaxLength = 500
-	SeriesSummaryMaxLength     = 200
 	SeriesMaxTags              = 5
 )
 

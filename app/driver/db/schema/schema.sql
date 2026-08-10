@@ -8,7 +8,6 @@ CREATE TABLE "public"."articles" (
   "slug" character varying(20) NOT NULL,
   "title" character varying(100) NOT NULL,
   "body" text NOT NULL,
-  "summary" text NULL,
   "status" character varying(20) NOT NULL DEFAULT 'draft',
   "published_at" timestamptz NULL,
   "created_at" timestamptz NOT NULL DEFAULT now(),
