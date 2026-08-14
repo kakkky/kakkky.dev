@@ -1,7 +1,9 @@
 package layout
 
+import "github.com/kakkky/hotwire-go/stimulus"
 import "github.com/kakkky/hotwire-go/turbo"
 import "github.com/kakkky/kakkky.dev/adapter/view"
+import "github.com/kakkky/kakkky.dev/assets/js"
 import "fmt"
 
 templ Base(subTitle string) {
@@ -13,6 +15,7 @@ templ Base(subTitle string) {
 			<title>{ pageTitle(subTitle) }</title>
 			<link rel="stylesheet" href="/assets/main.css"/>
 			@turbo.ScriptImport()
+			@stimulus.ScriptLoad(js.ControllerPaths...)
 		</head>
 		<body class="min-h-screen bg-white text-gray-900 font-sans antialiased">
 			@Header()
