@@ -1,0 +1,32 @@
+package partials
+
+import (
+	"github.com/kakkky/hotwire-go/turbo"
+
+	"github.com/kakkky/kakkky.dev/adapter/view/components"
+)
+
+const FeedItemListID = "feed-item-list"
+
+type FeedItemListViewModel struct {
+	Items   []components.FeedItemCardViewModel
+	NextCursorURL string // 空なら次ページなし
+}
+
+templ FeedItemList(vm FeedItemListViewModel) {
+	@turbo.Frame(FeedItemListID) {
+		<div class="mt-8 flex flex-col gap-4">
+			for _, item := range vm.Items {
+				@components.FeedItemCard(item)
+			}
+			if len(vm.Items) == 0 {
+				<p class="py-12 text-center text-sm text-gray-500">該当する記事はありません。</p>
+			}
+			if vm.NextCursorURL != "" {
+				@turbo.Frame(FeedItemListID, turbo.AttrSrc(vm.NextCursorURL), turbo.AttrLoadingLazy()) {
+					<div class="py-6 text-center text-sm text-gray-500">Loading...</div>
+				}
+			}
+		</div>
+	}
+}

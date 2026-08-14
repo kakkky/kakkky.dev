@@ -9,17 +9,14 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"time"
-
 	"github.com/kakkky/kakkky.dev/adapter/view/components"
 	"github.com/kakkky/kakkky.dev/adapter/view/layout"
 	"github.com/kakkky/kakkky.dev/adapter/view/partials"
 )
 
 type FeedViewModel struct {
-	Items        []components.FeedItemCardViewModel
-	NextCursorID string
-	NextCursorAt time.Time
+	List    partials.FeedItemListViewModel
+	AllTags []components.TagOption
 }
 
 func Feed(vm FeedViewModel) templ.Component {
@@ -55,21 +52,19 @@ func Feed(vm FeedViewModel) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section id=\"feed\" class=\"py-16\"><div class=\"flex items-baseline justify-between\"><h2 class=\"text-2xl font-semibold tracking-tight\">Feed</h2><p class=\"text-xs text-gray-500\">Articles &amp; Series</p></div><div class=\"mt-8 flex flex-col gap-4\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section id=\"feed\" class=\"py-16\"><div class=\"flex items-baseline justify-between\"><h2 class=\"text-2xl font-semibold tracking-tight\">Feed</h2><p class=\"text-xs text-gray-500\">Articles &amp; Series</p></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			for _, item := range vm.Items {
-				templ_7745c5c3_Err = components.FeedItemCard(item).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-			}
-			templ_7745c5c3_Err = partials.FeedNextFrame(vm.NextCursorID, vm.NextCursorAt).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = components.TagFilterArea(vm.AllTags, partials.FeedItemListID).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div></section>")
+			templ_7745c5c3_Err = partials.FeedItemList(vm.List).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</section>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
