@@ -93,17 +93,17 @@ func (m *MockTagRepository) EXPECT() *MockTagRepositoryMockRecorder {
 	return m.recorder
 }
 
-// FindByIDs mocks base method.
-func (m *MockTagRepository) FindByIDs(ctx context.Context, ids []domain.TagID) ([]*domain.Tag, error) {
+// ListAll mocks base method.
+func (m *MockTagRepository) ListAll(ctx context.Context) ([]*domain.Tag, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindByIDs", ctx, ids)
+	ret := m.ctrl.Call(m, "ListAll", ctx)
 	ret0, _ := ret[0].([]*domain.Tag)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FindByIDs indicates an expected call of FindByIDs.
-func (mr *MockTagRepositoryMockRecorder) FindByIDs(ctx, ids any) *gomock.Call {
+// ListAll indicates an expected call of ListAll.
+func (mr *MockTagRepositoryMockRecorder) ListAll(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByIDs", reflect.TypeOf((*MockTagRepository)(nil).FindByIDs), ctx, ids)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAll", reflect.TypeOf((*MockTagRepository)(nil).ListAll), ctx)
 }

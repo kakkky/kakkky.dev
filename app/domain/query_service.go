@@ -12,5 +12,5 @@ type QueryService interface {
 }
 
 type FeedQueryService interface {
-	ListFeedItems(ctx context.Context, afterID FeedItemID, afterPublishedAt time.Time, limit int) ([]FeedItem, error)
+	ListFeedItems(ctx context.Context, tagIDs []TagID, afterID FeedItemID, afterPublishedAt time.Time, limit int) ([]FeedItem, error)
 }

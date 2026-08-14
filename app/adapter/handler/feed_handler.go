@@ -66,11 +66,15 @@ func (h *FeedHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	tagsByID := make(map[domain.TagID]*domain.Tag, len(out.Tags))
+	for _, t := range out.Tags {
+		tagsByID[t.ID] = t
+	}
 	items := make([]components.FeedItemCardViewModel, 0, len(out.Items))
 	for _, it := range out.Items {
 		tagNames := make([]string, 0, len(it.TagIDs))
 		for _, tid := range it.TagIDs {
-			if t, ok := out.Tags[tid]; ok {
+			if t, ok := tagsByID[tid]; ok {
 				tagNames = append(tagNames, t.Name)
 			}
 		}
