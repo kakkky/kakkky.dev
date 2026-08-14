@@ -1,9 +1,9 @@
 root = "/app"
 
 [build]
-cmd = "tailwindcss -i assets/main.css -o assets/dist/main.css && templ generate && go build -o ./tmp/main ./cmd/server"
+cmd = "tailwindcss -i assets/main.css -o assets/dist/main.css && rm -rf assets/dist/js && cp -R assets/js assets/dist/js && templ generate && go build -o ./tmp/main ./cmd/server"
 bin = "./tmp/main"
-include_ext = ["go", "templ", "css"]
+include_ext = ["go", "templ", "css", "js"]
 exclude_dir = ["tmp", "assets/dist"]
 delay = 500
 poll = true

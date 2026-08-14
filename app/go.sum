@@ -69,6 +69,8 @@ github.com/jackc/puddle/v2 v2.2.2 h1:PR8nw+E/1w0GLuRFSmiioY6UooMp6KJv0/61nB7icHo
 github.com/jackc/puddle/v2 v2.2.2/go.mod h1:vriiEXHvEE654aYKXXjOvZM39qJ0q+azkZFrfEOc3H4=
 github.com/jmoiron/sqlx v1.4.0 h1:1PLqN7S1UYp5t4SrVVnt4nUVNemrDAtxlulVe+Qgm3o=
 github.com/jmoiron/sqlx v1.4.0/go.mod h1:ZrZ7UsYB/weZdl2Bxg6jCRO9c3YHl8r3ahlKmRT4JLY=
+github.com/kakkky/hotwire-go v0.0.0-20260726075932-973e7dc621bc h1:3b+OjcQO4bWHxrAufa/M4HFXE+Kn/Nc5nON4eXH72Z0=
+github.com/kakkky/hotwire-go v0.0.0-20260726075932-973e7dc621bc/go.mod h1:p/zoEqBAF0DEbt2DvNUIS/jUszp5DDcR9c0X70FvA+c=
 github.com/kakkky/hotwire-go v0.1.0 h1:BRN9JIAB5yKg0pBWXBlazkl10Aj8xPYBw5YbG2ZYw5Q=
 github.com/kakkky/hotwire-go v0.1.0/go.mod h1:uKIvgQ/2ve36ynysFdai4g/Z5egEyWoFiYuN4hiXN7g=
 github.com/kakkky/scope v0.8.0 h1:dXrUIh9nmGJAr4m4UHBT2j6SqnDIloduKSswDGidJyA=
