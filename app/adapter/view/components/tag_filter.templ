@@ -1,0 +1,55 @@
+package components
+
+import (
+	"strconv"
+
+	"github.com/kakkky/hotwire-go/stimulus"
+	"github.com/kakkky/hotwire-go/turbo"
+
+	"github.com/kakkky/kakkky.dev/assets/js"
+)
+
+var tagFilterController = js.TagFilterController.Name
+
+const TagFilterMaxSelected = 10
+
+type TagOption struct {
+	Slug string
+	Name string
+}
+
+
+templ TagFilterArea(tags []TagOption, targetFrameID string) {
+	<form
+		method="get"
+		action="/feed"
+		{ turbo.AttrFrame(targetFrameID)... }
+		{ turbo.AttrActionAdvance()... }
+		{ stimulus.AttrControllers(tagFilterController)... }
+		{ stimulus.AttrValue(tagFilterController, "max", strconv.Itoa(TagFilterMaxSelected))... }
+		class="mt-6 rounded-lg border border-gray-300 bg-gray-50 p-4 shadow-sm"
+	>
+		<div
+			{ stimulus.AttrTargets(tagFilterController, "options")... }
+			class="flex flex-wrap gap-1.5"
+		>
+			for _, t := range tags {
+				@tagBadgeOption(t.Name, t.Slug)
+			}
+		</div>
+	</form>
+}
+
+templ tagBadgeOption(name, slug string) {
+	<button
+		type="button"
+		{ stimulus.AttrTargets(tagFilterController, "option")... }
+		data-tag-slug={ slug }
+		{ stimulus.AttrActions("click->tag-filter#toggle")... }
+		{ stimulus.AttrActionParam(tagFilterController, "slug", slug)... }
+		aria-pressed="false"
+		class="cursor-pointer rounded-full transition-opacity hover:opacity-70 aria-pressed:[&>span]:border-gray-900 aria-pressed:[&>span]:bg-gray-900 aria-pressed:[&>span]:text-white"
+	>
+		@TagBadge(name)
+	</button>
+}

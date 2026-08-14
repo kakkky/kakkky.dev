@@ -8,8 +8,10 @@ package layout
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
+import "github.com/kakkky/hotwire-go/stimulus"
 import "github.com/kakkky/hotwire-go/turbo"
 import "github.com/kakkky/kakkky.dev/adapter/view"
+import "github.com/kakkky/kakkky.dev/assets/js"
 import "fmt"
 
 func Base(subTitle string) templ.Component {
@@ -40,7 +42,7 @@ func Base(subTitle string) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(pageTitle(subTitle))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/layout/base.templ`, Line: 13, Col: 31}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/layout/base.templ`, Line: 15, Col: 31}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -51,6 +53,10 @@ func Base(subTitle string) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		templ_7745c5c3_Err = turbo.ScriptImport().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = stimulus.ScriptLoad(js.ControllerPaths...).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
