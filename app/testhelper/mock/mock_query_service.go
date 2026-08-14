@@ -81,16 +81,16 @@ func (m *MockFeedQueryService) EXPECT() *MockFeedQueryServiceMockRecorder {
 }
 
 // ListFeedItems mocks base method.
-func (m *MockFeedQueryService) ListFeedItems(ctx context.Context, afterID domain.FeedItemID, afterPublishedAt time.Time, limit int) ([]domain.FeedItem, error) {
+func (m *MockFeedQueryService) ListFeedItems(ctx context.Context, tagIDs []domain.TagID, afterID domain.FeedItemID, afterPublishedAt time.Time, limit int) ([]domain.FeedItem, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListFeedItems", ctx, afterID, afterPublishedAt, limit)
+	ret := m.ctrl.Call(m, "ListFeedItems", ctx, tagIDs, afterID, afterPublishedAt, limit)
 	ret0, _ := ret[0].([]domain.FeedItem)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListFeedItems indicates an expected call of ListFeedItems.
-func (mr *MockFeedQueryServiceMockRecorder) ListFeedItems(ctx, afterID, afterPublishedAt, limit any) *gomock.Call {
+func (mr *MockFeedQueryServiceMockRecorder) ListFeedItems(ctx, tagIDs, afterID, afterPublishedAt, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListFeedItems", reflect.TypeOf((*MockFeedQueryService)(nil).ListFeedItems), ctx, afterID, afterPublishedAt, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListFeedItems", reflect.TypeOf((*MockFeedQueryService)(nil).ListFeedItems), ctx, tagIDs, afterID, afterPublishedAt, limit)
 }

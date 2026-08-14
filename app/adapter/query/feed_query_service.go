@@ -31,10 +31,16 @@ type feedItemRow struct {
 
 func (fqs *FeedQueryService) ListFeedItems(
 	ctx context.Context,
+	tagIDs []domain.TagID,
 	afterID domain.FeedItemID,
 	afterPublishedAt time.Time,
 	limit int,
 ) ([]domain.FeedItem, error) {
+	strTagIDs := make([]string, len(tagIDs))
+	for i, id := range tagIDs {
+		strTagIDs[i] = string(id)
+	}
+
 	var publishedAtArg, idArg any
 	if afterID != "" && !afterPublishedAt.IsZero() {
 		publishedAtArg = afterPublishedAt
@@ -55,6 +61,13 @@ SELECT
 FROM articles a
 WHERE a.status = 'published'
   AND NOT EXISTS (SELECT 1 FROM series_articles WHERE article_id = a.id)
+  AND (
+    cardinality($4::uuid[]) = 0
+    OR EXISTS (
+      SELECT 1 FROM article_tags at
+      WHERE at.article_id = a.id AND at.tag_id = ANY($4::uuid[])
+    )
+  )
   AND (a.published_at, a.id) < (
     COALESCE($1::timestamptz, 'infinity'),
     COALESCE($2::uuid, 'ffffffff-ffff-ffff-ffff-ffffffffffff')
@@ -73,6 +86,13 @@ SELECT
   s.status        AS series_status
 FROM series s
 WHERE s.status LIKE 'published_%'
+  AND (
+    cardinality($4::uuid[]) = 0
+    OR EXISTS (
+      SELECT 1 FROM series_tags st
+      WHERE st.series_id = s.id AND st.tag_id = ANY($4::uuid[])
+    )
+  )
   AND (s.published_at, s.id) < (
     COALESCE($1::timestamptz, 'infinity'),
     COALESCE($2::uuid, 'ffffffff-ffff-ffff-ffff-ffffffffffff')
@@ -80,8 +100,8 @@ WHERE s.status LIKE 'published_%'
 
 ORDER BY published_at DESC, id DESC
 LIMIT $3
-`, publishedAtArg, idArg, limit); err != nil {
-		return nil, domain.ErrInternal.Wrap(err, "select feed items")
+`, publishedAtArg, idArg, limit, pq.Array(strTagIDs)); err != nil {
+		return nil, domain.ErrInternal.Wrap(err, "list feed items")
 	}
 
 	items := make([]domain.FeedItem, len(rows))

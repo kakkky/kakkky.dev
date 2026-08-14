@@ -17,6 +17,7 @@ func TestFeedQueryService_ListFeedItems(t *testing.T) {
 	var (
 		tag1 domain.TagID = "11111111-1111-1111-1111-111111111111"
 		tag2 domain.TagID = "22222222-2222-2222-2222-222222222222"
+		tag3 domain.TagID = "33333333-3333-3333-3333-333333333333"
 
 		art1 domain.ArticleID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa01"
 		art2 domain.ArticleID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa02"
@@ -34,6 +35,7 @@ func TestFeedQueryService_ListFeedItems(t *testing.T) {
 		existingTags     []*domain.Tag
 		existingArticles []*domain.Article
 		existingSeries   []*domain.Series
+		tagIDs           []domain.TagID
 		afterID          domain.FeedItemID
 		afterPublishedAt time.Time
 		limit            int
@@ -51,34 +53,17 @@ func TestFeedQueryService_ListFeedItems(t *testing.T) {
 			limit: 10,
 			want: []domain.FeedItem{
 				{
-					Kind:         domain.FeedItemKindArticle,
-					ID:           domain.FeedItemID(art2),
-					Slug:         "a2",
-					Title:        "A2",
-					PublishedAt:  baseTime.Add(-1 * time.Hour),
-					TagIDs:       []domain.TagID{},
-					ArticleCount: 0,
-					SeriesStatus: "",
+					Kind: domain.FeedItemKindArticle, ID: domain.FeedItemID(art2), Slug: "a2", Title: "A2",
+					PublishedAt: baseTime.Add(-1 * time.Hour), TagIDs: []domain.TagID{},
 				},
 				{
-					Kind:         domain.FeedItemKindSeries,
-					ID:           domain.FeedItemID(ser1),
-					Slug:         "s1",
-					Title:        "S1",
-					PublishedAt:  baseTime.Add(-2 * time.Hour),
-					TagIDs:       []domain.TagID{},
-					ArticleCount: 0,
+					Kind: domain.FeedItemKindSeries, ID: domain.FeedItemID(ser1), Slug: "s1", Title: "S1",
+					PublishedAt: baseTime.Add(-2 * time.Hour), TagIDs: []domain.TagID{},
 					SeriesStatus: domain.SeriesStatusPublishedOngoing,
 				},
 				{
-					Kind:         domain.FeedItemKindArticle,
-					ID:           domain.FeedItemID(art1),
-					Slug:         "a1",
-					Title:        "A1",
-					PublishedAt:  baseTime.Add(-3 * time.Hour),
-					TagIDs:       []domain.TagID{},
-					ArticleCount: 0,
-					SeriesStatus: "",
+					Kind: domain.FeedItemKindArticle, ID: domain.FeedItemID(art1), Slug: "a1", Title: "A1",
+					PublishedAt: baseTime.Add(-3 * time.Hour), TagIDs: []domain.TagID{},
 				},
 			},
 		},
@@ -102,24 +87,13 @@ func TestFeedQueryService_ListFeedItems(t *testing.T) {
 			limit: 10,
 			want: []domain.FeedItem{
 				{
-					Kind:         domain.FeedItemKindArticle,
-					ID:           domain.FeedItemID(art3),
-					Slug:         "a3",
-					Title:        "A3",
-					PublishedAt:  baseTime.Add(-1 * time.Hour),
-					TagIDs:       []domain.TagID{},
-					ArticleCount: 0,
-					SeriesStatus: "",
+					Kind: domain.FeedItemKindArticle, ID: domain.FeedItemID(art3), Slug: "a3", Title: "A3",
+					PublishedAt: baseTime.Add(-1 * time.Hour), TagIDs: []domain.TagID{},
 				},
 				{
-					Kind:         domain.FeedItemKindSeries,
-					ID:           domain.FeedItemID(ser1),
-					Slug:         "s1",
-					Title:        "S1",
-					PublishedAt:  baseTime.Add(-4 * time.Hour),
-					TagIDs:       []domain.TagID{},
-					ArticleCount: 2,
-					SeriesStatus: domain.SeriesStatusPublishedCompleted,
+					Kind: domain.FeedItemKindSeries, ID: domain.FeedItemID(ser1), Slug: "s1", Title: "S1",
+					PublishedAt: baseTime.Add(-4 * time.Hour), TagIDs: []domain.TagID{},
+					ArticleCount: 2, SeriesStatus: domain.SeriesStatusPublishedCompleted,
 				},
 			},
 		},
@@ -139,14 +113,8 @@ func TestFeedQueryService_ListFeedItems(t *testing.T) {
 			limit: 10,
 			want: []domain.FeedItem{
 				{
-					Kind:         domain.FeedItemKindArticle,
-					ID:           domain.FeedItemID(art1),
-					Slug:         "a1",
-					Title:        "A1",
-					PublishedAt:  baseTime.Add(-1 * time.Hour),
-					TagIDs:       []domain.TagID{tag1, tag2},
-					ArticleCount: 0,
-					SeriesStatus: "",
+					Kind: domain.FeedItemKindArticle, ID: domain.FeedItemID(art1), Slug: "a1", Title: "A1",
+					PublishedAt: baseTime.Add(-1 * time.Hour), TagIDs: []domain.TagID{tag1, tag2},
 				},
 			},
 		},
@@ -174,24 +142,75 @@ func TestFeedQueryService_ListFeedItems(t *testing.T) {
 			limit:            2,
 			want: []domain.FeedItem{
 				{
-					Kind:         domain.FeedItemKindArticle,
-					ID:           domain.FeedItemID(art2),
-					Slug:         "a2",
-					Title:        "A2",
-					PublishedAt:  baseTime.Add(-2 * time.Hour),
-					TagIDs:       []domain.TagID{},
-					ArticleCount: 0,
-					SeriesStatus: "",
+					Kind: domain.FeedItemKindArticle, ID: domain.FeedItemID(art2), Slug: "a2", Title: "A2",
+					PublishedAt: baseTime.Add(-2 * time.Hour), TagIDs: []domain.TagID{},
 				},
 				{
-					Kind:         domain.FeedItemKindSeries,
-					ID:           domain.FeedItemID(ser1),
-					Slug:         "s1",
-					Title:        "S1",
-					PublishedAt:  baseTime.Add(-3 * time.Hour),
-					TagIDs:       []domain.TagID{},
-					ArticleCount: 2,
+					Kind: domain.FeedItemKindSeries, ID: domain.FeedItemID(ser1), Slug: "s1", Title: "S1",
+					PublishedAt: baseTime.Add(-3 * time.Hour), TagIDs: []domain.TagID{},
+					ArticleCount: 2, SeriesStatus: domain.SeriesStatusPublishedOngoing,
+				},
+			},
+		},
+		{
+			name: "filters by any of the given tags when tagIDs is non-empty (OR filter)",
+			existingTags: []*domain.Tag{
+				{ID: tag1, Slug: "go", Name: "Go"},
+				{ID: tag2, Slug: "db", Name: "DB"},
+				{ID: tag3, Slug: "ts", Name: "TypeScript"},
+			},
+			existingArticles: []*domain.Article{
+				{ID: art1, Slug: "a1", Title: "A1 has go", Body: "b", Status: domain.ArticleStatusPublished, PublishedAt: baseTime.Add(-1 * time.Hour), TagIDs: []domain.TagID{tag1}},
+				{ID: art2, Slug: "a2", Title: "A2 has db", Body: "b", Status: domain.ArticleStatusPublished, PublishedAt: baseTime.Add(-2 * time.Hour), TagIDs: []domain.TagID{tag2}},
+				{ID: art3, Slug: "a3", Title: "A3 has ts only", Body: "b", Status: domain.ArticleStatusPublished, PublishedAt: baseTime.Add(-3 * time.Hour), TagIDs: []domain.TagID{tag3}},
+			},
+			existingSeries: []*domain.Series{
+				{
+					ID: ser1, Slug: "s1", Title: "S1 has go", Status: domain.SeriesStatusPublishedOngoing,
+					PublishedAt: baseTime.Add(-4 * time.Hour),
+					TagIDs:      []domain.TagID{tag1},
+				},
+			},
+			tagIDs: []domain.TagID{tag1, tag2},
+			limit:  10,
+			want: []domain.FeedItem{
+				{
+					Kind: domain.FeedItemKindArticle, ID: domain.FeedItemID(art1), Slug: "a1", Title: "A1 has go",
+					PublishedAt: baseTime.Add(-1 * time.Hour), TagIDs: []domain.TagID{tag1},
+				},
+				{
+					Kind: domain.FeedItemKindArticle, ID: domain.FeedItemID(art2), Slug: "a2", Title: "A2 has db",
+					PublishedAt: baseTime.Add(-2 * time.Hour), TagIDs: []domain.TagID{tag2},
+				},
+				{
+					Kind: domain.FeedItemKindSeries, ID: domain.FeedItemID(ser1), Slug: "s1", Title: "S1 has go",
+					PublishedAt: baseTime.Add(-4 * time.Hour), TagIDs: []domain.TagID{tag1},
 					SeriesStatus: domain.SeriesStatusPublishedOngoing,
+				},
+			},
+		},
+		{
+			name: "still excludes in-series articles when filtered by their tag",
+			existingTags: []*domain.Tag{
+				{ID: tag1, Slug: "go", Name: "Go"},
+			},
+			existingArticles: []*domain.Article{
+				{ID: art1, Slug: "a1", Title: "A1 standalone", Body: "b", Status: domain.ArticleStatusPublished, PublishedAt: baseTime.Add(-1 * time.Hour), TagIDs: []domain.TagID{tag1}},
+				{ID: art4, Slug: "a4", Title: "A4 in series", Body: "b", Status: domain.ArticleStatusPublished, PublishedAt: baseTime.Add(-2 * time.Hour), TagIDs: []domain.TagID{tag1}},
+			},
+			existingSeries: []*domain.Series{
+				{
+					ID: ser1, Slug: "s1", Title: "S1", Status: domain.SeriesStatusPublishedOngoing,
+					PublishedAt: baseTime.Add(-3 * time.Hour),
+					Articles:    []domain.SeriesArticle{{ArticleID: art4, Position: 1}},
+				},
+			},
+			tagIDs: []domain.TagID{tag1},
+			limit:  10,
+			want: []domain.FeedItem{
+				{
+					Kind: domain.FeedItemKindArticle, ID: domain.FeedItemID(art1), Slug: "a1", Title: "A1 standalone",
+					PublishedAt: baseTime.Add(-1 * time.Hour), TagIDs: []domain.TagID{tag1},
 				},
 			},
 		},
@@ -210,7 +229,7 @@ func TestFeedQueryService_ListFeedItems(t *testing.T) {
 			})
 
 			qs := &FeedQueryService{db: testDB}
-			got, err := qs.ListFeedItems(ctx, tt.afterID, tt.afterPublishedAt, tt.limit)
+			got, err := qs.ListFeedItems(ctx, tt.tagIDs, tt.afterID, tt.afterPublishedAt, tt.limit)
 			require.NoError(t, err)
 			assert.Equal(t, tt.want, got)
 		})

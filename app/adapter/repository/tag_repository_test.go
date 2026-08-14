@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"errors"
-	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,7 +10,7 @@ import (
 	"github.com/kakkky/kakkky.dev/testhelper"
 )
 
-func TestTagRepository_FindByIDs(t *testing.T) {
+func TestTagRepository_ListAll(t *testing.T) {
 	ctx := t.Context()
 
 	var (
@@ -24,43 +22,24 @@ func TestTagRepository_FindByIDs(t *testing.T) {
 	tests := []struct {
 		name         string
 		existingTags []*domain.Tag
-		ids          []domain.TagID
 		want         []*domain.Tag
-		wantErr      error
 	}{
 		{
-			name: "returns tags whose ids are in the given ids",
+			name: "returns all tags ordered by name",
 			existingTags: []*domain.Tag{
+				{ID: tag2, Slug: "ts", Name: "TypeScript"},
 				{ID: tag1, Slug: "go", Name: "Go"},
-				{ID: tag2, Slug: "db", Name: "DB"},
-				{ID: tag3, Slug: "ts", Name: "TypeScript"},
+				{ID: tag3, Slug: "db", Name: "DB"},
 			},
-			ids: []domain.TagID{tag1, tag3},
 			want: []*domain.Tag{
+				{ID: tag3, Slug: "db", Name: "DB"},
 				{ID: tag1, Slug: "go", Name: "Go"},
-				{ID: tag3, Slug: "ts", Name: "TypeScript"},
+				{ID: tag2, Slug: "ts", Name: "TypeScript"},
 			},
 		},
 		{
-			name: "returns only matched tags when some ids are missing",
-			existingTags: []*domain.Tag{
-				{ID: tag1, Slug: "go", Name: "Go"},
-			},
-			ids: []domain.TagID{tag1, tag2},
-			want: []*domain.Tag{
-				{ID: tag1, Slug: "go", Name: "Go"},
-			},
-		},
-		{
-			name:         "returns empty slice when ids is empty",
-			existingTags: []*domain.Tag{{ID: tag1, Slug: "go", Name: "Go"}},
-			ids:          []domain.TagID{},
-			want:         []*domain.Tag{},
-		},
-		{
-			name:         "returns empty slice when no tags match",
-			existingTags: []*domain.Tag{{ID: tag1, Slug: "go", Name: "Go"}},
-			ids:          []domain.TagID{tag2},
+			name:         "returns empty slice when no tags exist",
+			existingTags: nil,
 			want:         []*domain.Tag{},
 		},
 	}
@@ -76,17 +55,8 @@ func TestTagRepository_FindByIDs(t *testing.T) {
 			})
 
 			tr := &TagRepository{db: testDB}
-			got, err := tr.FindByIDs(ctx, tt.ids)
-
-			if tt.wantErr != nil {
-				require.Error(t, err)
-				assert.True(t, errors.Is(err, tt.wantErr))
-				return
-			}
+			got, err := tr.ListAll(ctx)
 			require.NoError(t, err)
-
-			sort.Slice(got, func(i, j int) bool { return got[i].ID < got[j].ID })
-			sort.Slice(tt.want, func(i, j int) bool { return tt.want[i].ID < tt.want[j].ID })
 			assert.Equal(t, tt.want, got)
 		})
 	}

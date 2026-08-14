@@ -2,32 +2,32 @@ package usecase
 
 import (
 	"context"
-	"slices"
 	"time"
 
 	"github.com/kakkky/kakkky.dev/domain"
 )
 
 type GetFeedUsecase struct {
-	qs   domain.FeedQueryService
-	repo domain.TagRepository
+	feedQS  domain.FeedQueryService
+	tagRepo domain.TagRepository
 }
 
 func (us *UseCase) NewGetFeedUsecase() *GetFeedUsecase {
 	return &GetFeedUsecase{
-		qs:   us.qs.NewFeedQueryService(),
-		repo: us.repo.NewTagRepository(),
+		feedQS:  us.qs.NewFeedQueryService(),
+		tagRepo: us.repo.NewTagRepository(),
 	}
 }
 
 type GetFeedUsecaseInput struct {
-	Cursor GetFeedUsecaseCursor
-	Limit  int
+	TagSlugs []domain.Slug
+	Cursor   GetFeedUsecaseCursor
+	Limit    int
 }
 
 type GetFeedUsecaseOutput struct {
 	Items      []domain.FeedItem
-	Tags       map[domain.TagID]domain.Tag
+	Tags       []*domain.Tag
 	NextCursor GetFeedUsecaseCursor
 }
 
@@ -37,30 +37,37 @@ type GetFeedUsecaseCursor struct {
 }
 
 func (us *GetFeedUsecase) Exec(ctx context.Context, in GetFeedUsecaseInput) (*GetFeedUsecaseOutput, error) {
-	items, err := us.qs.ListFeedItems(ctx, in.Cursor.AfterID, in.Cursor.AfterPublishedAt, in.Limit)
+	allTags, err := us.tagRepo.ListAll(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var tagIDs []domain.TagID
-	for _, it := range items {
-		tagIDs = append(tagIDs, it.TagIDs...)
+	var filterTagIDs []domain.TagID
+	if len(in.TagSlugs) > 0 {
+		tagBySlug := make(map[domain.Slug]*domain.Tag, len(allTags))
+		for _, t := range allTags {
+			tagBySlug[t.Slug] = t
+		}
+		filterTagIDs = make([]domain.TagID, 0, len(in.TagSlugs))
+		for _, s := range in.TagSlugs {
+			if t, ok := tagBySlug[s]; ok {
+				filterTagIDs = append(filterTagIDs, t.ID)
+			}
+		}
 	}
-	slices.Sort(tagIDs)
-	tagIDs = slices.Compact(tagIDs)
 
-	tags, err := us.repo.FindByIDs(ctx, tagIDs)
+	fetchLimit := in.Limit
+	if in.Limit > 0 {
+		fetchLimit = in.Limit + 1
+	}
+	items, err := us.feedQS.ListFeedItems(ctx, filterTagIDs, in.Cursor.AfterID, in.Cursor.AfterPublishedAt, fetchLimit)
 	if err != nil {
 		return nil, err
-	}
-
-	tagMap := make(map[domain.TagID]domain.Tag, len(tags))
-	for _, t := range tags {
-		tagMap[t.ID] = *t
 	}
 
 	var next GetFeedUsecaseCursor
-	if len(items) == in.Limit && in.Limit > 0 {
+	if in.Limit > 0 && len(items) > in.Limit {
+		items = items[:in.Limit]
 		last := items[len(items)-1]
 		next = GetFeedUsecaseCursor{
 			AfterID:          last.ID,
@@ -70,7 +77,7 @@ func (us *GetFeedUsecase) Exec(ctx context.Context, in GetFeedUsecaseInput) (*Ge
 
 	return &GetFeedUsecaseOutput{
 		Items:      items,
-		Tags:       tagMap,
+		Tags:       allTags,
 		NextCursor: next,
 	}, nil
 }
