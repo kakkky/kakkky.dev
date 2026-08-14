@@ -7,7 +7,7 @@ require (
 	github.com/google/wire v0.7.0
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/jmoiron/sqlx v1.4.0
-	github.com/kakkky/hotwire-go v0.1.0
+	github.com/kakkky/hotwire-go v0.0.0-20260726075932-973e7dc621bc
 	github.com/kakkky/scope v0.8.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/lib/pq v1.12.3
