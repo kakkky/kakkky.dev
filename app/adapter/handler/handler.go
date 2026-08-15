@@ -25,7 +25,7 @@ func (h *Handler) PublicRoutes() []Route {
 	return []Route{
 		{
 			Pattern: "GET /feed",
-			Handler: NewFeedHandler(h.usecase.NewGetFeedUsecase()),
+			Handler: NewGetFeedHandler(h.usecase.NewGetFeedUsecase()),
 		},
 	}
 }

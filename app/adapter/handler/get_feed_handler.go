@@ -21,12 +21,12 @@ const (
 	feedMaxFilterTags    = 10
 )
 
-type FeedHandler struct {
+type GetFeedHandler struct {
 	getFeedUsecase *usecase.GetFeedUsecase
 }
 
-func NewFeedHandler(getFeedUsecase *usecase.GetFeedUsecase) *FeedHandler {
-	return &FeedHandler{getFeedUsecase: getFeedUsecase}
+func NewGetFeedHandler(getFeedUsecase *usecase.GetFeedUsecase) *GetFeedHandler {
+	return &GetFeedHandler{getFeedUsecase: getFeedUsecase}
 }
 
 type feedParams struct {
@@ -40,7 +40,7 @@ type feedCursor struct {
 	At time.Time
 }
 
-func (h *FeedHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+func (h *GetFeedHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	params, err := parseFeedParams(r)
