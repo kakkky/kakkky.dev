@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/kakkky/kakkky.dev/adapter/view/pages"
 	"github.com/kakkky/kakkky.dev/domain"
 	"github.com/kakkky/kakkky.dev/usecase"
 )
@@ -33,13 +34,12 @@ func (h *GetArticleHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 			tagNames = append(tagNames, t.Name)
 		}
 	}
-	_ = tagNames
 
-	// vm := pages.ArticleViewModel{
-	// 	Title:       out.Article.Title,
-	// 	PublishedAt: out.Article.PublishedAt,
-	// 	Tags:        tagNames,
-	// 	BodyMD:      out.Article.Body,
-	// }
-	// _ = pages.Article(vm).Render(ctx, rw)
+	vm := pages.ArticleViewModel{
+		Title:       out.Article.Title,
+		PublishedAt: out.Article.PublishedAt,
+		Tags:        tagNames,
+		Body:        out.Article.Body,
+	}
+	_ = pages.Article(vm).Render(ctx, rw)
 }
