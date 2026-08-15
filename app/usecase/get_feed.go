@@ -36,10 +36,10 @@ type GetFeedUsecaseCursor struct {
 	AfterPublishedAt time.Time
 }
 
-func (us *GetFeedUsecase) Exec(ctx context.Context, in GetFeedUsecaseInput) (*GetFeedUsecaseOutput, error) {
+func (us *GetFeedUsecase) Exec(ctx context.Context, in GetFeedUsecaseInput) (GetFeedUsecaseOutput, error) {
 	allTags, err := us.tagRepo.ListAll(ctx)
 	if err != nil {
-		return nil, err
+		return GetFeedUsecaseOutput{}, err
 	}
 
 	var filterTagIDs []domain.TagID
@@ -62,7 +62,7 @@ func (us *GetFeedUsecase) Exec(ctx context.Context, in GetFeedUsecaseInput) (*Ge
 	}
 	items, err := us.feedQS.ListFeedItems(ctx, filterTagIDs, in.Cursor.AfterID, in.Cursor.AfterPublishedAt, fetchLimit)
 	if err != nil {
-		return nil, err
+		return GetFeedUsecaseOutput{}, err
 	}
 
 	var next GetFeedUsecaseCursor
@@ -75,7 +75,7 @@ func (us *GetFeedUsecase) Exec(ctx context.Context, in GetFeedUsecaseInput) (*Ge
 		}
 	}
 
-	return &GetFeedUsecaseOutput{
+	return GetFeedUsecaseOutput{
 		Items:      items,
 		Tags:       allTags,
 		NextCursor: next,

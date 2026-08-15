@@ -62,7 +62,7 @@ func TestGetFeedUsecase_Exec(t *testing.T) {
 		name    string
 		input   GetFeedUsecaseInput
 		mock    func(qs *mock.MockFeedQueryService, repo *mock.MockTagRepository)
-		want    *GetFeedUsecaseOutput
+		want    GetFeedUsecaseOutput
 		wantErr error
 	}{
 		{
@@ -74,7 +74,7 @@ func TestGetFeedUsecase_Exec(t *testing.T) {
 					ListFeedItems(ctx, []domain.TagID(nil), domain.FeedItemID(""), time.Time{}, 3).
 					Return([]domain.FeedItem{item1, item2, item3}, nil)
 			},
-			want: &GetFeedUsecaseOutput{
+			want: GetFeedUsecaseOutput{
 				Items: []domain.FeedItem{item1, item2},
 				Tags:  allTags,
 				NextCursor: GetFeedUsecaseCursor{
@@ -92,7 +92,7 @@ func TestGetFeedUsecase_Exec(t *testing.T) {
 					ListFeedItems(ctx, []domain.TagID(nil), domain.FeedItemID(""), time.Time{}, 3).
 					Return([]domain.FeedItem{item1, item2}, nil)
 			},
-			want: &GetFeedUsecaseOutput{
+			want: GetFeedUsecaseOutput{
 				Items: []domain.FeedItem{item1, item2},
 				Tags:  allTags,
 			},
@@ -106,7 +106,7 @@ func TestGetFeedUsecase_Exec(t *testing.T) {
 					ListFeedItems(ctx, []domain.TagID(nil), domain.FeedItemID(""), time.Time{}, 11).
 					Return([]domain.FeedItem{item1}, nil)
 			},
-			want: &GetFeedUsecaseOutput{
+			want: GetFeedUsecaseOutput{
 				Items: []domain.FeedItem{item1},
 				Tags:  allTags,
 			},
@@ -126,7 +126,7 @@ func TestGetFeedUsecase_Exec(t *testing.T) {
 					ListFeedItems(ctx, []domain.TagID(nil), item1ID, baseTime, 11).
 					Return([]domain.FeedItem{item2}, nil)
 			},
-			want: &GetFeedUsecaseOutput{
+			want: GetFeedUsecaseOutput{
 				Items: []domain.FeedItem{item2},
 				Tags:  allTags,
 			},
@@ -140,7 +140,7 @@ func TestGetFeedUsecase_Exec(t *testing.T) {
 					ListFeedItems(ctx, []domain.TagID{tag1, tag2}, domain.FeedItemID(""), time.Time{}, 11).
 					Return([]domain.FeedItem{item2}, nil)
 			},
-			want: &GetFeedUsecaseOutput{
+			want: GetFeedUsecaseOutput{
 				Items: []domain.FeedItem{item2},
 				Tags:  allTags,
 			},
@@ -154,7 +154,7 @@ func TestGetFeedUsecase_Exec(t *testing.T) {
 					ListFeedItems(ctx, []domain.TagID{tag1}, domain.FeedItemID(""), time.Time{}, 11).
 					Return([]domain.FeedItem{item2}, nil)
 			},
-			want: &GetFeedUsecaseOutput{
+			want: GetFeedUsecaseOutput{
 				Items: []domain.FeedItem{item2},
 				Tags:  allTags,
 			},
@@ -199,7 +199,7 @@ func TestGetFeedUsecase_Exec(t *testing.T) {
 
 			if tt.wantErr != nil {
 				require.ErrorIs(t, err, tt.wantErr)
-				assert.Nil(t, got)
+				assert.Equal(t, GetFeedUsecaseOutput{}, got)
 				return
 			}
 			require.NoError(t, err)
