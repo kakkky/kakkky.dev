@@ -41,6 +41,34 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 	return m.recorder
 }
 
+// NewArticleRepository mocks base method.
+func (m *MockRepository) NewArticleRepository() domain.ArticleRepository {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewArticleRepository")
+	ret0, _ := ret[0].(domain.ArticleRepository)
+	return ret0
+}
+
+// NewArticleRepository indicates an expected call of NewArticleRepository.
+func (mr *MockRepositoryMockRecorder) NewArticleRepository() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewArticleRepository", reflect.TypeOf((*MockRepository)(nil).NewArticleRepository))
+}
+
+// NewSeriesRepository mocks base method.
+func (m *MockRepository) NewSeriesRepository() domain.SeriesRepository {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewSeriesRepository")
+	ret0, _ := ret[0].(domain.SeriesRepository)
+	return ret0
+}
+
+// NewSeriesRepository indicates an expected call of NewSeriesRepository.
+func (mr *MockRepositoryMockRecorder) NewSeriesRepository() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewSeriesRepository", reflect.TypeOf((*MockRepository)(nil).NewSeriesRepository))
+}
+
 // NewTagRepository mocks base method.
 func (m *MockRepository) NewTagRepository() domain.TagRepository {
 	m.ctrl.T.Helper()
@@ -69,6 +97,104 @@ func (mr *MockRepositoryMockRecorder) WithTx(ctx, fn any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithTx", reflect.TypeOf((*MockRepository)(nil).WithTx), ctx, fn)
 }
 
+// MockArticleRepository is a mock of ArticleRepository interface.
+type MockArticleRepository struct {
+	ctrl     *gomock.Controller
+	recorder *MockArticleRepositoryMockRecorder
+	isgomock struct{}
+}
+
+// MockArticleRepositoryMockRecorder is the mock recorder for MockArticleRepository.
+type MockArticleRepositoryMockRecorder struct {
+	mock *MockArticleRepository
+}
+
+// NewMockArticleRepository creates a new mock instance.
+func NewMockArticleRepository(ctrl *gomock.Controller) *MockArticleRepository {
+	mock := &MockArticleRepository{ctrl: ctrl}
+	mock.recorder = &MockArticleRepositoryMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockArticleRepository) EXPECT() *MockArticleRepositoryMockRecorder {
+	return m.recorder
+}
+
+// FindByIDs mocks base method.
+func (m *MockArticleRepository) FindByIDs(ctx context.Context, ids ...domain.ArticleID) ([]*domain.Article, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx}
+	for _, a := range ids {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "FindByIDs", varargs...)
+	ret0, _ := ret[0].([]*domain.Article)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByIDs indicates an expected call of FindByIDs.
+func (mr *MockArticleRepositoryMockRecorder) FindByIDs(ctx any, ids ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx}, ids...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByIDs", reflect.TypeOf((*MockArticleRepository)(nil).FindByIDs), varargs...)
+}
+
+// FindBySlug mocks base method.
+func (m *MockArticleRepository) FindBySlug(ctx context.Context, slug domain.Slug) (*domain.Article, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindBySlug", ctx, slug)
+	ret0, _ := ret[0].(*domain.Article)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindBySlug indicates an expected call of FindBySlug.
+func (mr *MockArticleRepositoryMockRecorder) FindBySlug(ctx, slug any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindBySlug", reflect.TypeOf((*MockArticleRepository)(nil).FindBySlug), ctx, slug)
+}
+
+// MockSeriesRepository is a mock of SeriesRepository interface.
+type MockSeriesRepository struct {
+	ctrl     *gomock.Controller
+	recorder *MockSeriesRepositoryMockRecorder
+	isgomock struct{}
+}
+
+// MockSeriesRepositoryMockRecorder is the mock recorder for MockSeriesRepository.
+type MockSeriesRepositoryMockRecorder struct {
+	mock *MockSeriesRepository
+}
+
+// NewMockSeriesRepository creates a new mock instance.
+func NewMockSeriesRepository(ctrl *gomock.Controller) *MockSeriesRepository {
+	mock := &MockSeriesRepository{ctrl: ctrl}
+	mock.recorder = &MockSeriesRepositoryMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockSeriesRepository) EXPECT() *MockSeriesRepositoryMockRecorder {
+	return m.recorder
+}
+
+// FindBySlug mocks base method.
+func (m *MockSeriesRepository) FindBySlug(ctx context.Context, slug domain.Slug) (*domain.Series, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindBySlug", ctx, slug)
+	ret0, _ := ret[0].(*domain.Series)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindBySlug indicates an expected call of FindBySlug.
+func (mr *MockSeriesRepositoryMockRecorder) FindBySlug(ctx, slug any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindBySlug", reflect.TypeOf((*MockSeriesRepository)(nil).FindBySlug), ctx, slug)
+}
+
 // MockTagRepository is a mock of TagRepository interface.
 type MockTagRepository struct {
 	ctrl     *gomock.Controller
@@ -91,6 +217,26 @@ func NewMockTagRepository(ctrl *gomock.Controller) *MockTagRepository {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockTagRepository) EXPECT() *MockTagRepositoryMockRecorder {
 	return m.recorder
+}
+
+// FindByIDs mocks base method.
+func (m *MockTagRepository) FindByIDs(ctx context.Context, ids ...domain.TagID) ([]*domain.Tag, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx}
+	for _, a := range ids {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "FindByIDs", varargs...)
+	ret0, _ := ret[0].([]*domain.Tag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByIDs indicates an expected call of FindByIDs.
+func (mr *MockTagRepositoryMockRecorder) FindByIDs(ctx any, ids ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx}, ids...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByIDs", reflect.TypeOf((*MockTagRepository)(nil).FindByIDs), varargs...)
 }
 
 // ListAll mocks base method.
