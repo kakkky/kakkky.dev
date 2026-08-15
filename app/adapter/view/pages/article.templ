@@ -1,0 +1,214 @@
+package pages
+
+import (
+	"bytes"
+	"crypto/sha1"
+	"encoding/hex"
+	"html"
+	"net/url"
+	"regexp"
+	"strings"
+	"time"
+
+	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
+	"github.com/microcosm-cc/bluemonday"
+	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/ast"
+	"github.com/yuin/goldmark/extension"
+	"github.com/yuin/goldmark/parser"
+	ghtml "github.com/yuin/goldmark/renderer/html"
+	"github.com/yuin/goldmark/text"
+	highlighting "github.com/yuin/goldmark-highlighting/v2"
+
+	"github.com/kakkky/kakkky.dev/adapter/view/components"
+	"github.com/kakkky/kakkky.dev/adapter/view/layout"
+)
+
+type ArticleViewModel struct {
+	Title       string
+	PublishedAt time.Time
+	Tags        []string
+	BodyMD      string
+}
+
+type tocNode struct {
+	Level    int
+	Text     string
+	Anchor   string
+	Children []*tocNode
+}
+
+var mdParser = goldmark.New(
+	goldmark.WithExtensions(
+		extension.GFM,
+		highlighting.NewHighlighting(
+			highlighting.WithStyle("github"),
+			highlighting.WithFormatOptions(chromahtml.WithClasses(true)),
+		),
+	),
+	goldmark.WithParserOptions(parser.WithAutoHeadingID()),
+	goldmark.WithRendererOptions(ghtml.WithUnsafe()),
+)
+
+var sanitizer = func() *bluemonday.Policy {
+	p := bluemonday.UGCPolicy()
+	p.AllowAttrs("class").OnElements("code", "pre", "span", "div", "table", "th", "td")
+	p.AllowAttrs("id").Globally()
+	p.AllowElements("details", "summary")
+	p.AllowElements("turbo-frame")
+	p.AllowAttrs("src", "loading").OnElements("turbo-frame")
+	return p
+}()
+
+var (
+	reToggle   = regexp.MustCompile(`(?ms)^:::toggle[ \t]+(.+?)\r?\n(.*?)\r?\n^:::[ \t]*$`)
+	reCallout  = regexp.MustCompile(`(?ms)^:::(info|warn)\r?\n(.*?)\r?\n^:::[ \t]*$`)
+	reLinkLine = regexp.MustCompile(`(?m)^[ \t]*(https?://[^\s<>"']+)[ \t]*$`)
+)
+
+func preprocessCallouts(src string) string {
+	src = reToggle.ReplaceAllStringFunc(src, func(m string) string {
+		g := reToggle.FindStringSubmatch(m)
+		label := html.EscapeString(strings.TrimSpace(g[1]))
+		return "<details><summary>" + label + "</summary>\n\n" + g[2] + "\n\n</details>"
+	})
+	src = reCallout.ReplaceAllStringFunc(src, func(m string) string {
+		g := reCallout.FindStringSubmatch(m)
+		return `<div class="callout callout-` + g[1] + `">` + "\n\n" + g[2] + "\n\n</div>"
+	})
+	src = reLinkLine.ReplaceAllStringFunc(src, func(m string) string {
+		g := reLinkLine.FindStringSubmatch(m)
+		raw := g[1]
+		return "\n<turbo-frame src=\"/preview?url=" + url.QueryEscape(raw) + "\" id=\"" + previewFrameID(raw) + "\" loading=\"lazy\">\n<a href=\"" + html.EscapeString(raw) + "\">" + html.EscapeString(raw) + "</a>\n</turbo-frame>\n"
+	})
+	return src
+}
+
+func previewFrameID(rawURL string) string {
+	sum := sha1.Sum([]byte(rawURL))
+	return "link-preview-" + hex.EncodeToString(sum[:])[:12]
+}
+
+func renderMarkdown(src string) string {
+	src = preprocessCallouts(src)
+	var buf bytes.Buffer
+	if err := mdParser.Convert([]byte(src), &buf); err != nil {
+		return html.EscapeString(src)
+	}
+	return sanitizer.Sanitize(buf.String())
+}
+
+func extractTOC(src string) []*tocNode {
+	source := []byte(preprocessCallouts(src))
+	doc := mdParser.Parser().Parse(text.NewReader(source))
+	var flat []*tocNode
+	_ = ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
+		if !entering {
+			return ast.WalkContinue, nil
+		}
+		h, ok := n.(*ast.Heading)
+		if !ok {
+			return ast.WalkContinue, nil
+		}
+		if h.Level > 3 {
+			return ast.WalkSkipChildren, nil
+		}
+		var textBuf bytes.Buffer
+		for c := h.FirstChild(); c != nil; c = c.NextSibling() {
+			if t, ok := c.(*ast.Text); ok {
+				textBuf.Write(t.Segment.Value(source))
+			}
+		}
+		var anchor string
+		if id, ok := h.AttributeString("id"); ok {
+			switch v := id.(type) {
+			case []byte:
+				anchor = string(v)
+			case string:
+				anchor = v
+			}
+		}
+		flat = append(flat, &tocNode{
+			Level:  h.Level,
+			Text:   textBuf.String(),
+			Anchor: anchor,
+		})
+		return ast.WalkContinue, nil
+	})
+	return buildTOCTree(flat)
+}
+
+func buildTOCTree(flat []*tocNode) []*tocNode {
+	var roots []*tocNode
+	var stack []*tocNode
+	for _, n := range flat {
+		for len(stack) > 0 && stack[len(stack)-1].Level >= n.Level {
+			stack = stack[:len(stack)-1]
+		}
+		if len(stack) == 0 {
+			roots = append(roots, n)
+		} else {
+			parent := stack[len(stack)-1]
+			parent.Children = append(parent.Children, n)
+		}
+		stack = append(stack, n)
+	}
+	return roots
+}
+
+templ Article(vm ArticleViewModel) {
+	@layout.BaseWide(vm.Title) {
+		<div class="grid grid-cols-1 gap-10 py-12 lg:grid-cols-[240px_minmax(0,1fr)_240px]">
+			<div class="hidden lg:block" aria-hidden="true"></div>
+			<article class="min-w-0">
+				<header class="mb-8 border-b border-gray-200 pb-6">
+					<h1 class="text-3xl font-bold tracking-tight text-gray-900">{ vm.Title }</h1>
+					<div class="mt-3 text-sm text-gray-500">
+						<time datetime={ vm.PublishedAt.Format(time.RFC3339) }>
+							{ vm.PublishedAt.Format("2006-01-02") }
+						</time>
+					</div>
+				</header>
+				<div class="article-body">
+					@templ.Raw(renderMarkdown(vm.BodyMD))
+				</div>
+			</article>
+			<aside class="hidden lg:block">
+				<div class="sticky top-20 max-h-[calc(100vh-6rem)] space-y-4 overflow-y-auto pr-1">
+					if len(vm.Tags) > 0 {
+						<section class="rounded-lg border border-gray-200 bg-gray-50/60 p-4">
+							<div class="flex flex-wrap gap-1.5">
+								for _, t := range vm.Tags {
+									@components.TagBadge(t)
+								}
+							</div>
+						</section>
+					}
+					<section class="rounded-lg border border-gray-200 bg-gray-50/60 p-4">
+						<h2 class="text-xs font-semibold tracking-wider text-gray-500">目次</h2>
+						@TOCList(extractTOC(vm.BodyMD))
+					</section>
+				</div>
+			</aside>
+		</div>
+	}
+}
+
+templ TOCList(nodes []*tocNode) {
+	if len(nodes) > 0 {
+		<ul class="mt-2 space-y-1 text-sm">
+			for _, n := range nodes {
+				<li>
+					<a href={ templ.SafeURL("#" + n.Anchor) } class="block truncate text-gray-600 hover:text-gray-900">
+						{ n.Text }
+					</a>
+					if len(n.Children) > 0 {
+						<div class="ml-3">
+							@TOCList(n.Children)
+						</div>
+					}
+				</li>
+			}
+		</ul>
+	}
+}

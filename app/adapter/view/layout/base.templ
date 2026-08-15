@@ -6,7 +6,7 @@ import "github.com/kakkky/kakkky.dev/adapter/view"
 import "github.com/kakkky/kakkky.dev/assets/js"
 import "fmt"
 
-templ Base(subTitle string) {
+templ shell(subTitle, maxW string) {
 	<!DOCTYPE html>
 	<html lang="ja">
 		<head>
@@ -20,11 +20,23 @@ templ Base(subTitle string) {
 		<body class="min-h-screen bg-white text-gray-900 font-sans antialiased">
 			@Header()
 			<div id="flash" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2"></div>
-			<main class="mx-auto max-w-4xl px-6">
+			<main class={ "mx-auto " + maxW + " px-6" }>
 				{ children... }
 			</main>
 		</body>
 	</html>
+}
+
+templ Base(subTitle string) {
+	@shell(subTitle, "max-w-4xl") {
+		{ children... }
+	}
+}
+
+templ BaseWide(subTitle string) {
+	@shell(subTitle, "max-w-7xl") {
+		{ children... }
+	}
 }
 
 func pageTitle(subTitle string) string {
