@@ -38,7 +38,13 @@ templ articleCard(vm FeedItemCardViewModel) {
 				{ vm.Title }
 			</a>
 		</h3>
-		@tagList(vm.Tags)
+		if len(vm.Tags) > 0 {
+			<div class="mt-4 flex flex-wrap gap-1.5">
+				for _, name := range vm.Tags {
+					@TagBadge(name)
+				}
+			</div>
+		}
 	</article>
 }
 
@@ -59,16 +65,12 @@ templ seriesCard(vm FeedItemCardViewModel) {
 				+{ strconv.Itoa(vm.ArticleCount) } articles
 			</span>
 		</div>
-		@tagList(vm.Tags)
+		if len(vm.Tags) > 0 {
+			<div class="mt-4 flex flex-wrap gap-1.5">
+				for _, name := range vm.Tags {
+					@TagBadge(name)
+				}
+			</div>
+		}
 	</article>
-}
-
-templ tagList(names []string) {
-	if len(names) > 0 {
-		<div class="mt-4 flex flex-wrap gap-1.5">
-			for _, name := range names {
-				@TagBadge(name)
-			}
-		</div>
-	}
 }
