@@ -1,0 +1,27 @@
+package components
+
+import "github.com/kakkky/kakkky.dev/adapter/view"
+
+templ ArticleOutlineList(nodes []*view.OutlineNode) {
+	<h2 class="text-xs font-semibold tracking-wider text-gray-500">目次</h2>
+	@articleOutlineNodes(nodes)
+}
+
+templ articleOutlineNodes(nodes []*view.OutlineNode) {
+	if len(nodes) > 0 {
+		<ul class="mt-2 space-y-1 text-sm">
+			for _, n := range nodes {
+				<li>
+					<a href={ templ.SafeURL("#" + n.Anchor) } class="block truncate text-gray-600 hover:text-gray-900">
+						{ n.Text }
+					</a>
+					if len(n.Children) > 0 {
+						<div class="ml-3">
+							@articleOutlineNodes(n.Children)
+						</div>
+					}
+				</li>
+			}
+		</ul>
+	}
+}
