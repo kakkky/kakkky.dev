@@ -50,7 +50,7 @@ CREATE TABLE "public"."series" (
   "id" uuid NOT NULL DEFAULT gen_random_uuid(),
   "slug" character varying(20) NOT NULL,
   "title" character varying(100) NOT NULL,
-  "description" text NULL,
+  "description" text NOT NULL DEFAULT '',
   "status" character varying(20) NOT NULL DEFAULT 'draft',
   "published_at" timestamptz NULL,
   "created_at" timestamptz NOT NULL DEFAULT now(),

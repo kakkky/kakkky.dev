@@ -3,7 +3,7 @@ CREATE TABLE series (
     id           UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     slug         VARCHAR(20)  NOT NULL UNIQUE,
     title        VARCHAR(100) NOT NULL,
-    description  TEXT,
+    description  TEXT         NOT NULL DEFAULT '',
     status       VARCHAR(20)  NOT NULL DEFAULT 'draft'
                  CHECK (status IN ('draft', 'published_ongoing', 'published_completed')),
     published_at TIMESTAMPTZ,
