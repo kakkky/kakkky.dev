@@ -46,6 +46,10 @@ func (e *Error) With(msg string) *Error {
 	}
 }
 
+func (e *Error) Message() string {
+	return e.msg
+}
+
 func (e *Error) Wrap(cause error, msg string) *Error {
 	return &Error{
 		errType: e.errType,

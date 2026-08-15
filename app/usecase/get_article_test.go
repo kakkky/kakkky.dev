@@ -83,12 +83,12 @@ func TestGetArticleUsecase_Exec(t *testing.T) {
 			},
 		},
 		{
-			name:  "returns zero Output and nil error when FindBySlug returns ErrNotFound",
+			name:  "wraps ErrNotFound with a user-facing message when FindBySlug returns ErrNotFound",
 			input: GetArticleUsecaseInput{Slug: articleSlug},
 			mock: func(ar *mock.MockArticleRepository, tr *mock.MockTagRepository) {
 				ar.EXPECT().FindBySlug(ctx, articleSlug).Return(nil, domain.ErrNotFound)
 			},
-			want: GetArticleUsecaseOutput{},
+			wantErr: domain.ErrNotFound,
 		},
 		{
 			name:  "propagates error from ArticleRepository.FindBySlug and skips FindByIDs",

@@ -33,14 +33,34 @@ func RenderError(w http.ResponseWriter, r *http.Request, err error) {
 }
 
 func errorStatusAndMessage(err error) (int, string) {
+	var domainErr *domain.Error
+	var domainErrMsg string
+	if errors.As(err, &domainErr) && domainErr.Message() != "" {
+		domainErrMsg = domainErr.Message()
+	}
+
+	var httpStatus int
+	var fallbackErrMsg string
+
 	switch {
 	case errors.Is(err, domain.ErrInvalidArgument):
-		return http.StatusBadRequest, "入力に誤りがあります"
+		httpStatus = http.StatusBadRequest
+		fallbackErrMsg = "入力に誤りがあります"
 	case errors.Is(err, domain.ErrNotFound):
-		return http.StatusNotFound, "ページが見つかりません"
+		httpStatus = http.StatusNotFound
+		fallbackErrMsg = "ページが見つかりません"
 	default:
-		return http.StatusInternalServerError, "サーバーエラーが発生しました。時間をおいてお試しください。"
+		httpStatus = http.StatusInternalServerError
+		fallbackErrMsg = "サーバーエラーが発生しました。時間をおいてお試しください。"
+
+		// ドメインエラーメッセージはUIでも表示する可能性がある。機密情報の漏れを防ぐため空にしておく
+		domainErrMsg = ""
 	}
+
+	if domainErrMsg != "" {
+		return httpStatus, domainErrMsg
+	}
+	return httpStatus, fallbackErrMsg
 }
 
 // Turbo は 200/422 の turbo-stream レスポンスのみ消化する。

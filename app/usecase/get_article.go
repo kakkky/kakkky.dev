@@ -31,12 +31,10 @@ type GetArticleUsecaseOutput struct {
 func (us *GetArticleUsecase) Exec(ctx context.Context, input GetArticleUsecaseInput) (GetArticleUsecaseOutput, error) {
 	article, err := us.articleRepo.FindBySlug(ctx, input.Slug)
 	if err != nil {
-		switch {
-		case errors.Is(err, domain.ErrNotFound):
-			return GetArticleUsecaseOutput{}, nil
-		default:
-			return GetArticleUsecaseOutput{}, err
+		if errors.Is(err, domain.ErrNotFound) {
+			return GetArticleUsecaseOutput{}, domain.ErrNotFound.With("記事 が 見つかりません")
 		}
+		return GetArticleUsecaseOutput{}, err
 	}
 	tags, err := us.tagRepo.FindByIDs(ctx, article.TagIDs...)
 	if err != nil {
