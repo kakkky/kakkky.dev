@@ -66,7 +66,7 @@ func ArticleOutlineHeader(outline []*view.OutlineNode) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, " class=\"fixed origin-top-right opacity-0 scale-[0.85] open:opacity-100 open:scale-100 starting:open:opacity-0 starting:open:scale-[0.85] transition-[opacity,transform,overlay,display] transition-discrete duration-150 ease-out mt-[90px] mr-6 mb-auto ml-auto w-64 max-w-[calc(100vw-3rem)] max-h-[calc(100vh-6rem)] rounded-lg border border-gray-200 bg-gray-50 p-4 shadow-lg backdrop:bg-transparent\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, " class=\"fixed origin-top-right opacity-0 scale-[0.85] open:opacity-100 open:scale-100 starting:open:opacity-0 starting:open:scale-[0.85] transition-[opacity,scale,overlay,display] transition-discrete duration-150 ease-out mt-[90px] mr-6 mb-auto ml-auto w-64 max-w-[calc(100vw-3rem)] max-h-[calc(100vh-6rem)] rounded-lg border border-gray-200 bg-gray-50 p-4 shadow-lg backdrop:bg-transparent\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
