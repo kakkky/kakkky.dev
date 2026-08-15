@@ -12,7 +12,7 @@ type FeedViewModel struct {
 }
 
 templ Feed(vm FeedViewModel) {
-	@layout.Base("Feed") {
+	@layout.Base("Feed", "max-w-4xl") {
 		<section id="feed" class="py-16">
 			<div class="flex items-baseline justify-between">
 				<h2 class="text-2xl font-semibold tracking-tight">Feed</h2>
