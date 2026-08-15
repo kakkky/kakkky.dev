@@ -1,0 +1,39 @@
+package pages
+
+import (
+	"time"
+
+	"github.com/kakkky/kakkky.dev/adapter/view"
+	"github.com/kakkky/kakkky.dev/adapter/view/components"
+	"github.com/kakkky/kakkky.dev/adapter/view/layout"
+)
+
+type ArticleViewModel struct {
+	Title       string
+	PublishedAt time.Time
+	Tags        []string
+	Body        string
+}
+
+templ Article(vm ArticleViewModel) {
+	@layout.Base(vm.Title, "max-w-7xl") {
+		// モバイル表示の場合目次ヘッダーを表示する
+		<div class="contents xl:hidden">
+			@components.ArticleOutlineHeader(view.ExtractOutlineFromMarkdown(vm.Body))
+		</div>
+		<div class="grid grid-cols-1 gap-10 py-12 xl:grid-cols-[240px_minmax(0,1fr)_240px]">
+			<div class="hidden xl:block" aria-hidden="true"></div>
+			@components.ArticleBody(components.ArticleBodyViewModel{
+				Title:       vm.Title,
+				PublishedAt: vm.PublishedAt,
+				Tags:        vm.Tags,
+				BodyHTML:    view.ParseMarkdownToHTML(vm.Body),
+			})
+			<div class="hidden xl:block">
+				@components.ArticleSidebar(components.ArticleSidebarViewModel{
+					Outline: view.ExtractOutlineFromMarkdown(vm.Body),
+				})
+			</div>
+		</div>
+	}
+}
