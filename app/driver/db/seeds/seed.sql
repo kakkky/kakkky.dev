@@ -125,6 +125,200 @@ SELECT
     ('2024-01-01 10:00:00+09'::timestamptz + ((n - 1) * 8 || ' days')::interval)
 FROM generate_series(98, 100) n;
 
+-- Markdown 記法ショーケース: 101
+-- GFM / Footnote / 独自 directive (:::message, :::toggle) を全て使ったサンプル。
+-- ダラークォート ($md$...$md$) を使うことで、markdown 中の ' や \ をエスケープせずに書ける。
+INSERT INTO articles (id, slug, title, body, status, published_at) VALUES (
+    '22222222-2222-2222-2222-000000000101',
+    'markdown-showcase',
+    'Markdown 記法ショーケース',
+    $md$# Markdown 記法ショーケース
+
+この記事はサイトで対応している **Markdown 記法** と _独自ディレクティブ_ の
+動作確認用サンプルです。目次生成・シンタックスハイライト・脚注・GFM 拡張・
+`:::message` / `:::toggle` などをまとめて確認できます。
+
+## 文字装飾
+
+段落中では **太字**・*斜体*・~~取り消し線~~・`inline code`・
+[外部リンク](https://go.dev)・自動リンク https://github.com が扱える。
+改行は 2 スペース or 空行で段落分割。
+
+## リスト
+
+### 箇条書き (ネスト)
+
+- Go
+  - goroutine
+  - channel
+    - buffered
+    - unbuffered
+- TypeScript
+  - 型推論
+  - conditional types
+
+### 番号付き
+
+1. 要件を洗い出す
+2. 設計を書く
+3. 実装する
+4. テストする
+
+### タスクリスト (GFM)
+
+- [x] スキーマ定義
+- [x] マイグレーション適用
+- [ ] 本番投入
+- [ ] ドキュメント更新
+
+## 引用 (blockquote)
+
+> "Programs must be written for people to read,
+> and only incidentally for machines to execute."
+>
+> > ネストした引用も表示できる。
+> > 出典を明示するときなどに便利。
+
+## コードブロック
+
+インラインの `errors.Is(err, io.EOF)` と、複数行のフェンスドコードブロック。
+
+```go
+package main
+
+import (
+    "fmt"
+    "errors"
+)
+
+var ErrNotFound = errors.New("not found")
+
+func find(id string) (string, error) {
+    if id == "" {
+        return "", ErrNotFound
+    }
+    return "hello, " + id, nil
+}
+
+func main() {
+    v, err := find("world")
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    fmt.Println(v)
+}
+```
+
+```ts
+type Result<T, E = Error> =
+  | { ok: true; value: T }
+  | { ok: false; error: E };
+
+const ok = <T,>(value: T): Result<T> => ({ ok: true, value });
+const err = <E extends Error>(error: E): Result<never, E> => ({ ok: false, error });
+```
+
+```sql
+SELECT a.id, a.title, t.name
+FROM articles a
+JOIN article_tags at ON at.article_id = a.id
+JOIN tags t          ON t.id = at.tag_id
+WHERE a.status = 'published'
+ORDER BY a.published_at DESC
+LIMIT 10;
+```
+
+```bash
+# 開発用コンテナ起動
+docker compose up -d
+docker compose logs -f app
+```
+
+## テーブル (GFM)
+
+| カラム | 型 | 制約 | 用途 |
+| --- | --- | :---: | --- |
+| id | uuid | PK | 主キー |
+| slug | varchar(20) | UNIQUE | URL 用スラッグ |
+| title | varchar(100) | NOT NULL | 記事タイトル |
+| body | text | NOT NULL | 本文 (Markdown) |
+| status | varchar(20) | CHECK | draft / published |
+
+## 水平線
+
+---
+
+## 脚注 (Footnote)
+
+Goldmark の Footnote 拡張により、本文中に脚注を差し込める[^1]。
+複数の脚注や名前付き脚注も扱える[^design]。
+
+[^1]: これは番号付き脚注の本文。
+[^design]: 名前付き脚注も同じ書式で書ける。本文からのリンクは自動生成される。
+
+## 独自ディレクティブ
+
+### :::message (info)
+
+:::message
+これは **info スタイル** のメッセージ。補足やヒントを書くのに使う。
+内部では通常の Markdown をネストできるので、`inline code` や
+[リンク](https://example.com) もそのまま動く。
+:::
+
+### :::message warn
+
+:::message warn
+こちらは **warn スタイル**。落とし穴・破壊的変更・非推奨 API などに使う。
+
+- `git push --force` は共有ブランチで実行しない
+- マイグレーションは必ずロールバック手順を用意する
+- 本番 DB への DDL は事前レビュー必須
+:::
+
+### :::toggle (details)
+
+:::toggle 詳細を開く (クリックで展開)
+中身には自由にコードブロックやリストを入れられる。
+
+```yaml
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: postgres
+```
+
+閉じ忘れ防止のため、独立行の `:::` で必ず閉じること。
+:::
+
+:::toggle Q. `:::` を含む本文を書きたいときは?
+段落中の `:::` は directive として解釈されないので、
+コードブロックや inline code の中に書けば OK。
+
+    :::message
+    (インデントされたコードブロック内は素通り)
+    :::
+:::
+
+## まとめ
+
+- GFM (table / task list / 取り消し線 / autolink) が使える
+- Footnote / シンタックスハイライトも動作
+- `:::message` / `:::message warn` / `:::toggle タイトル` を独自拡張として提供
+- 目次は h1〜h3 のみを抽出、h4 以下は本文中のみに描画される
+$md$,
+    'published',
+    '2026-08-21 10:00:00+09'
+);
+
 -- ---- article_tags ----
 -- カテゴリごとに primary tag を付ける。generate_series でまとめて INSERT する。
 INSERT INTO article_tags (article_id, tag_id)
@@ -177,7 +371,9 @@ INSERT INTO article_tags (article_id, tag_id) VALUES
     ('22222222-2222-2222-2222-000000000084', '11111111-1111-1111-1111-000000000003'), -- Next.js x React
     ('22222222-2222-2222-2222-000000000085', '11111111-1111-1111-1111-000000000003'), -- Next.js x React
     ('22222222-2222-2222-2222-000000000093', '11111111-1111-1111-1111-000000000004'), -- AWS x Docker
-    ('22222222-2222-2222-2222-000000000094', '11111111-1111-1111-1111-000000000004'); -- AWS x Docker
+    ('22222222-2222-2222-2222-000000000094', '11111111-1111-1111-1111-000000000004'), -- AWS x Docker
+    ('22222222-2222-2222-2222-000000000101', '11111111-1111-1111-1111-000000000008'), -- Markdown Showcase x Testing
+    ('22222222-2222-2222-2222-000000000101', '11111111-1111-1111-1111-000000000010'); -- Markdown Showcase x Architecture
 
 -- ---- series (10) ----
 INSERT INTO series (id, slug, title, description, status, published_at) VALUES
