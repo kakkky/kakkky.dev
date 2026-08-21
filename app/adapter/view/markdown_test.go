@@ -122,6 +122,98 @@ func TestParseMarkdownArticle(t *testing.T) {
 			wantHTML:    []string{"chroma"},
 			wantOutline: nil,
 		},
+		{
+			name: "directive: message info renders flex layout with info icon + inner markdown",
+			src: ":::message info\n" +
+				"**bold** text\n" +
+				":::\n",
+			wantHTML: []string{
+				`<div class="my-4 rounded-lg p-4 bg-blue-100 flex gap-3 items-start">`,
+				`<span class="text-blue-600">`,
+				`viewBox="0 0 24 24"`, // Material Icons Filled
+				`<div class="min-w-0 flex-1 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">`,
+				"<p><strong>bold</strong> text</p>",
+				"</div>",
+			},
+			wantOutline: nil,
+		},
+		{
+			name: "directive: message warn renders amber variant with warn icon",
+			src: ":::message warn\n" +
+				"careful\n" +
+				":::\n",
+			wantHTML: []string{
+				`<div class="my-4 rounded-lg p-4 bg-amber-100 flex gap-3 items-start">`,
+				`<span class="text-amber-600">`,
+				`viewBox="0 0 24 24"`,
+				"<p>careful</p>",
+				"</div>",
+			},
+			wantOutline: nil,
+		},
+		{
+			name: "directive: unknown message kind falls back to info variant",
+			src: ":::message hoge\n" +
+				"body\n" +
+				":::\n",
+			wantHTML: []string{
+				`<div class="my-4 rounded-lg p-4 bg-blue-100 flex gap-3 items-start">`,
+				`<span class="text-blue-600">`,
+				"<p>body</p>",
+			},
+			wantOutline: nil,
+		},
+		{
+			name: "directive: toggle renders details/summary with title and toggles bg on open",
+			src: ":::toggle 補足: 詳細\n" +
+				"body text\n" +
+				":::\n",
+			wantHTML: []string{
+				`<details class="group my-4 rounded-md border border-gray-200 bg-gray-50 open:bg-white">`,
+				`<summary class="cursor-pointer px-3 py-2 text-sm text-gray-600 [list-style:revert] group-open:border-b group-open:border-gray-200">補足: 詳細</summary>`,
+				`<div class="px-4 py-3 bg-gray-50 rounded-b-md [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">`,
+				"<p>body text</p>",
+				"</details>",
+			},
+			wantOutline: nil,
+		},
+		{
+			name: "directive: toggle title is html-escaped",
+			src: ":::toggle <script>\n" +
+				"x\n" +
+				":::\n",
+			wantHTML:    []string{"&lt;script&gt;</summary>"},
+			wantOutline: nil,
+		},
+		{
+			name: "directive: unknown name falls back to raw text",
+			src: ":::hoge\n" +
+				"body\n" +
+				":::\n",
+			wantHTML:    []string{":::hoge"},
+			wantOutline: nil,
+		},
+		{
+			name: "directive: heading inside directive is picked up by outline",
+			src: ":::message info\n" +
+				"## sub heading\n" +
+				":::\n",
+			wantHTML: []string{"bg-blue-100", "<h2"},
+			wantOutline: []*OutlineNode{
+				{level: 2, Text: "sub heading", Anchor: "sub-heading"},
+			},
+		},
+		{
+			name: "directive: unclosed at EOF is implicitly closed",
+			src: ":::message info\n" +
+				"body without closing fence\n",
+			wantHTML: []string{
+				"bg-blue-100",
+				"body without closing fence",
+				"</div>",
+			},
+			wantOutline: nil,
+		},
 	}
 
 	for _, tt := range tests {
