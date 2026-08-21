@@ -46,7 +46,7 @@ func ArticleOutlineHeader(outline []*view.OutlineNode) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "><div class=\"sticky top-[57px] z-10 -mx-6 border-b border-gray-200 bg-white/80 backdrop-blur\"><div class=\"h-10 px-6 flex items-center justify-end\"><button type=\"button\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "><div class=\"sticky top-0 z-10 -mx-6 border-b border-gray-200 bg-white/80 backdrop-blur\"><div class=\"h-11 px-6 flex items-center justify-end\"><button type=\"button\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -54,7 +54,7 @@ func ArticleOutlineHeader(outline []*view.OutlineNode) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, " aria-label=\"目次を開く\" class=\"inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm text-gray-700 hover:bg-gray-100\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><line x1=\"3\" y1=\"6\" x2=\"21\" y2=\"6\"></line> <line x1=\"3\" y1=\"12\" x2=\"21\" y2=\"12\"></line> <line x1=\"3\" y1=\"18\" x2=\"21\" y2=\"18\"></line></svg> 目次</button></div></div><dialog")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, " aria-label=\"目次を開く\" class=\"inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-base text-gray-700 hover:bg-gray-100\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><line x1=\"3\" y1=\"6\" x2=\"21\" y2=\"6\"></line> <line x1=\"3\" y1=\"12\" x2=\"21\" y2=\"12\"></line> <line x1=\"3\" y1=\"18\" x2=\"21\" y2=\"18\"></line></svg> 目次</button></div></div><dialog")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -3,9 +3,9 @@
 @source "../adapter/view/**/*.templ";
 
 @layer base {
-	/* sticky header (layout/header.templ) の下に見出しが隠れないようオフセット */
+	/* sticky header (mobile: 目次ヘッダ 41px / xl+: サイトヘッダ 57px) の下に見出しが隠れないようオフセット */
 	.article-body :is(h1, h2, h3, h4, h5, h6) {
-		scroll-margin-top: 4rem;
+		scroll-margin-top: 5rem;
 	}
 
 	/* --- 見出し --- */
@@ -41,8 +41,8 @@
 	/* 色付け・背景色は chroma.css (github-dark)、外側の余白/角丸/横スクロールはこちらで */
 	.article-body pre      { @apply my-4 p-4 rounded-lg overflow-x-auto text-sm; }
 
-	/* --- テーブル --- */
-	.article-body table    { @apply my-4 w-full border-collapse text-sm; }
+	/* --- テーブル (display:block で table 自身を横スクロールコンテナ化し、狭い viewport でページ全体が横スクロールしないようにする) --- */
+	.article-body table    { @apply my-4 border-collapse text-sm block max-w-full overflow-x-auto; }
 	.article-body th       { @apply px-3 py-2 border border-gray-300 bg-gray-50 font-semibold text-left; }
 	.article-body td       { @apply px-3 py-2 border border-gray-300; }
 
