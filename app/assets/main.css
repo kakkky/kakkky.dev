@@ -1,3 +1,54 @@
 @import "tailwindcss";
 @import "./chroma.css" layer(base);
 @source "../adapter/view/**/*.templ";
+
+@layer base {
+	/* sticky header (layout/header.templ) の下に見出しが隠れないようオフセット */
+	.article-body :is(h1, h2, h3, h4, h5, h6) {
+		scroll-margin-top: 4rem;
+	}
+
+	/* --- 見出し --- */
+	.article-body h1 { @apply mt-8 mb-4 text-3xl font-bold tracking-tight; }
+	.article-body h2 { @apply mt-8 mb-4 pb-1 text-2xl font-bold tracking-tight border-b border-gray-200; }
+	.article-body h3 { @apply mt-6 mb-3 text-xl font-semibold; }
+	.article-body h4 { @apply mt-5 mb-2 text-lg font-semibold; }
+	.article-body h5 { @apply mt-4 mb-2 text-base font-semibold; }
+	.article-body h6 { @apply mt-4 mb-2 text-sm font-semibold text-gray-600; }
+
+	/* --- 段落・強調 --- */
+	.article-body p        { @apply my-4 leading-7 text-gray-800; }
+	.article-body strong   { @apply font-semibold; }
+	.article-body em       { @apply italic; }
+
+	/* --- リンク --- */
+	.article-body a        { @apply text-blue-600 underline underline-offset-2 hover:text-blue-800; }
+
+	/* --- リスト --- */
+	.article-body ul       { @apply my-4 pl-6 list-disc; }
+	.article-body ol       { @apply my-4 pl-6 list-decimal; }
+	.article-body li       { @apply my-1 leading-7; }
+	/* ネストしたリストは外側のマージンを詰める */
+	.article-body :is(ul, ol) :is(ul, ol) { @apply my-1; }
+
+	/* --- blockquote --- */
+	.article-body blockquote { @apply my-4 pl-4 border-l-4 border-gray-300 text-gray-600 italic; }
+
+	/* --- inline code (pre 直下じゃない code だけ) --- */
+	.article-body :not(pre) > code { @apply px-1.5 py-0.5 rounded bg-gray-100 text-gray-800 font-mono text-sm; }
+
+	/* --- コードブロック (chroma がラップする pre) --- */
+	/* 色付け・背景色は chroma.css (github-dark)、外側の余白/角丸/横スクロールはこちらで */
+	.article-body pre      { @apply my-4 p-4 rounded-lg overflow-x-auto text-sm; }
+
+	/* --- テーブル --- */
+	.article-body table    { @apply my-4 w-full border-collapse text-sm; }
+	.article-body th       { @apply px-3 py-2 border border-gray-300 bg-gray-50 font-semibold text-left; }
+	.article-body td       { @apply px-3 py-2 border border-gray-300; }
+
+	/* --- 画像 --- */
+	.article-body img      { @apply my-4 max-w-full mx-auto rounded; }
+
+	/* --- hr --- */
+	.article-body hr       { @apply my-8 border-gray-200; }
+}
