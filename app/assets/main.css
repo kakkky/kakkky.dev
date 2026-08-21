@@ -1,2 +1,3 @@
 @import "tailwindcss";
+@import "./chroma.css" layer(base);
 @source "../adapter/view/**/*.templ";

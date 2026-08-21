@@ -3,7 +3,7 @@ COMPOSE_EXEC := $(COMPOSE) exec app
 
 .PHONY: dev.up dev.down dev.restart dev.build dev.logs dev.sh wire.gen templ.gen \
 	migrate.up migrate.down migrate.version migrate.create schema.dump \
-	seed test
+	seed test chroma.gen
 
 # ---- docker for development ----
 dev.up:
@@ -31,6 +31,10 @@ wire.gen:
 # ---- templ ----
 templ.gen:
 	$(COMPOSE_EXEC) templ generate
+
+# ---- chroma (コードハイライト CSS 生成) ----
+chroma.gen:
+	cd app && go run ./script/gen_chroma_css > assets/chroma.css
 
 # ---- migration ----
 MIGRATIONS_DIR := ./app/driver/db/migrations
