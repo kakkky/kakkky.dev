@@ -21,6 +21,7 @@ type ArticleViewModel struct {
 	PublishedAt time.Time
 	Tags        []string
 	Body        string
+	Outline     []*view.OutlineNode
 }
 
 func Article(vm ArticleViewModel) templ.Component {
@@ -60,7 +61,7 @@ func Article(vm ArticleViewModel) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = components.ArticleOutlineHeader(view.ExtractOutlineFromMarkdown(vm.Body)).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = components.ArticleOutlineHeader(vm.Outline).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -72,7 +73,7 @@ func Article(vm ArticleViewModel) templ.Component {
 				Title:       vm.Title,
 				PublishedAt: vm.PublishedAt,
 				Tags:        vm.Tags,
-				BodyHTML:    view.ParseMarkdownToHTML(vm.Body),
+				BodyHTML:    vm.Body,
 			}).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -82,7 +83,7 @@ func Article(vm ArticleViewModel) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			templ_7745c5c3_Err = components.ArticleSidebar(components.ArticleSidebarViewModel{
-				Outline: view.ExtractOutlineFromMarkdown(vm.Body),
+				Outline: vm.Outline,
 			}).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err

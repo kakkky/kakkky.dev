@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/kakkky/kakkky.dev/adapter/view"
 	"github.com/kakkky/kakkky.dev/adapter/view/pages"
 	"github.com/kakkky/kakkky.dev/domain"
 	"github.com/kakkky/kakkky.dev/usecase"
@@ -35,11 +36,14 @@ func (h *GetArticleHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	htmlBody, outline := view.ParseMarkdownArticle(out.Article.Body)
+
 	vm := pages.ArticleViewModel{
 		Title:       out.Article.Title,
 		PublishedAt: out.Article.PublishedAt,
 		Tags:        tagNames,
-		Body:        out.Article.Body,
+		Body:        htmlBody,
+		Outline:     outline,
 	}
 	_ = pages.Article(vm).Render(ctx, rw)
 }
