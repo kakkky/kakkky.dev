@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "./chroma.css" layer(base);
 @source "../adapter/view/**/*.templ";
+@source "../adapter/view/**/*.go";
 
 @layer base {
 	/* sticky header (mobile: 目次ヘッダ 41px / xl+: サイトヘッダ 57px) の下に見出しが隠れないようオフセット */

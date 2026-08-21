@@ -20,6 +20,7 @@ var mdParser = goldmark.New(
 		extension.GFM,
 		extension.CJK,
 		extension.Footnote,
+		NewDirectiveExtension(),
 		highlighting.NewHighlighting(
 			highlighting.WithStyle("github"),
 			highlighting.WithFormatOptions(
