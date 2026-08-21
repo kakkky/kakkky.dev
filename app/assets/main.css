@@ -36,7 +36,7 @@
 	.article-body blockquote { @apply my-4 pl-4 border-l-4 border-gray-300 text-gray-600 italic; }
 
 	/* --- inline code (pre 直下じゃない code だけ) --- */
-	.article-body :not(pre) > code { @apply px-1.5 py-0.5 rounded bg-gray-100 text-gray-800 font-mono text-sm; }
+	.article-body :not(pre) > code { @apply px-1.5 py-0.5 rounded bg-gray-200 text-gray-900 font-mono text-sm; }
 
 	/* --- コードブロック (chroma がラップする pre) --- */
 	/* 色付け・背景色は chroma.css (github-dark)、外側の余白/角丸/横スクロールはこちらで */
