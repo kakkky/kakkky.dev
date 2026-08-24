@@ -1,0 +1,13 @@
+package partials
+
+import (
+	"github.com/kakkky/hotwire-go/turbo"
+
+	"github.com/kakkky/kakkky.dev/adapter/view/components"
+)
+
+templ LinkPreviewFrame(frameID string, vm components.LinkPreviewCardViewModel) {
+	@turbo.Frame(frameID) {
+		@components.LinkPreviewCard(vm)
+	}
+}
