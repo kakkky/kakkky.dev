@@ -6,6 +6,7 @@ package adapter
 import (
 	"github.com/google/wire"
 
+	"github.com/kakkky/kakkky.dev/adapter/client"
 	"github.com/kakkky/kakkky.dev/adapter/handler"
 	"github.com/kakkky/kakkky.dev/adapter/middleware"
 	"github.com/kakkky/kakkky.dev/adapter/query"
@@ -15,6 +16,7 @@ import (
 )
 
 var Set = wire.NewSet(
+	client.NewOGPFetcher,
 	handler.NewHandler,
 	middleware.NewMiddleware,
 	repository.NewRepository,

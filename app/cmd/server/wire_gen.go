@@ -8,6 +8,7 @@ package main
 
 import (
 	"context"
+	"github.com/kakkky/kakkky.dev/adapter/client"
 	"github.com/kakkky/kakkky.dev/adapter/handler"
 	"github.com/kakkky/kakkky.dev/adapter/middleware"
 	"github.com/kakkky/kakkky.dev/adapter/query"
@@ -32,7 +33,8 @@ func InitServer(ctx context.Context) (*Server, func(), error) {
 	repositoryRepository := repository.NewRepository(sqlxDB)
 	queryService := query.NewQueryService(sqlxDB)
 	useCase := usecase.NewUseCase(repositoryRepository, queryService)
-	handlerHandler := handler.NewHandler(useCase)
+	ogpFetcher := client.NewOGPFetcher()
+	handlerHandler := handler.NewHandler(useCase, ogpFetcher)
 	middlewareMiddleware := middleware.NewMiddleware()
 	httpHandler := httpserver.NewMux(handlerHandler, middlewareMiddleware)
 	httpServer := httpserver.NewHTTPServer(configConfig, httpHandler)

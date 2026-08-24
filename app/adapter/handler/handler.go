@@ -3,16 +3,19 @@ package handler
 import (
 	"net/http"
 
+	"github.com/kakkky/kakkky.dev/adapter/client"
 	"github.com/kakkky/kakkky.dev/usecase"
 )
 
 type Handler struct {
-	usecase *usecase.UseCase
+	usecase    *usecase.UseCase
+	ogpFetcher *client.OGPFetcher // GetLinkPreviewHandler 専用
 }
 
-func NewHandler(usecase *usecase.UseCase) *Handler {
+func NewHandler(usecase *usecase.UseCase, ogpFetcher *client.OGPFetcher) *Handler {
 	return &Handler{
-		usecase: usecase,
+		usecase:    usecase,
+		ogpFetcher: ogpFetcher,
 	}
 }
 
@@ -30,6 +33,10 @@ func (h *Handler) PublicRoutes() []Route {
 		{
 			Pattern: "GET /articles/{slug}",
 			Handler: NewGetArticleHandler(h.usecase.NewGetArticleUsecase()),
+		},
+		{
+			Pattern: "GET /link-preview",
+			Handler: NewGetLinkPreviewHandler(h.ogpFetcher),
 		},
 	}
 }
