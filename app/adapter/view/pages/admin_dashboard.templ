@@ -1,0 +1,216 @@
+package pages
+
+import (
+	"github.com/kakkky/kakkky.dev/adapter/view/components"
+	"github.com/kakkky/kakkky.dev/adapter/view/layout"
+)
+
+type AdminDashboardArticleRow struct {
+	Title     string
+	Status    string
+	UpdatedAt string
+	Tags      []string
+	EditHref  string
+}
+
+type AdminDashboardSeriesRow struct {
+	Title        string
+	Status       string
+	ArticleCount int
+	UpdatedAt    string
+	EditHref     string
+}
+
+type AdminDashboardTopArticleRow struct {
+	Title         string
+	PageViews     string
+	PageViewsPrev string
+	Growth        float64
+	Users         string
+	AvgStay       string
+	TopReferrer   string
+}
+
+type AdminDashboardReferrerRow struct {
+	Source   string
+	Sessions string
+	Users    string
+}
+
+type AdminDashboardViewModel struct {
+	Stats       []components.StatCardViewModel
+	Articles    []AdminDashboardArticleRow
+	Series      []AdminDashboardSeriesRow
+	TopArticles []AdminDashboardTopArticleRow
+	Referrers   []AdminDashboardReferrerRow
+	TrafficNote string
+}
+
+templ AdminDashboard(vm AdminDashboardViewModel) {
+	@layout.Base("Dashboard", "max-w-none") {
+		<section class="flex flex-col gap-4 py-4 md:pt-6 md:pb-8 md:px-4 lg:px-8 md:h-[calc(100dvh-3.5rem)]">
+			@dashboardHeader()
+			@statsRow(vm.Stats)
+			<div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:flex-1 md:min-h-0">
+				@trafficPanel(vm.TrafficNote)
+				@referrersPanel(vm.Referrers)
+			</div>
+			<div class="md:flex-1 md:min-h-0">
+				@topArticlesPanel(vm.TopArticles)
+			</div>
+			<div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:flex-[1.5] md:min-h-0">
+				@articlesPanel(vm.Articles)
+				@seriesPanel(vm.Series)
+			</div>
+		</section>
+	}
+}
+
+templ dashboardHeader() {
+	<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+		<div>
+			<h1 class="text-xl font-semibold tracking-tight text-gray-900">Dashboard</h1>
+			<p class="text-xs text-gray-500">Analytics &amp; Content 管理</p>
+		</div>
+		<div class="hidden md:flex flex-wrap items-center gap-2">
+			<a href="/admin/articles/new" class="inline-flex items-center gap-1 rounded-md bg-gray-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-700">
+				+ New Article
+			</a>
+			<a href="/admin/series/new" class="inline-flex items-center gap-1 rounded-md border border-gray-900 bg-white px-3 py-1.5 text-xs font-medium text-gray-900 hover:bg-gray-100">
+				+ New Series
+			</a>
+		</div>
+	</div>
+}
+
+templ statsRow(stats []components.StatCardViewModel) {
+	<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+		for _, s := range stats {
+			@components.StatCard(s)
+		}
+	</div>
+}
+
+templ trafficPanel(note string) {
+	<div class="md:col-span-8 rounded-lg border border-gray-200 bg-white p-4 h-64 md:h-full flex flex-col min-h-0">
+		@panelHeader("Traffic", "last 30 days")
+		<div class="mt-3 flex-1 min-h-0 flex items-center justify-center rounded-md bg-gray-50 border border-dashed border-gray-200 text-xs text-gray-400">
+			{ note }
+		</div>
+	</div>
+}
+
+templ referrersPanel(rows []AdminDashboardReferrerRow) {
+	<div class="md:col-span-4 rounded-lg border border-gray-200 bg-white p-4 h-64 md:h-full flex flex-col min-h-0">
+		@panelHeader("Referrers", "参照元別")
+		<div class="mt-3 flex-1 min-h-0 overflow-y-auto">
+			<table class="w-full text-xs">
+				<thead class="sticky top-0 bg-white">
+					<tr class="border-b border-gray-200 text-gray-500">
+						<th class="py-1.5 pr-2 text-left font-medium">Source</th>
+						<th class="py-1.5 px-2 text-right font-medium">Sessions</th>
+						<th class="py-1.5 pl-2 text-right font-medium">Users</th>
+					</tr>
+				</thead>
+				<tbody>
+					if len(rows) == 0 {
+						<tr><td colspan="3" class="py-6 text-center text-gray-400">GA 未接続</td></tr>
+					} else {
+						for _, r := range rows {
+							<tr class="border-b border-gray-100 last:border-0">
+								<td class="py-1.5 pr-2 truncate max-w-[180px] text-gray-800">{ r.Source }</td>
+								<td class="py-1.5 px-2 text-right tabular-nums text-gray-700">{ r.Sessions }</td>
+								<td class="py-1.5 pl-2 text-right tabular-nums text-gray-700">{ r.Users }</td>
+							</tr>
+						}
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+}
+
+templ topArticlesPanel(rows []AdminDashboardTopArticleRow) {
+	<div class="rounded-lg border border-gray-200 bg-white p-4 h-72 md:h-full flex flex-col min-h-0">
+		@panelHeader("Top Articles", "PV / 伸び率 / 主な流入元")
+		<div class="mt-3 flex-1 min-h-0 overflow-auto">
+			<table class="min-w-full text-xs whitespace-nowrap">
+				<thead class="sticky top-0 bg-white">
+					<tr class="border-b border-gray-200 text-gray-500">
+						<th class="py-1.5 pr-3 text-left font-medium">Title</th>
+						<th class="py-1.5 px-3 text-right font-medium">PV (今週)</th>
+						<th class="py-1.5 px-3 text-right font-medium">PV (前週)</th>
+						<th class="py-1.5 px-3 text-right font-medium">伸び率</th>
+						<th class="py-1.5 px-3 text-right font-medium">UU</th>
+						<th class="py-1.5 px-3 text-right font-medium">平均滞在</th>
+						<th class="py-1.5 pl-3 text-left font-medium">主な流入元</th>
+					</tr>
+				</thead>
+				<tbody>
+					if len(rows) == 0 {
+						<tr><td colspan="7" class="py-6 text-center text-gray-400">GA 未接続</td></tr>
+					} else {
+						for _, r := range rows {
+							<tr class="border-b border-gray-100 last:border-0">
+								<td class="py-2 pr-3 max-w-[280px] truncate text-gray-800">{ r.Title }</td>
+								<td class="py-2 px-3 text-right tabular-nums text-gray-700">{ r.PageViews }</td>
+								<td class="py-2 px-3 text-right tabular-nums text-gray-500">{ r.PageViewsPrev }</td>
+								<td class="py-2 px-3 text-right">
+									@components.GrowthLabel(r.Growth)
+								</td>
+								<td class="py-2 px-3 text-right tabular-nums text-gray-700">{ r.Users }</td>
+								<td class="py-2 px-3 text-right tabular-nums text-gray-500">{ r.AvgStay }</td>
+								<td class="py-2 pl-3 text-gray-600">{ r.TopReferrer }</td>
+							</tr>
+						}
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+}
+
+templ articlesPanel(rows []AdminDashboardArticleRow) {
+	<div class="md:col-span-6 rounded-lg border border-gray-200 bg-white p-4 h-80 md:h-full flex flex-col min-h-0">
+		@panelHeader("Articles", "")
+		<div class="mt-3 flex-1 min-h-0 overflow-y-auto divide-y divide-gray-100">
+			for _, r := range rows {
+				<div class="flex items-center gap-3 py-2 text-sm">
+					@components.ArticleStatusLabel(r.Status)
+					<div class="flex-1 min-w-0">
+						<div class="truncate text-gray-900">{ r.Title }</div>
+						<div class="text-[11px] text-gray-400">updated { r.UpdatedAt }</div>
+					</div>
+					<a href={ templ.SafeURL(r.EditHref) } class="shrink-0 text-xs text-gray-500 hover:text-gray-900">編集</a>
+				</div>
+			}
+		</div>
+	</div>
+}
+
+templ seriesPanel(rows []AdminDashboardSeriesRow) {
+	<div class="md:col-span-6 rounded-lg border border-gray-200 bg-white p-4 h-80 md:h-full flex flex-col min-h-0">
+		@panelHeader("Series", "")
+		<div class="mt-3 flex-1 min-h-0 overflow-y-auto divide-y divide-gray-100">
+			for _, r := range rows {
+				<div class="flex items-center gap-3 py-2 text-sm">
+					@components.SeriesStatusLabel(r.Status)
+					<div class="flex-1 min-w-0">
+						<div class="truncate text-gray-900">{ r.Title }</div>
+						<div class="text-[11px] text-gray-400">updated { r.UpdatedAt }</div>
+					</div>
+					<a href={ templ.SafeURL(r.EditHref) } class="shrink-0 text-xs text-gray-500 hover:text-gray-900">編集</a>
+				</div>
+			}
+		</div>
+	</div>
+}
+
+templ panelHeader(title, hint string) {
+	<div class="flex items-baseline justify-between">
+		<h2 class="text-sm font-semibold tracking-tight text-gray-900">{ title }</h2>
+		if hint != "" {
+			<span class="text-[11px] text-gray-400">{ hint }</span>
+		}
+	</div>
+}

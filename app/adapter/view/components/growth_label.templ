@@ -1,0 +1,19 @@
+package components
+
+import "fmt"
+
+templ GrowthLabel(pct float64) {
+	if pct > 0 {
+		<span class="inline-flex items-center gap-0.5 text-xs font-medium text-emerald-600 tabular-nums">
+			▲ { fmt.Sprintf("%.1f%%", pct) }
+		</span>
+	} else if pct < 0 {
+		<span class="inline-flex items-center gap-0.5 text-xs font-medium text-red-600 tabular-nums">
+			▼ { fmt.Sprintf("%.1f%%", -pct) }
+		</span>
+	} else {
+		<span class="inline-flex items-center gap-0.5 text-xs text-gray-400 tabular-nums">
+			— 0%
+		</span>
+	}
+}

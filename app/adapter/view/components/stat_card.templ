@@ -1,0 +1,19 @@
+package components
+
+type StatCardViewModel struct {
+	Label string
+	Value string
+	Hint  string
+}
+
+templ StatCard(vm StatCardViewModel) {
+	<div class="rounded-lg border border-gray-200 bg-white px-4 py-3">
+		<div class="text-[11px] font-semibold uppercase tracking-wider text-gray-500">{ vm.Label }</div>
+		<div class="mt-1 flex items-baseline gap-2">
+			<div class="text-2xl font-semibold tracking-tight text-gray-900">{ vm.Value }</div>
+			if vm.Hint != "" {
+				<div class="text-xs text-gray-400">{ vm.Hint }</div>
+			}
+		</div>
+	</div>
+}
