@@ -44,10 +44,8 @@ func (h *Handler) PublicRoutes() []Route {
 func (h *Handler) AdminRoutes() []Route {
 	return []Route{
 		{
-			Pattern: "GET /",
-			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.Write([]byte("Hello, World!"))
-			}),
+			Pattern: "GET /dashboard",
+			Handler: NewGetDashboardHandler(h.usecase.NewGetDashboardUsecase()),
 		},
 	}
 }
