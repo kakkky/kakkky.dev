@@ -1,0 +1,32 @@
+package partials
+
+import (
+	"github.com/kakkky/hotwire-go/turbo"
+
+	"github.com/kakkky/kakkky.dev/adapter/view/components"
+)
+
+const ArticlesListID = "articles-list"
+
+type ArticlesListViewModel struct {
+	Items         []components.ArticleRowViewModel
+	NextCursorURL string
+}
+
+templ ArticlesList(vm ArticlesListViewModel) {
+	@turbo.Frame(ArticlesListID) {
+		<div class="divide-y divide-gray-100">
+			for _, item := range vm.Items {
+				@components.ArticleRow(item)
+			}
+			if len(vm.Items) == 0 {
+				<p class="py-12 text-center text-sm text-gray-500">記事がありません。</p>
+			}
+			if vm.NextCursorURL != "" {
+				@turbo.Frame(ArticlesListID, turbo.AttrSrc(vm.NextCursorURL), turbo.AttrLoadingLazy()) {
+					<div class="py-4 text-center text-sm text-gray-500">Loading...</div>
+				}
+			}
+		</div>
+	}
+}

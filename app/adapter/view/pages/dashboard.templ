@@ -1,0 +1,50 @@
+package pages
+
+import (
+	"github.com/kakkky/kakkky.dev/adapter/view/components"
+	"github.com/kakkky/kakkky.dev/adapter/view/layout"
+	"github.com/kakkky/kakkky.dev/adapter/view/partials"
+)
+
+type DashboardViewModel struct {
+	Articles partials.ArticlesListViewModel
+	Series   partials.SeriesListViewModel
+}
+
+templ Dashboard(vm DashboardViewModel) {
+	@layout.Base("Dashboard", "max-w-none") {
+		<section class="flex flex-col gap-4 py-4 md:pt-6 md:pb-8 md:px-4 lg:px-8 md:h-[calc(100dvh-3.5rem)]">
+			@dashboardHeader()
+			<div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:flex-1 md:min-h-0">
+				<div class="md:col-span-6 rounded-lg border border-gray-200 bg-white p-4 h-80 md:h-full flex flex-col min-h-0">
+					@panelHeader("Articles")
+					<div class="mt-3 flex-1 min-h-0 overflow-y-auto">
+						@partials.ArticlesList(vm.Articles)
+					</div>
+				</div>
+				<div class="md:col-span-6 rounded-lg border border-gray-200 bg-white p-4 h-80 md:h-full flex flex-col min-h-0">
+					@panelHeader("Series")
+					<div class="mt-3 flex-1 min-h-0 overflow-y-auto">
+						@partials.SeriesList(vm.Series)
+					</div>
+				</div>
+			</div>
+		</section>
+	}
+}
+
+templ dashboardHeader() {
+	<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+		<h1 class="text-xl font-semibold tracking-tight text-gray-900 leading-none">Dashboard</h1>
+		<div class="hidden md:flex flex-wrap items-center gap-2">
+			@components.NewButton("/admin/articles/new", "New Article", false)
+			@components.NewButton("/admin/series/new", "New Series", true)
+		</div>
+	</div>
+}
+
+templ panelHeader(title string) {
+	<div class="flex items-baseline justify-between">
+		<h2 class="text-sm font-semibold tracking-tight text-gray-900">{ title }</h2>
+	</div>
+}

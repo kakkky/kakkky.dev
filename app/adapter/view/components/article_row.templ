@@ -1,0 +1,30 @@
+package components
+
+import (
+	"time"
+
+	"github.com/kakkky/hotwire-go/turbo"
+)
+
+type ArticleRowViewModel struct {
+	Title     string
+	Status    string
+	CreatedAt time.Time
+	Href      string
+	EditHref  string
+}
+
+templ ArticleRow(vm ArticleRowViewModel) {
+	<div class="flex items-center gap-3 py-2 text-sm">
+		<div class="w-24 shrink-0">
+			@ArticleStatusLabel(vm.Status)
+		</div>
+		<div class="flex-1 min-w-0">
+			<a href={ templ.SafeURL(vm.Href) } { turbo.AttrFrame("_top")... } class="block truncate text-gray-900 hover:text-gray-600 hover:underline">
+				{ vm.Title }
+			</a>
+			<div class="text-[11px] text-gray-400">{ vm.CreatedAt.Format("2006-01-02") }</div>
+		</div>
+		@EditButton(vm.EditHref)
+	</div>
+}

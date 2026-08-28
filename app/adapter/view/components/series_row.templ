@@ -1,0 +1,35 @@
+package components
+
+import (
+	"strconv"
+	"time"
+
+	"github.com/kakkky/hotwire-go/turbo"
+)
+
+type SeriesRowViewModel struct {
+	Title        string
+	Status       string
+	ArticleCount int
+	CreatedAt    time.Time
+	Href         string
+	EditHref     string
+}
+
+templ SeriesRow(vm SeriesRowViewModel) {
+	<div class="flex items-center gap-3 py-2 text-sm">
+		<div class="w-24 shrink-0">
+			@SeriesStatusLabel(vm.Status)
+		</div>
+		<div class="flex-1 min-w-0">
+			<div class="flex items-baseline gap-2">
+				<a href={ templ.SafeURL(vm.Href) } { turbo.AttrFrame("_top")... } class="truncate text-gray-900 hover:text-gray-600 hover:underline">
+					{ vm.Title }
+				</a>
+				<span class="shrink-0 text-[11px] text-gray-400">({ strconv.Itoa(vm.ArticleCount) } articles)</span>
+			</div>
+			<div class="text-[11px] text-gray-400">{ vm.CreatedAt.Format("2006-01-02") }</div>
+		</div>
+		@EditButton(vm.EditHref)
+	</div>
+}

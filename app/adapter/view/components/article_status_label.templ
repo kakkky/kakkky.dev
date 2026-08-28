@@ -1,21 +1,16 @@
 package components
 
-templ SeriesStatusLabel(status string) {
+templ ArticleStatusLabel(status string) {
 	switch status {
 		case "draft":
 			<span class="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-gray-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-gray-600">
 				<span class="h-1.5 w-1.5 rounded-full bg-gray-400" aria-hidden="true"></span>
 				Draft
 			</span>
-		case "published_ongoing":
+		case "published":
 			<span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700">
-				<span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true"></span>
-				Ongoing
-			</span>
-		case "published_completed":
-			<span class="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-blue-700">
-				<span class="h-1.5 w-1.5 rounded-full bg-blue-500" aria-hidden="true"></span>
-				Completed
+				<span class="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true"></span>
+				Published
 			</span>
 	}
 }
