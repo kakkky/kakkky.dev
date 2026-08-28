@@ -12,6 +12,7 @@ package mock
 import (
 	context "context"
 	reflect "reflect"
+	time "time"
 
 	domain "github.com/kakkky/kakkky.dev/domain"
 	gomock "go.uber.org/mock/gomock"
@@ -156,6 +157,21 @@ func (mr *MockArticleRepositoryMockRecorder) FindBySlug(ctx, slug any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindBySlug", reflect.TypeOf((*MockArticleRepository)(nil).FindBySlug), ctx, slug)
 }
 
+// List mocks base method.
+func (m *MockArticleRepository) List(ctx context.Context, afterID domain.ArticleID, afterCreatedAt time.Time, limit int) ([]*domain.Article, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "List", ctx, afterID, afterCreatedAt, limit)
+	ret0, _ := ret[0].([]*domain.Article)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List.
+func (mr *MockArticleRepositoryMockRecorder) List(ctx, afterID, afterCreatedAt, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockArticleRepository)(nil).List), ctx, afterID, afterCreatedAt, limit)
+}
+
 // MockSeriesRepository is a mock of SeriesRepository interface.
 type MockSeriesRepository struct {
 	ctrl     *gomock.Controller
@@ -193,6 +209,21 @@ func (m *MockSeriesRepository) FindBySlug(ctx context.Context, slug domain.Slug)
 func (mr *MockSeriesRepositoryMockRecorder) FindBySlug(ctx, slug any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindBySlug", reflect.TypeOf((*MockSeriesRepository)(nil).FindBySlug), ctx, slug)
+}
+
+// List mocks base method.
+func (m *MockSeriesRepository) List(ctx context.Context, afterID domain.SeriesID, afterCreatedAt time.Time, limit int) ([]*domain.Series, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "List", ctx, afterID, afterCreatedAt, limit)
+	ret0, _ := ret[0].([]*domain.Series)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List.
+func (mr *MockSeriesRepositoryMockRecorder) List(ctx, afterID, afterCreatedAt, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockSeriesRepository)(nil).List), ctx, afterID, afterCreatedAt, limit)
 }
 
 // MockTagRepository is a mock of TagRepository interface.

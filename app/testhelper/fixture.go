@@ -2,7 +2,9 @@ package testhelper
 
 import (
 	"context"
+	"database/sql"
 	"testing"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 
@@ -29,9 +31,10 @@ func Insert(t *testing.T, ctx context.Context, db sqlx.ExtContext, f Fixtures) {
 
 	for _, a := range f.Articles {
 		if _, err := db.ExecContext(ctx,
-			`INSERT INTO articles (id, slug, title, body, status, published_at)
-			 VALUES ($1, $2, $3, $4, $5, $6)`,
+			`INSERT INTO articles (id, slug, title, body, status, published_at, created_at)
+			 VALUES ($1, $2, $3, $4, $5, $6, COALESCE($7, now()))`,
 			string(a.ID), string(a.Slug), a.Title, a.Body, string(a.Status), a.PublishedAt,
+			nullTime(a.CreatedAt),
 		); err != nil {
 			t.Fatalf("insert article: %v", err)
 		}
@@ -47,9 +50,10 @@ func Insert(t *testing.T, ctx context.Context, db sqlx.ExtContext, f Fixtures) {
 
 	for _, s := range f.Series {
 		if _, err := db.ExecContext(ctx,
-			`INSERT INTO series (id, slug, title, description, status, published_at)
-			 VALUES ($1, $2, $3, $4, $5, $6)`,
+			`INSERT INTO series (id, slug, title, description, status, published_at, created_at)
+			 VALUES ($1, $2, $3, $4, $5, $6, COALESCE($7, now()))`,
 			string(s.ID), string(s.Slug), s.Title, s.Description, string(s.Status), s.PublishedAt,
+			nullTime(s.CreatedAt),
 		); err != nil {
 			t.Fatalf("insert series: %v", err)
 		}
@@ -70,6 +74,13 @@ func Insert(t *testing.T, ctx context.Context, db sqlx.ExtContext, f Fixtures) {
 			}
 		}
 	}
+}
+
+func nullTime(t time.Time) sql.NullTime {
+	if t.IsZero() {
+		return sql.NullTime{}
+	}
+	return sql.NullTime{Time: t, Valid: true}
 }
 
 func TruncateAll(t *testing.T, ctx context.Context, db sqlx.ExecerContext) {

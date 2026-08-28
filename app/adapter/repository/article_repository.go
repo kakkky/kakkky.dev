@@ -27,6 +27,7 @@ type articleRow struct {
 	Body        string         `db:"body"`
 	Status      string         `db:"status"`
 	PublishedAt sql.NullTime   `db:"published_at"`
+	CreatedAt   time.Time      `db:"created_at"`
 	TagIDs      pq.StringArray `db:"tag_ids"`
 }
 
@@ -46,6 +47,7 @@ func (r articleRow) toArticle() *domain.Article {
 		Body:        r.Body,
 		Status:      domain.ArticleStatus(r.Status),
 		PublishedAt: publishedAt,
+		CreatedAt:   r.CreatedAt.UTC(),
 		TagIDs:      tagIDs,
 	}
 }
@@ -59,6 +61,7 @@ SELECT a.id::text     AS id,
        a.body         AS body,
        a.status       AS status,
        a.published_at AS published_at,
+       a.created_at   AS created_at,
        ARRAY(SELECT tag_id::text FROM article_tags WHERE article_id = a.id ORDER BY tag_id) AS tag_ids
 FROM articles a
 WHERE a.slug = $1
@@ -89,11 +92,52 @@ SELECT a.id::text     AS id,
        a.body         AS body,
        a.status       AS status,
        a.published_at AS published_at,
+       a.created_at   AS created_at,
        ARRAY(SELECT tag_id::text FROM article_tags WHERE article_id = a.id ORDER BY tag_id) AS tag_ids
 FROM articles a
 WHERE a.id = ANY($1::uuid[])
 `, pq.Array(strIDs)); err != nil {
 		return nil, domain.ErrInternal.Wrap(err, "find articles by ids")
+	}
+
+	articles := make([]*domain.Article, len(rows))
+	for i, r := range rows {
+		articles[i] = r.toArticle()
+	}
+	return articles, nil
+}
+
+func (ar *ArticleRepository) List(
+	ctx context.Context,
+	afterID domain.ArticleID,
+	afterCreatedAt time.Time,
+	limit int,
+) ([]*domain.Article, error) {
+	var createdAtArg, idArg any
+	if afterID != "" && !afterCreatedAt.IsZero() {
+		createdAtArg = afterCreatedAt
+		idArg = string(afterID)
+	}
+
+	var rows []articleRow
+	if err := sqlx.SelectContext(ctx, ar.db, &rows, `
+SELECT a.id::text     AS id,
+       a.slug         AS slug,
+       a.title        AS title,
+       a.body         AS body,
+       a.status       AS status,
+       a.published_at AS published_at,
+       a.created_at   AS created_at,
+       ARRAY(SELECT tag_id::text FROM article_tags WHERE article_id = a.id ORDER BY tag_id) AS tag_ids
+FROM articles a
+WHERE (a.created_at, a.id) < (
+  COALESCE($1::timestamptz, 'infinity'),
+  COALESCE($2::uuid, 'ffffffff-ffff-ffff-ffff-ffffffffffff')
+)
+ORDER BY a.created_at DESC, a.id DESC
+LIMIT $3
+`, createdAtArg, idArg, limit); err != nil {
+		return nil, domain.ErrInternal.Wrap(err, "list articles")
 	}
 
 	articles := make([]*domain.Article, len(rows))

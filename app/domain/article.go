@@ -29,6 +29,7 @@ type Article struct {
 	Body        string
 	Status      ArticleStatus
 	PublishedAt time.Time
+	CreatedAt   time.Time
 	TagIDs      []TagID
 }
 

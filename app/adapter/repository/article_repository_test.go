@@ -21,6 +21,7 @@ func TestArticleRepository_FindBySlug(t *testing.T) {
 		tag2     domain.TagID     = "22222222-2222-2222-2222-222222222222"
 	)
 	publishedAt := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	createdAt := time.Date(2026, 1, 2, 12, 0, 0, 0, time.UTC)
 
 	tests := []struct {
 		name             string
@@ -39,7 +40,7 @@ func TestArticleRepository_FindBySlug(t *testing.T) {
 			existingArticles: []*domain.Article{
 				{
 					ID: article1, Slug: "first", Title: "First", Body: "body1",
-					Status: domain.ArticleStatusPublished, PublishedAt: publishedAt,
+					Status: domain.ArticleStatusPublished, PublishedAt: publishedAt, CreatedAt: createdAt,
 					TagIDs: []domain.TagID{tag2, tag1},
 				},
 				{
@@ -50,7 +51,7 @@ func TestArticleRepository_FindBySlug(t *testing.T) {
 			slug: "first",
 			want: &domain.Article{
 				ID: article1, Slug: "first", Title: "First", Body: "body1",
-				Status: domain.ArticleStatusPublished, PublishedAt: publishedAt,
+				Status: domain.ArticleStatusPublished, PublishedAt: publishedAt, CreatedAt: createdAt,
 				TagIDs: []domain.TagID{tag1, tag2},
 			},
 		},
@@ -169,6 +170,77 @@ func TestArticleRepository_FindByIDs(t *testing.T) {
 				gotIDs[i] = a.ID
 			}
 			assert.ElementsMatch(t, tt.wantIDs, gotIDs)
+		})
+	}
+}
+
+func TestArticleRepository_List(t *testing.T) {
+	ctx := t.Context()
+
+	var (
+		article1 domain.ArticleID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+		article2 domain.ArticleID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2"
+		article3 domain.ArticleID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3"
+	)
+	baseTime := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	// article1: newest, article3: middle, article2: oldest
+	fixtures := []*domain.Article{
+		{ID: article1, Slug: "a1", Title: "A1", Body: "b1", Status: domain.ArticleStatusPublished, CreatedAt: baseTime.Add(3 * time.Hour)},
+		{ID: article2, Slug: "a2", Title: "A2", Body: "b2", Status: domain.ArticleStatusDraft, CreatedAt: baseTime.Add(1 * time.Hour)},
+		{ID: article3, Slug: "a3", Title: "A3", Body: "b3", Status: domain.ArticleStatusPublished, CreatedAt: baseTime.Add(2 * time.Hour)},
+	}
+
+	tests := []struct {
+		name           string
+		afterID        domain.ArticleID
+		afterCreatedAt time.Time
+		limit          int
+		wantIDs        []domain.ArticleID
+	}{
+		{
+			name:    "returns all articles ordered by created_at desc (draft included)",
+			limit:   10,
+			wantIDs: []domain.ArticleID{article1, article3, article2},
+		},
+		{
+			name:    "applies limit",
+			limit:   2,
+			wantIDs: []domain.ArticleID{article1, article3},
+		},
+		{
+			name:           "cursor advances to next batch",
+			afterID:        article1,
+			afterCreatedAt: baseTime.Add(3 * time.Hour),
+			limit:          10,
+			wantIDs:        []domain.ArticleID{article3, article2},
+		},
+		{
+			name:           "cursor at last item returns empty",
+			afterID:        article2,
+			afterCreatedAt: baseTime.Add(1 * time.Hour),
+			limit:          10,
+			wantIDs:        []domain.ArticleID{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Cleanup(func() {
+				testhelper.TruncateAll(t, ctx, testDB)
+			})
+
+			testhelper.Insert(t, ctx, testDB, testhelper.Fixtures{Articles: fixtures})
+
+			ar := &ArticleRepository{db: testDB}
+			got, err := ar.List(ctx, tt.afterID, tt.afterCreatedAt, tt.limit)
+			require.NoError(t, err)
+
+			gotIDs := make([]domain.ArticleID, len(got))
+			for i, a := range got {
+				gotIDs[i] = a.ID
+			}
+			assert.Equal(t, tt.wantIDs, gotIDs)
 		})
 	}
 }

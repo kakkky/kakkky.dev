@@ -27,6 +27,7 @@ type seriesRow struct {
 	Description string         `db:"description"`
 	Status      string         `db:"status"`
 	PublishedAt sql.NullTime   `db:"published_at"`
+	CreatedAt   time.Time      `db:"created_at"`
 	TagIDs      pq.StringArray `db:"tag_ids"`
 	ArticleIDs  pq.StringArray `db:"article_ids"`
 	Positions   pq.Int64Array  `db:"positions"`
@@ -55,6 +56,7 @@ func (r seriesRow) toSeries() *domain.Series {
 		Description: r.Description,
 		Status:      domain.SeriesStatus(r.Status),
 		PublishedAt: publishedAt,
+		CreatedAt:   r.CreatedAt.UTC(),
 		TagIDs:      tagIDs,
 		Articles:    articles,
 	}
@@ -69,6 +71,7 @@ SELECT s.id::text                 AS id,
        s.description              AS description,
        s.status                   AS status,
        s.published_at             AS published_at,
+       s.created_at               AS created_at,
        ARRAY(SELECT tag_id::text     FROM series_tags     WHERE series_id = s.id ORDER BY tag_id)   AS tag_ids,
        ARRAY(SELECT article_id::text FROM series_articles WHERE series_id = s.id ORDER BY position) AS article_ids,
        ARRAY(SELECT position         FROM series_articles WHERE series_id = s.id ORDER BY position) AS positions
@@ -81,4 +84,46 @@ WHERE s.slug = $1
 		return nil, domain.ErrInternal.Wrap(err, "find series by slug")
 	}
 	return row.toSeries(), nil
+}
+
+func (sr *SeriesRepository) List(
+	ctx context.Context,
+	afterID domain.SeriesID,
+	afterCreatedAt time.Time,
+	limit int,
+) ([]*domain.Series, error) {
+	var createdAtArg, idArg any
+	if afterID != "" && !afterCreatedAt.IsZero() {
+		createdAtArg = afterCreatedAt
+		idArg = string(afterID)
+	}
+
+	var rows []seriesRow
+	if err := sqlx.SelectContext(ctx, sr.db, &rows, `
+SELECT s.id::text                 AS id,
+       s.slug                     AS slug,
+       s.title                    AS title,
+       s.description              AS description,
+       s.status                   AS status,
+       s.published_at             AS published_at,
+       s.created_at               AS created_at,
+       ARRAY(SELECT tag_id::text     FROM series_tags     WHERE series_id = s.id ORDER BY tag_id)   AS tag_ids,
+       ARRAY(SELECT article_id::text FROM series_articles WHERE series_id = s.id ORDER BY position) AS article_ids,
+       ARRAY(SELECT position         FROM series_articles WHERE series_id = s.id ORDER BY position) AS positions
+FROM series s
+WHERE (s.created_at, s.id) < (
+  COALESCE($1::timestamptz, 'infinity'),
+  COALESCE($2::uuid, 'ffffffff-ffff-ffff-ffff-ffffffffffff')
+)
+ORDER BY s.created_at DESC, s.id DESC
+LIMIT $3
+`, createdAtArg, idArg, limit); err != nil {
+		return nil, domain.ErrInternal.Wrap(err, "list series")
+	}
+
+	series := make([]*domain.Series, len(rows))
+	for i, r := range rows {
+		series[i] = r.toSeries()
+	}
+	return series, nil
 }

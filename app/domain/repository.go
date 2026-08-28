@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"time"
 )
 
 //go:generate mockgen -source=$GOFILE -destination=../testhelper/mock/mock_repository.go -package=mock
@@ -16,10 +17,12 @@ type Repository interface {
 type ArticleRepository interface {
 	FindBySlug(ctx context.Context, slug Slug) (*Article, error)
 	FindByIDs(ctx context.Context, ids ...ArticleID) ([]*Article, error)
+	List(ctx context.Context, afterID ArticleID, afterCreatedAt time.Time, limit int) ([]*Article, error)
 }
 
 type SeriesRepository interface {
 	FindBySlug(ctx context.Context, slug Slug) (*Series, error)
+	List(ctx context.Context, afterID SeriesID, afterCreatedAt time.Time, limit int) ([]*Series, error)
 }
 
 type TagRepository interface {

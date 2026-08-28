@@ -35,6 +35,7 @@ type Series struct {
 	Description string
 	Status      SeriesStatus
 	PublishedAt time.Time
+	CreatedAt   time.Time
 	TagIDs      []TagID
 	Articles    []SeriesArticle
 }
