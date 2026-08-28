@@ -15,7 +15,7 @@ type FeedItemListViewModel struct {
 
 templ FeedItemList(vm FeedItemListViewModel) {
 	@turbo.Frame(FeedItemListID) {
-		<div class="mt-8 flex flex-col gap-4">
+		<div class="flex flex-col gap-4">
 			for _, item := range vm.Items {
 				@components.FeedItemCard(item)
 			}

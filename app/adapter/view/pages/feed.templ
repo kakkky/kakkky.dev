@@ -19,7 +19,9 @@ templ Feed(vm FeedViewModel) {
 				<p class="text-xs text-gray-500">Articles &amp; Series</p>
 			</div>
 			@components.TagFilterArea(vm.AllTags, partials.FeedItemListID)
-			@partials.FeedItemList(vm.List)
+			<div class="mt-8">
+				@partials.FeedItemList(vm.List)
+			</div>
 		</section>
 	}
 }
