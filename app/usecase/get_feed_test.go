@@ -27,9 +27,11 @@ func TestGetFeedUsecase_Exec(t *testing.T) {
 		item3ID domain.FeedItemID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa03"
 	)
 
-	tag1Val := &domain.Tag{ID: tag1, Slug: "go", Name: "Go"}
-	tag2Val := &domain.Tag{ID: tag2, Slug: "db", Name: "DB"}
-	allTags := []*domain.Tag{tag1Val, tag2Val}
+	tag1Val := domain.Tag{ID: tag1, Slug: "go", Name: "Go"}
+	tag2Val := domain.Tag{ID: tag2, Slug: "db", Name: "DB"}
+	allTags := []domain.Tag{tag1Val, tag2Val}
+	// mock returns []*domain.Tag (repo shape); build pointer slice from values
+	allTagsPtr := []*domain.Tag{&tag1Val, &tag2Val}
 
 	item1 := domain.FeedItem{
 		Kind:        domain.FeedItemKindArticle,
@@ -69,7 +71,7 @@ func TestGetFeedUsecase_Exec(t *testing.T) {
 			name:  "truncates to limit and sets NextCursor when ListFeedItems returns more than limit (limit+1 signal)",
 			input: GetFeedUsecaseInput{Limit: 2},
 			mock: func(qs *mock.MockFeedQueryService, repo *mock.MockTagRepository) {
-				repo.EXPECT().ListAll(ctx).Return(allTags, nil)
+				repo.EXPECT().ListAll(ctx).Return(allTagsPtr, nil)
 				qs.EXPECT().
 					ListFeedItems(ctx, []domain.TagID(nil), domain.FeedItemID(""), time.Time{}, 3).
 					Return([]domain.FeedItem{item1, item2, item3}, nil)
@@ -87,7 +89,7 @@ func TestGetFeedUsecase_Exec(t *testing.T) {
 			name:  "leaves NextCursor zero when items exactly match the limit and there is no more",
 			input: GetFeedUsecaseInput{Limit: 2},
 			mock: func(qs *mock.MockFeedQueryService, repo *mock.MockTagRepository) {
-				repo.EXPECT().ListAll(ctx).Return(allTags, nil)
+				repo.EXPECT().ListAll(ctx).Return(allTagsPtr, nil)
 				qs.EXPECT().
 					ListFeedItems(ctx, []domain.TagID(nil), domain.FeedItemID(""), time.Time{}, 3).
 					Return([]domain.FeedItem{item1, item2}, nil)
@@ -101,7 +103,7 @@ func TestGetFeedUsecase_Exec(t *testing.T) {
 			name:  "leaves NextCursor zero when items are fewer than the limit",
 			input: GetFeedUsecaseInput{Limit: 10},
 			mock: func(qs *mock.MockFeedQueryService, repo *mock.MockTagRepository) {
-				repo.EXPECT().ListAll(ctx).Return(allTags, nil)
+				repo.EXPECT().ListAll(ctx).Return(allTagsPtr, nil)
 				qs.EXPECT().
 					ListFeedItems(ctx, []domain.TagID(nil), domain.FeedItemID(""), time.Time{}, 11).
 					Return([]domain.FeedItem{item1}, nil)
@@ -121,7 +123,7 @@ func TestGetFeedUsecase_Exec(t *testing.T) {
 				Limit: 10,
 			},
 			mock: func(qs *mock.MockFeedQueryService, repo *mock.MockTagRepository) {
-				repo.EXPECT().ListAll(ctx).Return(allTags, nil)
+				repo.EXPECT().ListAll(ctx).Return(allTagsPtr, nil)
 				qs.EXPECT().
 					ListFeedItems(ctx, []domain.TagID(nil), item1ID, baseTime, 11).
 					Return([]domain.FeedItem{item2}, nil)
@@ -135,7 +137,7 @@ func TestGetFeedUsecase_Exec(t *testing.T) {
 			name:  "resolves TagSlugs to TagIDs via the fetched tag list and passes them to ListFeedItems",
 			input: GetFeedUsecaseInput{TagSlugs: []domain.Slug{"go", "db"}, Limit: 10},
 			mock: func(qs *mock.MockFeedQueryService, repo *mock.MockTagRepository) {
-				repo.EXPECT().ListAll(ctx).Return(allTags, nil)
+				repo.EXPECT().ListAll(ctx).Return(allTagsPtr, nil)
 				qs.EXPECT().
 					ListFeedItems(ctx, []domain.TagID{tag1, tag2}, domain.FeedItemID(""), time.Time{}, 11).
 					Return([]domain.FeedItem{item2}, nil)
@@ -149,7 +151,7 @@ func TestGetFeedUsecase_Exec(t *testing.T) {
 			name:  "ignores unknown slugs when resolving TagSlugs",
 			input: GetFeedUsecaseInput{TagSlugs: []domain.Slug{"go", "unknown"}, Limit: 10},
 			mock: func(qs *mock.MockFeedQueryService, repo *mock.MockTagRepository) {
-				repo.EXPECT().ListAll(ctx).Return(allTags, nil)
+				repo.EXPECT().ListAll(ctx).Return(allTagsPtr, nil)
 				qs.EXPECT().
 					ListFeedItems(ctx, []domain.TagID{tag1}, domain.FeedItemID(""), time.Time{}, 11).
 					Return([]domain.FeedItem{item2}, nil)
@@ -171,7 +173,7 @@ func TestGetFeedUsecase_Exec(t *testing.T) {
 			name:  "propagates error from FeedQueryService.ListFeedItems",
 			input: GetFeedUsecaseInput{Limit: 10},
 			mock: func(qs *mock.MockFeedQueryService, repo *mock.MockTagRepository) {
-				repo.EXPECT().ListAll(ctx).Return(allTags, nil)
+				repo.EXPECT().ListAll(ctx).Return(allTagsPtr, nil)
 				qs.EXPECT().
 					ListFeedItems(ctx, []domain.TagID(nil), domain.FeedItemID(""), time.Time{}, 11).
 					Return(nil, wantErr)

@@ -71,7 +71,7 @@ func (h *GetFeedHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		nextCursorURL = "/feed?" + v.Encode()
 	}
 
-	tagsByID := make(map[domain.TagID]*domain.Tag, len(out.Tags))
+	tagsByID := make(map[domain.TagID]domain.Tag, len(out.Tags))
 	for _, t := range out.Tags {
 		tagsByID[t.ID] = t
 	}
@@ -155,7 +155,7 @@ func parseFeedParams(r *http.Request) (feedParams, error) {
 	return params, nil
 }
 
-func toTagOptions(tags []*domain.Tag) []components.TagOption {
+func toTagOptions(tags []domain.Tag) []components.TagOption {
 	options := make([]components.TagOption, len(tags))
 	for i, t := range tags {
 		options[i] = components.TagOption{Slug: string(t.Slug), Name: t.Name}

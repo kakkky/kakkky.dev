@@ -27,7 +27,7 @@ type GetFeedUsecaseInput struct {
 
 type GetFeedUsecaseOutput struct {
 	Items      []domain.FeedItem
-	Tags       []*domain.Tag
+	Tags       []domain.Tag
 	NextCursor GetFeedUsecaseCursor
 }
 
@@ -37,14 +37,18 @@ type GetFeedUsecaseCursor struct {
 }
 
 func (us *GetFeedUsecase) Exec(ctx context.Context, in GetFeedUsecaseInput) (GetFeedUsecaseOutput, error) {
-	allTags, err := us.tagRepo.ListAll(ctx)
+	tagRows, err := us.tagRepo.ListAll(ctx)
 	if err != nil {
 		return GetFeedUsecaseOutput{}, err
+	}
+	allTags := make([]domain.Tag, len(tagRows))
+	for i, t := range tagRows {
+		allTags[i] = *t
 	}
 
 	var filterTagIDs []domain.TagID
 	if len(in.TagSlugs) > 0 {
-		tagBySlug := make(map[domain.Slug]*domain.Tag, len(allTags))
+		tagBySlug := make(map[domain.Slug]domain.Tag, len(allTags))
 		for _, t := range allTags {
 			tagBySlug[t.Slug] = t
 		}
