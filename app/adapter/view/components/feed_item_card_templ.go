@@ -219,13 +219,15 @@ func seriesCard(vm FeedItemCardViewModel) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</time> <span class=\"inline-flex items-center rounded-full border border-gray-900 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-gray-900\">Series</span>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</time> <span class=\"inline-flex items-center rounded-full border border-gray-900 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-gray-900\">Series</span> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = SeriesStatusLabel(vm.SeriesStatus).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
+		if vm.SeriesStatus == "published_ongoing" {
+			templ_7745c5c3_Err = SeriesStatusLabel(vm.SeriesStatus).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
 		}
 		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</div><div class=\"mt-2 flex items-start justify-between gap-4\"><h3 class=\"text-lg font-medium text-gray-900\"><a href=\"")
 		if templ_7745c5c3_Err != nil {
@@ -234,7 +236,7 @@ func seriesCard(vm FeedItemCardViewModel) templ.Component {
 		var templ_7745c5c3_Var10 templ.SafeURL
 		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(vm.Href))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/components/feed_item_card.templ`, Line: 60, Col: 36}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/components/feed_item_card.templ`, Line: 62, Col: 36}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 		if templ_7745c5c3_Err != nil {
@@ -255,7 +257,7 @@ func seriesCard(vm FeedItemCardViewModel) templ.Component {
 		var templ_7745c5c3_Var11 string
 		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(vm.Title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/components/feed_item_card.templ`, Line: 61, Col: 15}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/components/feed_item_card.templ`, Line: 63, Col: 15}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 		if templ_7745c5c3_Err != nil {
@@ -268,7 +270,7 @@ func seriesCard(vm FeedItemCardViewModel) templ.Component {
 		var templ_7745c5c3_Var12 string
 		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(vm.ArticleCount))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/components/feed_item_card.templ`, Line: 65, Col: 36}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/components/feed_item_card.templ`, Line: 67, Col: 36}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {
