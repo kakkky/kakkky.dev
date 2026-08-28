@@ -64,7 +64,7 @@ func (h *GetFeedHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if out.NextCursor.AfterID != "" {
 		v := url.Values{}
 		v.Set("cursor_id", string(out.NextCursor.AfterID))
-		v.Set("cursor_at", out.NextCursor.AfterPublishedAt.Format(time.RFC3339))
+		v.Set("cursor_at", out.NextCursor.AfterPublishedAt.Format(time.RFC3339Nano))
 		for _, s := range params.tagSlugs {
 			v.Add("tag", s)
 		}
