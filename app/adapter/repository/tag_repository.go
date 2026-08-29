@@ -50,6 +50,43 @@ ORDER BY name
 	return tags, nil
 }
 
+func (tr *TagRepository) FindByNames(ctx context.Context, names ...string) ([]*domain.Tag, error) {
+	if len(names) == 0 {
+		return []*domain.Tag{}, nil
+	}
+
+	var rows []tagRow
+	if err := sqlx.SelectContext(ctx, tr.db, &rows, `
+SELECT id::text AS id,
+       slug,
+       name
+FROM tags
+WHERE name = ANY($1::varchar[])
+ORDER BY name
+`, pq.Array(names)); err != nil {
+		return nil, domain.ErrInternal.Wrap(err, "find tags by names")
+	}
+
+	tags := make([]*domain.Tag, len(rows))
+	for i, r := range rows {
+		tags[i] = r.toTag()
+	}
+	return tags, nil
+}
+
+func (tr *TagRepository) Create(ctx context.Context, tag *domain.Tag) error {
+	var id string
+	if err := sqlx.GetContext(ctx, tr.db, &id, `
+INSERT INTO tags (slug, name)
+VALUES ($1, $2)
+RETURNING id::text
+`, string(tag.Slug), tag.Name); err != nil {
+		return domain.ErrInternal.Wrap(err, "create tag")
+	}
+	tag.ID = domain.TagID(id)
+	return nil
+}
+
 func (tr *TagRepository) FindByIDs(ctx context.Context, ids ...domain.TagID) ([]*domain.Tag, error) {
 	if len(ids) == 0 {
 		return []*domain.Tag{}, nil
