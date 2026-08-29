@@ -43,6 +43,10 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/ikawaha/kagome-dict v1.1.7 // indirect
+	github.com/ikawaha/kagome-dict/ipa v1.2.6 // indirect
+	github.com/ikawaha/kagome-dict/uni v1.2.6 // indirect
+	github.com/ikawaha/kagome/v2 v2.11.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect

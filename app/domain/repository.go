@@ -18,6 +18,8 @@ type ArticleRepository interface {
 	FindBySlug(ctx context.Context, slug Slug) (*Article, error)
 	FindByIDs(ctx context.Context, ids ...ArticleID) ([]*Article, error)
 	List(ctx context.Context, afterID ArticleID, afterCreatedAt time.Time, limit int) ([]*Article, error)
+	Create(ctx context.Context, article *Article) error
+	Update(ctx context.Context, article *Article) error
 }
 
 type SeriesRepository interface {
@@ -28,4 +30,6 @@ type SeriesRepository interface {
 type TagRepository interface {
 	ListAll(ctx context.Context) ([]*Tag, error)
 	FindByIDs(ctx context.Context, ids ...TagID) ([]*Tag, error)
+	FindByNames(ctx context.Context, names ...string) ([]*Tag, error)
+	Create(ctx context.Context, tag *Tag) error
 }
