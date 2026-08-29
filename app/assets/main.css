@@ -9,6 +9,13 @@
 		scroll-margin-top: 5rem;
 	}
 
+	/* 先頭要素の上マージンを消す (editor preview で余白が出るため) */
+	.article-body > :first-child { margin-top: 0; }
+
+	/* editor/preview を包む turbo-frame は layout 透過にして、box styling は
+	   outer wrapper に任せる (frame を置き換えても box が消えないため) */
+	turbo-frame#editor-area { display: contents; }
+
 	/* --- 見出し --- */
 	.article-body h1 { @apply mt-8 mb-4 text-3xl font-bold tracking-tight; }
 	.article-body h2 { @apply mt-8 mb-4 pb-1 text-2xl font-bold tracking-tight border-b border-gray-200; }

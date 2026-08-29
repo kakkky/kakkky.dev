@@ -1,0 +1,11 @@
+package partials
+
+// TurboStreamReplaceURL は project 独自の custom stream action `replace-url` を
+// 発行するための turbo-stream 要素を返す。 client 側では
+// assets/js/turbo_stream_actions.js が history.replaceState でこれを処理する。
+//
+// hotwire-go 標準の StreamAppend / StreamReplace 等が custom action を
+// カバーしていないため、この partial を helper として置く。
+templ TurboStreamReplaceURL(url string) {
+	<turbo-stream action="replace-url" data-src={ url }></turbo-stream>
+}

@@ -1,0 +1,17 @@
+package partials
+
+import "github.com/kakkky/hotwire-go/turbo"
+
+// ArticleFormSavedStream は保存成功時に返す turbo-stream fragment。
+//  1. #flash に「保存しました」flash card を append
+//  2. #article-form-root (form 本体) を保存後の状態 (edit 版) で replace
+//  3. custom stream action "replace-url" で URL bar を edit URL に書き換え
+//
+// 3 つ組み合わせることで page 遷移せず in-place で保存完了を表現する。
+templ ArticleFormSavedStream(form ArticleFormViewModel, editURL string) {
+	@Flash(FlashViewModel{Kind: FlashKindInfo, Msg: "保存しました"})
+	@turbo.StreamReplace(ArticleFormRootID) {
+		@ArticleFormElement(form)
+	}
+	@TurboStreamReplaceURL(editURL)
+}

@@ -1,0 +1,16 @@
+package pages
+
+import (
+	"github.com/kakkky/kakkky.dev/adapter/view/layout"
+	"github.com/kakkky/kakkky.dev/adapter/view/partials"
+)
+
+type NewArticleViewModel struct {
+	Form partials.ArticleFormViewModel
+}
+
+templ NewArticle(vm NewArticleViewModel) {
+	@layout.Base("New Article", "max-w-none") {
+		@partials.ArticleForm(vm.Form)
+	}
+}

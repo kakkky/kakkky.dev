@@ -1,0 +1,16 @@
+package pages
+
+import (
+	"github.com/kakkky/kakkky.dev/adapter/view/layout"
+	"github.com/kakkky/kakkky.dev/adapter/view/partials"
+)
+
+type EditArticleViewModel struct {
+	Form partials.ArticleFormViewModel
+}
+
+templ EditArticle(vm EditArticleViewModel) {
+	@layout.Base("Edit Article", "max-w-none") {
+		@partials.ArticleForm(vm.Form)
+	}
+}

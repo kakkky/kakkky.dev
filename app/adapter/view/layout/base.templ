@@ -15,6 +15,7 @@ templ Base(subTitle, contentMaxW string) {
 			<title>{ pageTitle(subTitle) }</title>
 			<link rel="stylesheet" href="/assets/main.css"/>
 			@turbo.ScriptImport()
+			<script type="module" src={ js.TurboStreamActionsPath }></script>
 			@stimulus.ScriptLoad(js.ControllerPaths...)
 		</head>
 		<body class="min-h-screen bg-zinc-50 text-black font-sans antialiased text-md">
@@ -33,3 +34,4 @@ func pageTitle(subTitle string) string {
 	}
 	return fmt.Sprintf("%s | %s",view.ServiceName, subTitle)
 }
+
