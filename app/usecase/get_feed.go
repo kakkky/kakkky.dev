@@ -37,7 +37,7 @@ type GetFeedUsecaseCursor struct {
 }
 
 func (us *GetFeedUsecase) Exec(ctx context.Context, in GetFeedUsecaseInput) (GetFeedUsecaseOutput, error) {
-	tagRows, err := us.tagRepo.ListAll(ctx)
+	tagRows, err := us.tagRepo.List(ctx)
 	if err != nil {
 		return GetFeedUsecaseOutput{}, err
 	}

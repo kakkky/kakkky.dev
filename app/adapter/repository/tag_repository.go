@@ -31,7 +31,7 @@ func (r tagRow) toTag() *domain.Tag {
 	}
 }
 
-func (tr *TagRepository) ListAll(ctx context.Context) ([]*domain.Tag, error) {
+func (tr *TagRepository) List(ctx context.Context) ([]*domain.Tag, error) {
 	var rows []tagRow
 	if err := sqlx.SelectContext(ctx, tr.db, &rows, `
 SELECT id::text AS id,

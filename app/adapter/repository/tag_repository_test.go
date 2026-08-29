@@ -10,7 +10,7 @@ import (
 	"github.com/kakkky/kakkky.dev/testhelper"
 )
 
-func TestTagRepository_ListAll(t *testing.T) {
+func TestTagRepository_List(t *testing.T) {
 	ctx := t.Context()
 
 	var (
@@ -55,7 +55,7 @@ func TestTagRepository_ListAll(t *testing.T) {
 			})
 
 			tr := &TagRepository{db: testDB}
-			got, err := tr.ListAll(ctx)
+			got, err := tr.List(ctx)
 			require.NoError(t, err)
 			assert.Equal(t, tt.want, got)
 		})

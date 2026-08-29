@@ -26,6 +26,6 @@ type SeriesRepository interface {
 }
 
 type TagRepository interface {
-	ListAll(ctx context.Context) ([]*Tag, error)
+	List(ctx context.Context) ([]*Tag, error)
 	FindByIDs(ctx context.Context, ids ...TagID) ([]*Tag, error)
 }
