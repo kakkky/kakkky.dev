@@ -28,6 +28,7 @@ type articleRow struct {
 	Status      string         `db:"status"`
 	PublishedAt sql.NullTime   `db:"published_at"`
 	CreatedAt   time.Time      `db:"created_at"`
+	UpdatedAt   time.Time      `db:"updated_at"`
 	TagIDs      pq.StringArray `db:"tag_ids"`
 }
 
@@ -48,6 +49,7 @@ func (r articleRow) toArticle() *domain.Article {
 		Status:      domain.ArticleStatus(r.Status),
 		PublishedAt: publishedAt,
 		CreatedAt:   r.CreatedAt.UTC(),
+		UpdatedAt:   r.UpdatedAt.UTC(),
 		TagIDs:      tagIDs,
 	}
 }
@@ -62,6 +64,7 @@ SELECT a.id::text     AS id,
        a.status       AS status,
        a.published_at AS published_at,
        a.created_at   AS created_at,
+       a.updated_at   AS updated_at,
        ARRAY(SELECT tag_id::text FROM article_tags WHERE article_id = a.id ORDER BY tag_id) AS tag_ids
 FROM articles a
 WHERE a.slug = $1
@@ -93,6 +96,7 @@ SELECT a.id::text     AS id,
        a.status       AS status,
        a.published_at AS published_at,
        a.created_at   AS created_at,
+       a.updated_at   AS updated_at,
        ARRAY(SELECT tag_id::text FROM article_tags WHERE article_id = a.id ORDER BY tag_id) AS tag_ids
 FROM articles a
 WHERE a.id = ANY($1::uuid[])
@@ -105,6 +109,74 @@ WHERE a.id = ANY($1::uuid[])
 		articles[i] = r.toArticle()
 	}
 	return articles, nil
+}
+
+func (ar *ArticleRepository) Create(ctx context.Context, article *domain.Article) error {
+	var publishedAt sql.NullTime
+	if !article.PublishedAt.IsZero() {
+		publishedAt = sql.NullTime{Time: article.PublishedAt, Valid: true}
+	}
+
+	var row struct {
+		ID        string    `db:"id"`
+		CreatedAt time.Time `db:"created_at"`
+	}
+	if err := sqlx.GetContext(ctx, ar.db, &row, `
+INSERT INTO articles (slug, title, body, status, published_at)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id::text AS id, created_at
+`, string(article.Slug), article.Title, article.Body, string(article.Status), publishedAt); err != nil {
+		return domain.ErrInternal.Wrap(err, "create article")
+	}
+	article.ID = domain.ArticleID(row.ID)
+	article.CreatedAt = row.CreatedAt.UTC()
+
+	if err := insertArticleTags(ctx, ar.db, article.ID, article.TagIDs); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (ar *ArticleRepository) Update(ctx context.Context, article *domain.Article) error {
+	var publishedAt sql.NullTime
+	if !article.PublishedAt.IsZero() {
+		publishedAt = sql.NullTime{Time: article.PublishedAt, Valid: true}
+	}
+
+	res, err := ar.db.ExecContext(ctx, `
+UPDATE articles
+SET slug = $1, title = $2, body = $3, status = $4, published_at = $5, updated_at = now()
+WHERE id = $6
+`, string(article.Slug), article.Title, article.Body, string(article.Status), publishedAt, string(article.ID))
+	if err != nil {
+		return domain.ErrInternal.Wrap(err, "update article")
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return domain.ErrInternal.Wrap(err, "update article rows affected")
+	}
+	if n == 0 {
+		return domain.ErrNotFound.With("article not found")
+	}
+
+	if _, err := ar.db.ExecContext(ctx, `DELETE FROM article_tags WHERE article_id = $1`, string(article.ID)); err != nil {
+		return domain.ErrInternal.Wrap(err, "delete article tags")
+	}
+	if err := insertArticleTags(ctx, ar.db, article.ID, article.TagIDs); err != nil {
+		return err
+	}
+	return nil
+}
+
+func insertArticleTags(ctx context.Context, db sqlx.ExtContext, articleID domain.ArticleID, tagIDs []domain.TagID) error {
+	for _, tid := range tagIDs {
+		if _, err := db.ExecContext(ctx, `
+INSERT INTO article_tags (article_id, tag_id) VALUES ($1, $2)
+`, string(articleID), string(tid)); err != nil {
+			return domain.ErrInternal.Wrap(err, "insert article_tag")
+		}
+	}
+	return nil
 }
 
 func (ar *ArticleRepository) List(
@@ -128,6 +200,7 @@ SELECT a.id::text     AS id,
        a.status       AS status,
        a.published_at AS published_at,
        a.created_at   AS created_at,
+       a.updated_at   AS updated_at,
        ARRAY(SELECT tag_id::text FROM article_tags WHERE article_id = a.id ORDER BY tag_id) AS tag_ids
 FROM articles a
 WHERE (a.created_at, a.id) < (

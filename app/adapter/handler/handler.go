@@ -50,6 +50,41 @@ func (h *Handler) AdminRoutes() []Route {
 				h.usecase.NewListSeriesUsecase(),
 			),
 		},
+		{
+			Pattern: "GET /articles/new",
+			Handler: NewGetNewArticleHandler(h.usecase.NewListTagsUsecase()),
+		},
+		{
+			Pattern: "GET /articles/{slug}/edit",
+			Handler: NewGetEditArticleHandler(
+				h.usecase.NewGetArticleUsecase(),
+				h.usecase.NewListTagsUsecase(),
+			),
+		},
+		{
+			Pattern: "POST /articles",
+			Handler: NewCreateArticleHandler(
+				h.usecase.NewCreateArticleUsecase(),
+				h.usecase.NewGetArticleUsecase(),
+				h.usecase.NewListTagsUsecase(),
+			),
+		},
+		{
+			Pattern: "POST /articles/{slug}/update",
+			Handler: NewUpdateArticleHandler(
+				h.usecase.NewUpdateArticleUsecase(),
+				h.usecase.NewGetArticleUsecase(),
+				h.usecase.NewListTagsUsecase(),
+			),
+		},
+		{
+			Pattern: "POST /articles/preview",
+			Handler: NewPostArticlePreviewHandler(),
+		},
+		{
+			Pattern: "POST /articles/editor",
+			Handler: NewPostArticleEditorHandler(),
+		},
 	}
 }
 

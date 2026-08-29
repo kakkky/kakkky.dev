@@ -31,10 +31,11 @@ func Insert(t *testing.T, ctx context.Context, db sqlx.ExtContext, f Fixtures) {
 
 	for _, a := range f.Articles {
 		if _, err := db.ExecContext(ctx,
-			`INSERT INTO articles (id, slug, title, body, status, published_at, created_at)
-			 VALUES ($1, $2, $3, $4, $5, $6, COALESCE($7, now()))`,
+			`INSERT INTO articles (id, slug, title, body, status, published_at, created_at, updated_at)
+			 VALUES ($1, $2, $3, $4, $5, $6, COALESCE($7, now()), COALESCE($8, now()))`,
 			string(a.ID), string(a.Slug), a.Title, a.Body, string(a.Status), a.PublishedAt,
 			nullTime(a.CreatedAt),
+			nullTime(a.UpdatedAt),
 		); err != nil {
 			t.Fatalf("insert article: %v", err)
 		}

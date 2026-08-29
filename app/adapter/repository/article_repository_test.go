@@ -22,6 +22,7 @@ func TestArticleRepository_FindBySlug(t *testing.T) {
 	)
 	publishedAt := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	createdAt := time.Date(2026, 1, 2, 12, 0, 0, 0, time.UTC)
+	updatedAt := time.Date(2026, 1, 3, 15, 30, 0, 0, time.UTC)
 
 	tests := []struct {
 		name             string
@@ -40,7 +41,8 @@ func TestArticleRepository_FindBySlug(t *testing.T) {
 			existingArticles: []*domain.Article{
 				{
 					ID: article1, Slug: "first", Title: "First", Body: "body1",
-					Status: domain.ArticleStatusPublished, PublishedAt: publishedAt, CreatedAt: createdAt,
+					Status: domain.ArticleStatusPublished, PublishedAt: publishedAt,
+					CreatedAt: createdAt, UpdatedAt: updatedAt,
 					TagIDs: []domain.TagID{tag2, tag1},
 				},
 				{
@@ -51,7 +53,8 @@ func TestArticleRepository_FindBySlug(t *testing.T) {
 			slug: "first",
 			want: &domain.Article{
 				ID: article1, Slug: "first", Title: "First", Body: "body1",
-				Status: domain.ArticleStatusPublished, PublishedAt: publishedAt, CreatedAt: createdAt,
+				Status: domain.ArticleStatusPublished, PublishedAt: publishedAt,
+				CreatedAt: createdAt, UpdatedAt: updatedAt,
 				TagIDs: []domain.TagID{tag1, tag2},
 			},
 		},
@@ -172,6 +175,129 @@ func TestArticleRepository_FindByIDs(t *testing.T) {
 			assert.ElementsMatch(t, tt.wantIDs, gotIDs)
 		})
 	}
+}
+
+func TestArticleRepository_Create(t *testing.T) {
+	ctx := t.Context()
+
+	var (
+		tag1 domain.TagID = "11111111-1111-1111-1111-111111111111"
+		tag2 domain.TagID = "22222222-2222-2222-2222-222222222222"
+	)
+	publishedAt := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name         string
+		existingTags []*domain.Tag
+		article      *domain.Article
+	}{
+		{
+			name: "creates article with tags",
+			existingTags: []*domain.Tag{
+				{ID: tag1, Slug: "go", Name: "Go"},
+				{ID: tag2, Slug: "ts", Name: "TypeScript"},
+			},
+			article: &domain.Article{
+				Slug: "hello", Title: "Hello", Body: "body",
+				Status: domain.ArticleStatusPublished, PublishedAt: publishedAt,
+				TagIDs: []domain.TagID{tag1, tag2},
+			},
+		},
+		{
+			name: "creates draft article with zero published_at and no tags",
+			article: &domain.Article{
+				Slug: "draft-slug", Title: "Draft", Body: "body",
+				Status: domain.ArticleStatusDraft,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Cleanup(func() {
+				testhelper.TruncateAll(t, ctx, testDB)
+			})
+
+			testhelper.Insert(t, ctx, testDB, testhelper.Fixtures{Tags: tt.existingTags})
+
+			ar := &ArticleRepository{db: testDB}
+			require.NoError(t, ar.Create(ctx, tt.article))
+			require.NotEmpty(t, tt.article.ID)
+			require.False(t, tt.article.CreatedAt.IsZero())
+
+			got, err := ar.FindBySlug(ctx, tt.article.Slug)
+			require.NoError(t, err)
+			assert.Equal(t, tt.article.Slug, got.Slug)
+			assert.Equal(t, tt.article.Title, got.Title)
+			assert.Equal(t, tt.article.Body, got.Body)
+			assert.Equal(t, tt.article.Status, got.Status)
+			assert.Equal(t, tt.article.PublishedAt.UTC(), got.PublishedAt)
+			assert.ElementsMatch(t, tt.article.TagIDs, got.TagIDs)
+		})
+	}
+}
+
+func TestArticleRepository_Update(t *testing.T) {
+	ctx := t.Context()
+
+	var (
+		articleID domain.ArticleID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+		tag1      domain.TagID     = "11111111-1111-1111-1111-111111111111"
+		tag2      domain.TagID     = "22222222-2222-2222-2222-222222222222"
+		tag3      domain.TagID     = "33333333-3333-3333-3333-333333333333"
+	)
+	publishedAt := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	t.Run("updates fields and replaces tags", func(t *testing.T) {
+		t.Cleanup(func() {
+			testhelper.TruncateAll(t, ctx, testDB)
+		})
+
+		testhelper.Insert(t, ctx, testDB, testhelper.Fixtures{
+			Tags: []*domain.Tag{
+				{ID: tag1, Slug: "go", Name: "Go"},
+				{ID: tag2, Slug: "ts", Name: "TypeScript"},
+				{ID: tag3, Slug: "db", Name: "DB"},
+			},
+			Articles: []*domain.Article{
+				{
+					ID: articleID, Slug: "old", Title: "Old", Body: "old-body",
+					Status: domain.ArticleStatusDraft,
+					TagIDs: []domain.TagID{tag1, tag2},
+				},
+			},
+		})
+
+		ar := &ArticleRepository{db: testDB}
+		err := ar.Update(ctx, &domain.Article{
+			ID: articleID, Slug: "new", Title: "New", Body: "new-body",
+			Status: domain.ArticleStatusPublished, PublishedAt: publishedAt,
+			TagIDs: []domain.TagID{tag3},
+		})
+		require.NoError(t, err)
+
+		got, err := ar.FindBySlug(ctx, "new")
+		require.NoError(t, err)
+		assert.Equal(t, articleID, got.ID)
+		assert.Equal(t, "New", got.Title)
+		assert.Equal(t, "new-body", got.Body)
+		assert.Equal(t, domain.ArticleStatusPublished, got.Status)
+		assert.Equal(t, publishedAt, got.PublishedAt)
+		assert.Equal(t, []domain.TagID{tag3}, got.TagIDs)
+	})
+
+	t.Run("returns not found when article does not exist", func(t *testing.T) {
+		t.Cleanup(func() {
+			testhelper.TruncateAll(t, ctx, testDB)
+		})
+
+		ar := &ArticleRepository{db: testDB}
+		err := ar.Update(ctx, &domain.Article{
+			ID: articleID, Slug: "s", Title: "T", Body: "B",
+			Status: domain.ArticleStatusDraft,
+		})
+		require.ErrorIs(t, err, domain.ErrNotFound)
+	})
 }
 
 func TestArticleRepository_List(t *testing.T) {

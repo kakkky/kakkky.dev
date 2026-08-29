@@ -1,0 +1,66 @@
+package partials
+
+import "github.com/kakkky/hotwire-go/turbo"
+
+const EditorFrameID = "editor-area"
+
+// ArticleEditorAreaEditor は editor pane の初期状態 (textarea + Preview button)
+// を turbo-frame として返す。form 全体は呼び出し側で wrap する前提。
+templ ArticleEditorAreaEditor(body string) {
+	@turbo.Frame(EditorFrameID) {
+		@editorToolbar("Preview", "/admin/articles/preview")
+		<textarea
+			name="body"
+			maxlength="50000"
+			required
+			spellcheck="false"
+			placeholder="# Hello&#10;&#10;markdown で本文を書く..."
+			class="flex-1 resize-none border-0 bg-white px-6 py-6 font-mono text-sm leading-relaxed focus:outline-none"
+		>{ body }</textarea>
+	}
+}
+
+// ArticleEditorAreaPreview は preview pane の状態 (rendered HTML + Edit button)
+// を turbo-frame として返す。hidden textarea で body を保持し、Edit / Save の
+// 両方で body が失われないようにする。
+templ ArticleEditorAreaPreview(body, bodyHTML string) {
+	@turbo.Frame(EditorFrameID) {
+		@editorToolbar("Edit", "/admin/articles/editor")
+		<div class="flex-1 overflow-y-auto px-6 py-6">
+			<div class="article-body">
+				@templ.Raw(bodyHTML)
+			</div>
+		</div>
+		<textarea name="body" hidden>{ body }</textarea>
+	}
+}
+
+templ editorToolbar(label, formaction string) {
+	<div class="flex items-center justify-end border-b border-gray-200 bg-gray-50 px-3 py-1.5">
+		<button
+			type="submit"
+			formaction={ templ.SafeURL(formaction) }
+			formmethod="post"
+			formnovalidate
+			{ turbo.AttrFrame(EditorFrameID)... }
+			class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-colors"
+		>
+			@editorToolbarIcon(label)
+			{ label }
+		</button>
+	</div>
+}
+
+templ editorToolbarIcon(label string) {
+	if label == "Preview" {
+		<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+			<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+			<circle cx="12" cy="12" r="3"></circle>
+		</svg>
+	} else {
+		<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+			<path d="M12 20h9"></path>
+			<path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+		</svg>
+	}
+}

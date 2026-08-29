@@ -1,0 +1,250 @@
+package partials
+
+import (
+	"time"
+
+	"github.com/kakkky/hotwire-go/stimulus"
+
+	"github.com/kakkky/kakkky.dev/assets/js"
+)
+
+const (
+	tagComboboxInputID = "tag-combobox-input"
+)
+
+var (
+	articleFormCtrl = js.ArticleFormController.Name
+	tagComboboxCtrl = js.TagComboboxController.Name
+)
+
+type ArticleFormViewModel struct {
+	Action       string   // 保存先 URL
+	SubmitLabel  string   // "作成" or "更新"
+	Slug         string
+	Title        string
+	Body         string
+	Status       string    // "draft" or "published"
+	SelectedTags []string  // 選択済み tag 名 (順序保持)
+	AllTagNames  []string  // suggestion 用の全 tag 名
+	CreatedAt    time.Time // edit 時のみ設定。 zero なら sidebar 非表示
+	UpdatedAt    time.Time
+}
+
+const ArticleFormRootID = "article-form-root"
+
+templ ArticleForm(vm ArticleFormViewModel) {
+	<div class="flex h-[calc(100dvh-3.5rem)] flex-col">
+		@ArticleFormElement(vm)
+	</div>
+}
+
+// ArticleFormElement は <form> element 単体を描画する。 turbo-stream で
+// form 全体を差し替える (保存後) 用に、outer wrapper と分離してある。
+templ ArticleFormElement(vm ArticleFormViewModel) {
+	<form
+		id={ ArticleFormRootID }
+		method="post"
+		action={ templ.SafeURL(vm.Action) }
+		{ stimulus.AttrControllers(articleFormCtrl)... }
+		{ stimulus.AttrActions(
+			"turbo:submit-start->" + articleFormCtrl + "#onSubmitStart",
+			"turbo:submit-end->" + articleFormCtrl + "#onSubmitEnd",
+		)... }
+		class="flex flex-1 min-h-0 flex-col"
+	>
+		@articleFormHeader(vm)
+		<div class="flex flex-1 min-h-0">
+			@articleFormSidebar(vm)
+			@articleFormEditor(vm)
+		</div>
+	</form>
+}
+
+templ articleFormHeader(vm ArticleFormViewModel) {
+	<div class="border-b border-gray-200 bg-white px-4 py-3">
+		<div class="flex flex-wrap items-center gap-3">
+			<label class="flex flex-1 min-w-[200px] items-center gap-2">
+				<span class="text-xs font-medium text-gray-600">Title</span>
+				<input
+					type="text"
+					name="title"
+					value={ vm.Title }
+					maxlength="100"
+					required
+					placeholder="タイトル"
+					class="flex-1 rounded-md border border-gray-300 bg-white px-2 py-1 text-sm focus:border-gray-900 focus:outline-none"
+				/>
+			</label>
+			<label class="flex items-center gap-2">
+				<span class="text-xs font-medium text-gray-600">Status</span>
+				<select
+					name="status"
+					class="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm focus:border-gray-900 focus:outline-none"
+				>
+					@statusOption("draft", "Draft", vm.Status)
+					@statusOption("published", "Published", vm.Status)
+				</select>
+			</label>
+			@saveButton(vm.SubmitLabel)
+		</div>
+	</div>
+}
+
+templ statusOption(value, label, current string) {
+	if value == current {
+		<option value={ value } selected>{ label }</option>
+	} else {
+		<option value={ value }>{ label }</option>
+	}
+}
+
+templ saveButton(label string) {
+	<button
+		type="submit"
+		{ stimulus.AttrTargets(articleFormCtrl, "submit")... }
+		class="relative inline-flex items-center gap-1.5 rounded-md border border-gray-900 bg-gray-900 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-white hover:text-gray-900 transition-colors disabled:cursor-not-allowed disabled:opacity-70"
+	>
+		<span { stimulus.AttrTargets(articleFormCtrl, "submitLabel")... } class="transition-opacity">
+			{ label }
+			<span class="ml-1 text-[10px] opacity-60">⌘S</span>
+		</span>
+		<span
+			{ stimulus.AttrTargets(articleFormCtrl, "submitSpinner")... }
+			class="hidden absolute inset-0 flex items-center justify-center"
+		>
+			@spinnerIcon()
+		</span>
+	</button>
+}
+
+templ spinnerIcon() {
+	<svg class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+		<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+		<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+	</svg>
+}
+
+templ articleFormSidebar(vm ArticleFormViewModel) {
+	<aside class="hidden md:flex w-64 shrink-0 flex-col gap-6 border-r border-gray-200 bg-white p-4 overflow-y-auto">
+		if vm.Slug != "" {
+			@articleFormSlugField(vm.Slug)
+		}
+		@articleFormTagsField(vm)
+		if !vm.CreatedAt.IsZero() {
+			@articleFormTimestamps(vm.CreatedAt, vm.UpdatedAt)
+		}
+	</aside>
+}
+
+templ articleFormSlugField(slug string) {
+	<div class="flex flex-col gap-1">
+		<span class="text-xs font-medium text-gray-600">Slug</span>
+		<code class="rounded bg-gray-100 px-2 py-1 text-xs text-gray-800 break-all">{ slug }</code>
+		<p class="text-[10px] text-gray-500">保存時に title から自動生成。 変更不可。</p>
+	</div>
+}
+
+templ articleFormTimestamps(createdAt, updatedAt time.Time) {
+	<div class="flex flex-col gap-2 border-t border-gray-200 pt-4">
+		@timestampRow("作成日", createdAt)
+		if !updatedAt.IsZero() {
+			@timestampRow("最終更新", updatedAt)
+		}
+	</div>
+}
+
+templ timestampRow(label string, t time.Time) {
+	<div class="flex flex-col gap-0.5">
+		<span class="text-[10px] font-medium uppercase tracking-wide text-gray-500">{ label }</span>
+		<time datetime={ t.Format(time.RFC3339) } class="text-xs text-gray-800">
+			{ t.Local().Format("2006-01-02 15:04") }
+		</time>
+	</div>
+}
+
+templ articleFormTagsField(vm ArticleFormViewModel) {
+	<div class="flex flex-col gap-2">
+		<label for={ tagComboboxInputID } class="text-xs font-medium text-gray-600">Tags</label>
+		<div
+			{ stimulus.AttrControllers(tagComboboxCtrl)... }
+			{ stimulus.AttrValue(tagComboboxCtrl, "max", "5")... }
+			{ stimulus.AttrValue(tagComboboxCtrl, "tags", tagNamesJSON(vm.AllTagNames))... }
+			class="relative"
+		>
+			<div class="flex flex-wrap items-center gap-1.5 rounded-md border border-gray-300 bg-white px-2 py-1.5">
+				<div { stimulus.AttrTargets(tagComboboxCtrl, "chips")... } class="contents">
+					for _, name := range vm.SelectedTags {
+						@tagChip(name)
+					}
+				</div>
+				<input
+					type="text"
+					id={ tagComboboxInputID }
+					{ stimulus.AttrTargets(tagComboboxCtrl, "input")... }
+					{ stimulus.AttrActions(
+						"input->" + tagComboboxCtrl + "#onInput",
+						"keydown->" + tagComboboxCtrl + "#onKeydown",
+						"focus->" + tagComboboxCtrl + "#onFocus",
+						"blur->" + tagComboboxCtrl + "#onBlur",
+					)... }
+					autocomplete="off"
+					placeholder="tag 名を入力"
+					class="flex-1 min-w-[80px] border-0 bg-transparent px-1 py-0.5 text-sm focus:outline-none"
+				/>
+			</div>
+			<ul
+				{ stimulus.AttrTargets(tagComboboxCtrl, "suggestions")... }
+				role="listbox"
+				hidden
+				class="absolute z-20 mt-1 w-full max-h-56 overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg"
+			></ul>
+			@tagChipTemplate()
+		</div>
+		<p class="text-[10px] text-gray-500">最大 5 個。 未存在の tag はそのまま入力で新規作成。</p>
+	</div>
+}
+
+templ tagChip(name string) {
+	<span
+		data-name={ name }
+		class="inline-flex items-center gap-1 rounded-full border border-gray-300 bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800"
+	>
+		<span data-chip-label>#{ name }</span>
+		<input type="hidden" name="tag" value={ name }/>
+		<button
+			type="button"
+			data-remove
+			{ stimulus.AttrActions("click->" + tagComboboxCtrl + "#removeChip")... }
+			{ stimulus.AttrActionParam(tagComboboxCtrl, "name", name)... }
+			class="text-gray-500 hover:text-gray-900"
+			aria-label="tag を削除"
+		>×</button>
+	</span>
+}
+
+templ tagChipTemplate() {
+	<template { stimulus.AttrTargets(tagComboboxCtrl, "template")... }>
+		<span
+			data-name=""
+			class="inline-flex items-center gap-1 rounded-full border border-gray-300 bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800"
+		>
+			<span data-chip-label></span>
+			<input type="hidden" name="tag" value=""/>
+			<button
+				type="button"
+				data-remove
+				{ stimulus.AttrActions("click->" + tagComboboxCtrl + "#removeChip")... }
+				class="text-gray-500 hover:text-gray-900"
+				aria-label="tag を削除"
+			>×</button>
+		</span>
+	</template>
+}
+
+templ articleFormEditor(vm ArticleFormViewModel) {
+	<div class="flex flex-1 min-h-0 flex-col bg-zinc-50 p-4">
+		<div class="mx-auto flex w-full max-w-4xl flex-1 min-h-0 flex-col rounded-lg border border-gray-300 bg-white shadow-sm overflow-hidden">
+			@ArticleEditorAreaEditor(vm.Body)
+		</div>
+	</div>
+}

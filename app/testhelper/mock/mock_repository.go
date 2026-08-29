@@ -122,6 +122,20 @@ func (m *MockArticleRepository) EXPECT() *MockArticleRepositoryMockRecorder {
 	return m.recorder
 }
 
+// Create mocks base method.
+func (m *MockArticleRepository) Create(ctx context.Context, article *domain.Article) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, article)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockArticleRepositoryMockRecorder) Create(ctx, article any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockArticleRepository)(nil).Create), ctx, article)
+}
+
 // FindByIDs mocks base method.
 func (m *MockArticleRepository) FindByIDs(ctx context.Context, ids ...domain.ArticleID) ([]*domain.Article, error) {
 	m.ctrl.T.Helper()
@@ -170,6 +184,20 @@ func (m *MockArticleRepository) List(ctx context.Context, afterID domain.Article
 func (mr *MockArticleRepositoryMockRecorder) List(ctx, afterID, afterCreatedAt, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockArticleRepository)(nil).List), ctx, afterID, afterCreatedAt, limit)
+}
+
+// Update mocks base method.
+func (m *MockArticleRepository) Update(ctx context.Context, article *domain.Article) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, article)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockArticleRepositoryMockRecorder) Update(ctx, article any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockArticleRepository)(nil).Update), ctx, article)
 }
 
 // MockSeriesRepository is a mock of SeriesRepository interface.
@@ -250,6 +278,20 @@ func (m *MockTagRepository) EXPECT() *MockTagRepositoryMockRecorder {
 	return m.recorder
 }
 
+// Create mocks base method.
+func (m *MockTagRepository) Create(ctx context.Context, tag *domain.Tag) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, tag)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockTagRepositoryMockRecorder) Create(ctx, tag any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTagRepository)(nil).Create), ctx, tag)
+}
+
 // FindByIDs mocks base method.
 func (m *MockTagRepository) FindByIDs(ctx context.Context, ids ...domain.TagID) ([]*domain.Tag, error) {
 	m.ctrl.T.Helper()
@@ -268,6 +310,26 @@ func (mr *MockTagRepositoryMockRecorder) FindByIDs(ctx any, ids ...any) *gomock.
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx}, ids...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByIDs", reflect.TypeOf((*MockTagRepository)(nil).FindByIDs), varargs...)
+}
+
+// FindByNames mocks base method.
+func (m *MockTagRepository) FindByNames(ctx context.Context, names ...string) ([]*domain.Tag, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx}
+	for _, a := range names {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "FindByNames", varargs...)
+	ret0, _ := ret[0].([]*domain.Tag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByNames indicates an expected call of FindByNames.
+func (mr *MockTagRepositoryMockRecorder) FindByNames(ctx any, names ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx}, names...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByNames", reflect.TypeOf((*MockTagRepository)(nil).FindByNames), varargs...)
 }
 
 // ListAll mocks base method.
