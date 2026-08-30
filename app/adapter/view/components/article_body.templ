@@ -21,7 +21,7 @@ templ ArticleBody(vm ArticleBodyViewModel) {
 			if len(vm.Tags) > 0 {
 				<div class="mt-4 flex flex-wrap gap-1.5">
 					for _, name := range vm.Tags {
-						@TagBadge(name)
+						@TagBadge(name, nil)
 					}
 				</div>
 			}

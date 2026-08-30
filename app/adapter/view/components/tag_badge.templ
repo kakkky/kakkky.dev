@@ -1,7 +1,15 @@
 package components
 
-templ TagBadge(name string) {
-	<span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium border-gray-300 bg-gray-100 text-gray-800">
-		#{ name }
+// TagBadge は tag 名を rounded pill として表示する。
+// attrs は outer <span> に追加する属性 (Stimulus target 等)。 stimulus.AttrTargets
+// のような hotwire-go/stimulus の Attrs 戻り値をそのまま渡せる。
+// children を渡せば name の右側に追加要素 (hidden input / remove button 等) を差し込める。
+templ TagBadge(name string, attrs templ.Attributer) {
+	<span
+		{ attrs... }
+		class="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium border-gray-300 bg-gray-100 text-gray-800"
+	>
+		<span data-chip-label>#{ name }</span>
+		{ children... }
 	</span>
 }

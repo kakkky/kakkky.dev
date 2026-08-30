@@ -154,7 +154,7 @@ func articleCard(vm FeedItemCardViewModel) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			for _, name := range vm.Tags {
-				templ_7745c5c3_Err = TagBadge(name).Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = TagBadge(name, nil).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -286,7 +286,7 @@ func seriesCard(vm FeedItemCardViewModel) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			for _, name := range vm.Tags {
-				templ_7745c5c3_Err = TagBadge(name).Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = TagBadge(name, nil).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

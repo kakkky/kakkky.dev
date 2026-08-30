@@ -13,17 +13,21 @@ var tagFilterController = js.TagFilterController.Name
 
 const TagFilterMaxSelected = 10
 
-type TagOption struct {
+type TagViewModel struct {
 	Slug string
 	Name string
 }
 
+type TagFilterAreaViewModel struct {
+	Tags          []TagViewModel
+	TargetFrameID string
+}
 
-templ TagFilterArea(tags []TagOption, targetFrameID string) {
+templ TagFilterArea(vm TagFilterAreaViewModel) {
 	<form
 		method="get"
 		action="/feed"
-		{ turbo.AttrFrame(targetFrameID)... }
+		{ turbo.AttrFrame(vm.TargetFrameID)... }
 		{ turbo.AttrActionAdvance()... }
 		{ stimulus.AttrControllers(tagFilterController)... }
 		{ stimulus.AttrValue(tagFilterController, "max", strconv.Itoa(TagFilterMaxSelected))... }
@@ -33,7 +37,7 @@ templ TagFilterArea(tags []TagOption, targetFrameID string) {
 			{ stimulus.AttrTargets(tagFilterController, "options")... }
 			class="flex flex-wrap gap-1.5"
 		>
-			for _, t := range tags {
+			for _, t := range vm.Tags {
 				@tagBadgeOption(t.Name, t.Slug)
 			}
 		</div>
@@ -50,6 +54,6 @@ templ tagBadgeOption(name, slug string) {
 		aria-pressed="false"
 		class="cursor-pointer rounded-full transition-opacity hover:opacity-70 aria-pressed:[&>span]:border-gray-900 aria-pressed:[&>span]:bg-gray-900 aria-pressed:[&>span]:text-white"
 	>
-		@TagBadge(name)
+		@TagBadge(name, nil)
 	</button>
 }

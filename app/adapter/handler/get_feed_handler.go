@@ -110,8 +110,11 @@ func (h *GetFeedHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		_ = partials.FeedItemList(listVM).Render(ctx, rw)
 	default:
 		vm := pages.FeedViewModel{
-			List:    listVM,
-			AllTags: toTagOptions(out.Tags),
+			List: listVM,
+			TagFilter: components.TagFilterAreaViewModel{
+				Tags:          toTagViewModels(out.Tags),
+				TargetFrameID: partials.FeedItemListID,
+			},
 		}
 		_ = pages.Feed(vm).Render(ctx, rw)
 	}
@@ -153,14 +156,6 @@ func parseFeedParams(r *http.Request) (feedParams, error) {
 	}
 
 	return params, nil
-}
-
-func toTagOptions(tags []domain.Tag) []components.TagOption {
-	options := make([]components.TagOption, len(tags))
-	for i, t := range tags {
-		options[i] = components.TagOption{Slug: string(t.Slug), Name: t.Name}
-	}
-	return options
 }
 
 func toSlugs(raw []string) []domain.Slug {

@@ -15,8 +15,8 @@ import (
 )
 
 type FeedViewModel struct {
-	List    partials.FeedItemListViewModel
-	AllTags []components.TagOption
+	List      partials.FeedItemListViewModel
+	TagFilter components.TagFilterAreaViewModel
 }
 
 func Feed(vm FeedViewModel) templ.Component {
@@ -56,7 +56,7 @@ func Feed(vm FeedViewModel) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = components.TagFilterArea(vm.AllTags, partials.FeedItemListID).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = components.TagFilterArea(vm.TagFilter).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

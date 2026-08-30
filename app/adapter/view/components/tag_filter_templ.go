@@ -21,12 +21,17 @@ var tagFilterController = js.TagFilterController.Name
 
 const TagFilterMaxSelected = 10
 
-type TagOption struct {
+type TagViewModel struct {
 	Slug string
 	Name string
 }
 
-func TagFilterArea(tags []TagOption, targetFrameID string) templ.Component {
+type TagFilterAreaViewModel struct {
+	Tags          []TagViewModel
+	TargetFrameID string
+}
+
+func TagFilterArea(vm TagFilterAreaViewModel) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -51,7 +56,7 @@ func TagFilterArea(tags []TagOption, targetFrameID string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templ.RenderAttributes(ctx, templ_7745c5c3_Buffer, turbo.AttrFrame(targetFrameID))
+		templ_7745c5c3_Err = templ.RenderAttributes(ctx, templ_7745c5c3_Buffer, turbo.AttrFrame(vm.TargetFrameID))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -79,7 +84,7 @@ func TagFilterArea(tags []TagOption, targetFrameID string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		for _, t := range tags {
+		for _, t := range vm.Tags {
 			templ_7745c5c3_Err = tagBadgeOption(t.Name, t.Slug).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -129,7 +134,7 @@ func tagBadgeOption(name, slug string) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.ResolveAttributeValue(slug)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/components/tag_filter.templ`, Line: 47, Col: 22}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/components/tag_filter.templ`, Line: 51, Col: 22}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var3)
 		if templ_7745c5c3_Err != nil {
@@ -151,7 +156,7 @@ func tagBadgeOption(name, slug string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = TagBadge(name).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = TagBadge(name, nil).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
