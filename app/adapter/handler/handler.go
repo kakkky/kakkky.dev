@@ -50,6 +50,12 @@ func (h *Handler) AdminRoutes() []Route {
 				h.usecase.NewListSeriesUsecase(),
 			),
 		},
+		{
+			Pattern: "GET /articles/new",
+			Handler: NewGetNewArticleHandler(
+				h.usecase.NewListTagsUsecase(),
+			),
+		},
 	}
 }
 

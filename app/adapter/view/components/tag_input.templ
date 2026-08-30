@@ -1,0 +1,88 @@
+package components
+
+import (
+	"encoding/json"
+	"strconv"
+
+	"github.com/kakkky/hotwire-go/stimulus"
+
+	"github.com/kakkky/kakkky.dev/assets/js"
+)
+
+var tagInputController = js.TagInputController.Name
+
+const (
+	TagInputMaxSelected = 5
+	tagInputElementID   = "tag-input"
+)
+
+type TagInputViewModel struct {
+	ExistingTagNames  []string
+	SelectedTagNames []string
+}
+
+templ TagInput(vm TagInputViewModel) {
+	<div class="flex flex-col gap-2">
+		<label for={ tagInputElementID } class="text-sm font-medium text-gray-700">Tags</label>
+		<div
+			{ stimulus.AttrControllers(tagInputController)... }
+			{ stimulus.AttrValue(tagInputController, "max-selected-tag-count", strconv.Itoa(TagInputMaxSelected))... }
+			{ stimulus.AttrValue(tagInputController, "existing-tag-names", namesJSON(vm.ExistingTagNames))... }
+			class="relative"
+		>
+			<div class="flex flex-wrap items-center gap-1.5 rounded-md border border-gray-300 bg-white px-2 py-1.5">
+				<div { stimulus.AttrTargets(tagInputController, "tagChips")... } class="contents">
+					for _, name := range vm.SelectedTagNames {
+						@tagChip(name)
+					}
+				</div>
+				<input
+					type="text"
+					id={ tagInputElementID }
+					{ stimulus.AttrTargets(tagInputController, "input")... }
+					{ stimulus.AttrActions(
+						"input->tag-input#onInput",
+						"keydown->tag-input#onKeydown",
+						"focus->tag-input#onFocus",
+						"blur->tag-input#onBlur",
+					)... }
+					autocomplete="off"
+					placeholder="タグ名を入力"
+					class="flex-1 min-w-[80px] border-0 bg-transparent px-1 py-0.5 text-sm focus:outline-none"
+				/>
+			</div>
+			<ul
+				{ stimulus.AttrTargets(tagInputController, "tagSuggestions")... }
+				role="listbox"
+				hidden
+				class="absolute left-0 top-full z-20 mt-1 w-full max-h-56 overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg"
+			></ul>
+			<template { stimulus.AttrTargets(tagInputController, "tagChipTemplate")... }>
+				@tagChip("")
+			</template>
+		</div>
+	</div>
+}
+
+templ tagChip(name string) {
+	@TagBadge(name, stimulus.AttrTargets(tagInputController, "tagChip")) {
+		<input type="hidden" name="tag" value={ name }/>
+		<button
+			type="button"
+			data-remove
+			{ stimulus.AttrActions("click->tag-input#removeChip")... }
+			{ stimulus.AttrActionParam(tagInputController, "name", name)... }
+			class="text-gray-500 hover:text-gray-900"
+			aria-label="tag を削除"
+		>×</button>
+	}
+}
+
+// Stimulus Value (Array) は 読まれる際に attribute 値を JSON.parse するため、JSON stringfy
+func namesJSON(names []string) string {
+	b, err := json.Marshal(names)
+	if err != nil {
+		return "[]"
+	}
+	return string(b)
+}

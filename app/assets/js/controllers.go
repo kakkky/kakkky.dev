@@ -15,7 +15,13 @@ var OutlineDialogController = Controller{
 	Path: "/assets/js/outline_dialog_controller.js",
 }
 
+var TagInputController = Controller{
+	Name: "tag-input",
+	Path: "/assets/js/tag_input_controller.js",
+}
+
 var ControllerPaths = []string{
 	TagFilterController.Path,
 	OutlineDialogController.Path,
+	TagInputController.Path,
 }
