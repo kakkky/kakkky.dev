@@ -1,10 +1,17 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["tagChips", "input", "tagSuggestions", "tagChipTemplate", "tagChip"]
+  static targets = [
+    "tagChips",
+    "input",
+    "tagSuggestions",
+    "existingTagChipTemplate",
+    "newTagChipTemplate",
+    "tagChip",
+  ]
   static values = {
     maxSelectedTagCount: { type: Number, default: 5 },
-    existingTagNames: { type: Array, default: [] },
+    existingTagIndex: { type: Object, default: {} }, // { [name]: id }
   }
 
   #chosenSuggestionIndex = -1
@@ -49,7 +56,7 @@ export default class extends Controller {
           event.preventDefault()
           const chips = this.tagChipTargets
           if (chips.length > 0) {
-            this.#removeTag(chips[chips.length - 1].querySelector("input[type='hidden']").value)
+            this.#removeTag(this.#chipName(chips[chips.length - 1]))
           }
         }
         break
@@ -81,15 +88,14 @@ export default class extends Controller {
 
   #renderSuggestionsList() {
     const q = this.inputTarget.value.trim().toLowerCase()
-    const selected = new Set(
-      this.tagChipTargets.map((c) => c.querySelector("input[type='hidden']").value),
-    )
-    const items = this.existingTagNamesValue
+    const selected = new Set(this.tagChipTargets.map((c) => this.#chipName(c)))
+    const existingNames = Object.keys(this.existingTagIndexValue)
+    const items = existingNames
       .filter((name) => !selected.has(name))
       .filter((name) => q === "" || name.toLowerCase().includes(q))
       .slice(0, 8)
       .map((name) => ({ name, isNew: false }))
-    const isExact = this.existingTagNamesValue.some((n) => n.toLowerCase() === q)
+    const isExact = existingNames.some((n) => n.toLowerCase() === q)
 
     // 入力文字列 が 既存タグ名と一致しておらず、 tagChip化 されていない場合は新規追加タグとみなせる
     if (q !== "" && !isExact && !selected.has(q)) {
@@ -140,14 +146,17 @@ export default class extends Controller {
 
   #addTag(name) {
     const trimmed = name.trim()
-    const alreadyAdded = this.tagChipTargets.some(
-      (c) => c.querySelector("input[type='hidden']").value === trimmed,
-    )
+    const alreadyAdded = this.tagChipTargets.some((c) => this.#chipName(c) === trimmed)
     if (trimmed === "" || alreadyAdded || this.tagChipTargets.length >= this.maxSelectedTagCountValue) return
 
-    const chip = this.tagChipTemplateTarget.content.firstElementChild.cloneNode(true)
+    const id = this.existingTagIndexValue[trimmed]
+    const template = id != null ? this.existingTagChipTemplateTarget : this.newTagChipTemplateTarget
+    const chip = template.content.firstElementChild.cloneNode(true)
+
     chip.querySelector("[data-chip-label]").textContent = `#${trimmed}`
-    chip.querySelector("input[type='hidden']").value = trimmed
+    const hidden = chip.querySelector("input[data-name]")
+    hidden.dataset.name = trimmed
+    hidden.value = id != null ? id : trimmed
     chip.querySelector("[data-remove]").setAttribute("data-tag-input-name-param", trimmed)
     this.tagChipsTarget.appendChild(chip)
 
@@ -159,14 +168,16 @@ export default class extends Controller {
   }
 
   #removeTag(name) {
-    const chip = this.tagChipTargets.find(
-      (c) => c.querySelector("input[type='hidden']").value === name,
-    )
+    const chip = this.tagChipTargets.find((c) => this.#chipName(c) === name)
     if (!chip) return
     chip.remove()
     this.#renderSuggestionsList()
     this.#updatePlaceholder()
     this.#syncInputDisabled()
+  }
+
+  #chipName(chip) {
+    return chip.querySelector("input[data-name]").dataset.name
   }
 
   #updatePlaceholder() {

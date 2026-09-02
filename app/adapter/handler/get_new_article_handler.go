@@ -26,12 +26,7 @@ func (h *GetNewArticleHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request
 		return
 	}
 
-	names := make([]string, len(out.Tags))
-	for i, t := range out.Tags {
-		names[i] = t.Name
-	}
-
 	_ = pages.NewArticle(pages.NewArticleViewModel{
-		ExistingTagNames: names,
+		ExistingTags: toTagViewModels(out.Tags),
 	}).Render(ctx, rw)
 }

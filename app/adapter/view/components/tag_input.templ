@@ -17,8 +17,8 @@ const (
 )
 
 type TagInputViewModel struct {
-	ExistingTagNames  []string
-	SelectedTagNames []string
+	ExistingTags []TagViewModel
+	SelectedTags []TagViewModel
 }
 
 templ TagInput(vm TagInputViewModel) {
@@ -27,13 +27,17 @@ templ TagInput(vm TagInputViewModel) {
 		<div
 			{ stimulus.AttrControllers(tagInputController)... }
 			{ stimulus.AttrValue(tagInputController, "max-selected-tag-count", strconv.Itoa(TagInputMaxSelected))... }
-			{ stimulus.AttrValue(tagInputController, "existing-tag-names", namesJSON(vm.ExistingTagNames))... }
+			{ stimulus.AttrValue(tagInputController, "existing-tag-index", tagIndexJSON(vm.ExistingTags))... }
 			class="relative"
 		>
 			<div class="flex flex-wrap items-center gap-1.5 rounded-md border border-gray-300 bg-white px-2 py-1.5">
 				<div { stimulus.AttrTargets(tagInputController, "tagChips")... } class="contents">
-					for _, name := range vm.SelectedTagNames {
-						@tagChip(name)
+					for _, t := range vm.SelectedTags {
+						if t.ID != "" {
+							@tagChipExisting(t.ID, t.Name)
+						} else {
+							@tagChipNew(t.Name)
+						}
 					}
 				</div>
 				<input
@@ -57,32 +61,51 @@ templ TagInput(vm TagInputViewModel) {
 				hidden
 				class="absolute left-0 top-full z-20 mt-1 w-full max-h-56 overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg"
 			></ul>
-			<template { stimulus.AttrTargets(tagInputController, "tagChipTemplate")... }>
-				@tagChip("")
+			<template { stimulus.AttrTargets(tagInputController, "existingTagChipTemplate")... }>
+				@tagChipExisting("", "")
+			</template>
+			<template { stimulus.AttrTargets(tagInputController, "newTagChipTemplate")... }>
+				@tagChipNew("")
 			</template>
 		</div>
 	</div>
 }
 
-templ tagChip(name string) {
+templ tagChipExisting(id, name string) {
 	@TagBadge(name, stimulus.AttrTargets(tagInputController, "tagChip")) {
-		<input type="hidden" name="tag" value={ name }/>
-		<button
-			type="button"
-			data-remove
-			{ stimulus.AttrActions("click->tag-input#removeChip")... }
-			{ stimulus.AttrActionParam(tagInputController, "name", name)... }
-			class="text-gray-500 hover:text-gray-900"
-			aria-label="tag を削除"
-		>×</button>
+		<input type="hidden" name="tag_id" value={ id } data-name={ name }/>
+		@tagChipRemoveButton(name)
 	}
 }
 
-// Stimulus Value (Array) は 読まれる際に attribute 値を JSON.parse するため、JSON stringfy
-func namesJSON(names []string) string {
-	b, err := json.Marshal(names)
+templ tagChipNew(name string) {
+	@TagBadge(name, stimulus.AttrTargets(tagInputController, "tagChip")) {
+		<input type="hidden" name="new_tag" value={ name } data-name={ name }/>
+		@tagChipRemoveButton(name)
+	}
+}
+
+templ tagChipRemoveButton(name string) {
+	<button
+		type="button"
+		data-remove
+		{ stimulus.AttrActions("click->tag-input#removeChip")... }
+		{ stimulus.AttrActionParam(tagInputController, "name", name)... }
+		class="text-gray-500 hover:text-gray-900"
+		aria-label="tag を削除"
+	>×</button>
+}
+
+// Stimulus Value (Object) は 読まれる際に attribute 値を JSON.parse するため、JSON stringify。
+// name → id の map を返す。
+func tagIndexJSON(tags []TagViewModel) string {
+	m := make(map[string]string, len(tags))
+	for _, t := range tags {
+		m[t.Name] = t.ID
+	}
+	b, err := json.Marshal(m)
 	if err != nil {
-		return "[]"
+		return "{}"
 	}
 	return string(b)
 }

@@ -6,7 +6,7 @@ import (
 )
 
 type NewArticleViewModel struct {
-	ExistingTagNames []string
+	ExistingTags []components.TagViewModel
 }
 
 templ NewArticle(vm NewArticleViewModel) {
@@ -26,7 +26,7 @@ templ NewArticle(vm NewArticleViewModel) {
 					/>
 				</label>
 				@components.TagInput(components.TagInputViewModel{
-					ExistingTagNames: vm.ExistingTagNames,
+					ExistingTags: vm.ExistingTags,
 				})
 				<button
 					type="submit"
