@@ -22,6 +22,7 @@ var tagFilterController = js.TagFilterController.Name
 const TagFilterMaxSelected = 10
 
 type TagViewModel struct {
+	ID   string
 	Slug string
 	Name string
 }
@@ -134,7 +135,7 @@ func tagBadgeOption(name, slug string) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.ResolveAttributeValue(slug)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/components/tag_filter.templ`, Line: 51, Col: 22}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/components/tag_filter.templ`, Line: 52, Col: 22}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var3)
 		if templ_7745c5c3_Err != nil {
