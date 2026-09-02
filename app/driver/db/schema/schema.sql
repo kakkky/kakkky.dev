@@ -5,7 +5,7 @@ COMMENT ON SCHEMA "public" IS 'standard public schema';
 -- Create "articles" table
 CREATE TABLE "public"."articles" (
   "id" uuid NOT NULL DEFAULT gen_random_uuid(),
-  "slug" character varying(20) NOT NULL,
+  "slug" character varying(200) NOT NULL,
   "title" character varying(100) NOT NULL,
   "body" text NOT NULL,
   "status" character varying(20) NOT NULL DEFAULT 'draft',
@@ -27,7 +27,7 @@ CREATE TABLE "public"."schema_migrations" (
 -- Create "tags" table
 CREATE TABLE "public"."tags" (
   "id" uuid NOT NULL DEFAULT gen_random_uuid(),
-  "slug" character varying(20) NOT NULL,
+  "slug" character varying(200) NOT NULL,
   "name" character varying(30) NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT now(),
   "updated_at" timestamptz NOT NULL DEFAULT now(),
@@ -48,7 +48,7 @@ CREATE INDEX "article_tags_tag_id_idx" ON "public"."article_tags" ("tag_id");
 -- Create "series" table
 CREATE TABLE "public"."series" (
   "id" uuid NOT NULL DEFAULT gen_random_uuid(),
-  "slug" character varying(20) NOT NULL,
+  "slug" character varying(200) NOT NULL,
   "title" character varying(100) NOT NULL,
   "description" text NOT NULL DEFAULT '',
   "status" character varying(20) NOT NULL DEFAULT 'draft',

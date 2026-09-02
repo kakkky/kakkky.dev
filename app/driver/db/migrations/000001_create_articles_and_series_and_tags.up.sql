@@ -1,7 +1,7 @@
 -- series
 CREATE TABLE series (
     id           UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-    slug         VARCHAR(20)  NOT NULL UNIQUE,
+    slug         VARCHAR(200) NOT NULL UNIQUE,
     title        VARCHAR(100) NOT NULL,
     description  TEXT         NOT NULL DEFAULT '',
     status       VARCHAR(20)  NOT NULL DEFAULT 'draft'
@@ -18,7 +18,7 @@ CREATE INDEX series_published_recent_idx
 -- articles
 CREATE TABLE articles (
     id            UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-    slug          VARCHAR(20)  NOT NULL UNIQUE,
+    slug          VARCHAR(200) NOT NULL UNIQUE,
     title         VARCHAR(100) NOT NULL,
     body          TEXT         NOT NULL,
     status        VARCHAR(20)  NOT NULL DEFAULT 'draft'
@@ -44,7 +44,7 @@ CREATE TABLE series_articles (
 -- tags
 CREATE TABLE tags (
     id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-    slug        VARCHAR(20)  NOT NULL UNIQUE,
+    slug        VARCHAR(200) NOT NULL UNIQUE,
     name        VARCHAR(30)  NOT NULL,
     created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
     updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
