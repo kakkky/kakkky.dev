@@ -37,6 +37,8 @@ export default class extends Controller {
   }
 
   onKeydown(event) {
+    // IME 変換中 (isComposing) の Enter などは確定処理を優先させて素通り
+    if (event.isComposing || event.keyCode === 229) return
     switch (event.key) {
       case "ArrowDown":
         event.preventDefault()
