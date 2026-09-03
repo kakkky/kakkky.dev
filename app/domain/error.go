@@ -5,6 +5,7 @@ import "fmt"
 var (
 	ErrInvalidArgument = &Error{errType: string(ErrInvalidArgumentType)}
 	ErrNotFound        = &Error{errType: string(ErrNotFoundType)}
+	ErrAlreadyExists   = &Error{errType: string(ErrAlreadyExistsType)}
 	ErrInternal        = &Error{errType: string(ErrInternalType)}
 )
 
@@ -13,6 +14,7 @@ type ErrorType string
 const (
 	ErrInvalidArgumentType ErrorType = "invalid argument"
 	ErrNotFoundType        ErrorType = "not found"
+	ErrAlreadyExistsType   ErrorType = "already exists"
 	ErrInternalType        ErrorType = "internal"
 )
 
