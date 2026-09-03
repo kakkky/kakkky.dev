@@ -40,7 +40,8 @@ func NewArticle(slug Slug, title string, body string, status ArticleStatus, publ
 	if utf8.RuneCountInString(title) > ArticleTitleMaxLength {
 		return nil, ErrInvalidArgument.With(fmt.Sprintf("タイトル は %d 文字以内 です", ArticleTitleMaxLength))
 	}
-	if body == "" {
+	// draft は edit page で後から本文を書けるので空を許容する。published は必須。
+	if status == ArticleStatusPublished && body == "" {
 		return nil, ErrInvalidArgument.With("本文 は 必須 です")
 	}
 	if utf8.RuneCountInString(body) > ArticleBodyMaxLength {

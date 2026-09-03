@@ -61,10 +61,17 @@ func TestNewArticle(t *testing.T) {
 			wantErr: domain.ErrInvalidArgument,
 		},
 		{
-			name:    "error: empty body",
+			name:    "success: empty body allowed for draft",
 			title:   "タイトル",
 			body:    "",
 			status:  domain.ArticleStatusDraft,
+			wantErr: nil,
+		},
+		{
+			name:    "error: empty body rejected for published",
+			title:   "タイトル",
+			body:    "",
+			status:  domain.ArticleStatusPublished,
 			wantErr: domain.ErrInvalidArgument,
 		},
 		{
