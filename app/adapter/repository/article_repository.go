@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -105,6 +107,48 @@ WHERE a.id = ANY($1::uuid[])
 		articles[i] = r.toArticle()
 	}
 	return articles, nil
+}
+
+func (ar *ArticleRepository) Store(ctx context.Context, article *domain.Article) error {
+	if article.ID != "" {
+		return domain.ErrInternal.With("article update is not implemented yet")
+	}
+
+	var id string
+	if err := sqlx.GetContext(ctx, ar.db, &id, `
+INSERT INTO articles (slug, title, body, status, published_at)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id::text
+`,
+		string(article.Slug),
+		article.Title,
+		article.Body,
+		string(article.Status),
+		nullTime(article.PublishedAt),
+	); err != nil {
+		if isUniqueViolation(err) {
+			return domain.ErrAlreadyExists.Wrap(err, "article slug already exists")
+		}
+		return domain.ErrInternal.Wrap(err, "insert article")
+	}
+	article.ID = domain.ArticleID(id)
+
+	if len(article.TagIDs) == 0 {
+		return nil
+	}
+
+	values := make([]string, len(article.TagIDs))
+	args := make([]any, 0, 1+len(article.TagIDs))
+	args = append(args, id)
+	for i, tid := range article.TagIDs {
+		values[i] = fmt.Sprintf("($1, $%d)", i+2)
+		args = append(args, string(tid))
+	}
+	query := "INSERT INTO article_tags (article_id, tag_id) VALUES " + strings.Join(values, ", ")
+	if _, err := ar.db.ExecContext(ctx, query, args...); err != nil {
+		return domain.ErrInternal.Wrap(err, "insert article_tags")
+	}
+	return nil
 }
 
 func (ar *ArticleRepository) List(

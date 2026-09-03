@@ -50,6 +50,25 @@ ORDER BY name
 	return tags, nil
 }
 
+func (tr *TagRepository) Store(ctx context.Context, tag *domain.Tag) error {
+	if tag.ID != "" {
+		return domain.ErrInternal.With("tag update is not implemented yet")
+	}
+	var id string
+	if err := sqlx.GetContext(ctx, tr.db, &id, `
+INSERT INTO tags (slug, name)
+VALUES ($1, $2)
+RETURNING id::text
+`, string(tag.Slug), tag.Name); err != nil {
+		if isUniqueViolation(err) {
+			return domain.ErrAlreadyExists.Wrap(err, "tag slug already exists")
+		}
+		return domain.ErrInternal.Wrap(err, "insert tag")
+	}
+	tag.ID = domain.TagID(id)
+	return nil
+}
+
 func (tr *TagRepository) FindByIDs(ctx context.Context, ids ...domain.TagID) ([]*domain.Tag, error) {
 	if len(ids) == 0 {
 		return []*domain.Tag{}, nil

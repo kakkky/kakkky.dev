@@ -2,9 +2,14 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
+	"time"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jmoiron/sqlx"
+
 	"github.com/kakkky/kakkky.dev/domain"
 )
 
@@ -40,4 +45,20 @@ func (r *Repository) WithTx(ctx context.Context, fn func(domain.Repository) erro
 	}()
 	err = fn(&Repository{db: tx})
 	return err
+}
+
+func nullTime(t time.Time) sql.NullTime {
+	if t.IsZero() {
+		return sql.NullTime{}
+	}
+	return sql.NullTime{Time: t, Valid: true}
+}
+
+// isUniqueViolation は Postgres の UNIQUE 制約違反 (SQLSTATE 23505) を判定する。
+func isUniqueViolation(err error) bool {
+	var pgErr *pgconn.PgError
+	if !errors.As(err, &pgErr) {
+		return false
+	}
+	return pgErr.Code == "23505"
 }

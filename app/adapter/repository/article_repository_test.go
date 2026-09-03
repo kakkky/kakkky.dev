@@ -174,6 +174,95 @@ func TestArticleRepository_FindByIDs(t *testing.T) {
 	}
 }
 
+func TestArticleRepository_Store(t *testing.T) {
+	ctx := t.Context()
+
+	var (
+		tag1 domain.TagID = "11111111-1111-1111-1111-111111111111"
+		tag2 domain.TagID = "22222222-2222-2222-2222-222222222222"
+	)
+
+	tests := []struct {
+		name             string
+		existingTags     []*domain.Tag
+		existingArticles []*domain.Article
+		article          *domain.Article
+		wantTagIDs       []domain.TagID
+		wantErr          error
+	}{
+		{
+			name: "inserts article and article_tags, writes back generated ID",
+			existingTags: []*domain.Tag{
+				{ID: tag1, Slug: "go", Name: "Go"},
+				{ID: tag2, Slug: "db", Name: "DB"},
+			},
+			article: &domain.Article{
+				Slug:   "first",
+				Title:  "First",
+				Body:   "",
+				Status: domain.ArticleStatusDraft,
+				TagIDs: []domain.TagID{tag1, tag2},
+			},
+			wantTagIDs: []domain.TagID{tag1, tag2},
+		},
+		{
+			name: "inserts article without tags",
+			article: &domain.Article{
+				Slug:   "solo",
+				Title:  "Solo",
+				Body:   "",
+				Status: domain.ArticleStatusDraft,
+			},
+			wantTagIDs: []domain.TagID{},
+		},
+		{
+			name: "returns ErrAlreadyExists when slug conflicts",
+			existingArticles: []*domain.Article{
+				{
+					ID: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1", Slug: "dup", Title: "Dup", Body: "b",
+					Status: domain.ArticleStatusDraft,
+				},
+			},
+			article: &domain.Article{
+				Slug:   "dup",
+				Title:  "New",
+				Body:   "",
+				Status: domain.ArticleStatusDraft,
+			},
+			wantErr: domain.ErrAlreadyExists,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Cleanup(func() {
+				testhelper.TruncateAll(t, ctx, testDB)
+			})
+
+			testhelper.Insert(t, ctx, testDB, testhelper.Fixtures{
+				Tags:     tt.existingTags,
+				Articles: tt.existingArticles,
+			})
+
+			ar := &ArticleRepository{db: testDB}
+			err := ar.Store(ctx, tt.article)
+			if tt.wantErr != nil {
+				require.ErrorIs(t, err, tt.wantErr)
+				return
+			}
+			require.NoError(t, err)
+			assert.NotEmpty(t, tt.article.ID)
+
+			got, err := ar.FindBySlug(ctx, tt.article.Slug)
+			require.NoError(t, err)
+			assert.Equal(t, tt.article.ID, got.ID)
+			assert.Equal(t, tt.article.Title, got.Title)
+			assert.Equal(t, tt.article.Status, got.Status)
+			assert.ElementsMatch(t, tt.wantTagIDs, got.TagIDs)
+		})
+	}
+}
+
 func TestArticleRepository_List(t *testing.T) {
 	ctx := t.Context()
 
