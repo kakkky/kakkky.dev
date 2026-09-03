@@ -46,6 +46,9 @@ func errorStatusAndMessage(err error) (int, string) {
 	case errors.Is(err, domain.ErrInvalidArgument):
 		httpStatus = http.StatusBadRequest
 		fallbackErrMsg = "入力に誤りがあります"
+	case errors.Is(err, domain.ErrAlreadyExists):
+		httpStatus = http.StatusConflict
+		fallbackErrMsg = "既に 存在 します"
 	case errors.Is(err, domain.ErrNotFound):
 		httpStatus = http.StatusNotFound
 		fallbackErrMsg = "ページが見つかりません"
@@ -64,9 +67,10 @@ func errorStatusAndMessage(err error) (int, string) {
 }
 
 // Turbo は 200/422 の turbo-stream レスポンスのみ消化する。
-// 400 は 422 に寄せて frame/stream 経由でも banner を反映させる。
+// 400/409 は 422 に寄せて frame/stream 経由でも banner を反映させる。
 func turboStreamStatus(status int) int {
-	if status == http.StatusBadRequest {
+	switch status {
+	case http.StatusBadRequest, http.StatusConflict:
 		return http.StatusUnprocessableEntity
 	}
 	return status
