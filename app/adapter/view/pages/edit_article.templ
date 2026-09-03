@@ -1,0 +1,14 @@
+package pages
+
+import "github.com/kakkky/kakkky.dev/adapter/view/layout"
+
+type EditArticleViewModel struct {
+}
+
+templ EditArticle(vm EditArticleViewModel) {
+	@layout.Base("Edit Article", "max-w-none") {
+		<section class="mx-auto max-w-2xl py-8 px-4">
+			<h1 class="text-xl font-semibold tracking-tight text-gray-900 mb-6">Edit Article</h1>
+		</section>
+	}
+}
