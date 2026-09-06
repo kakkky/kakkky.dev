@@ -10,7 +10,7 @@
 	}
 
 	/* --- 見出し --- */
-	.article-body h1 { @apply mt-8 mb-4 text-3xl font-bold tracking-tight; }
+	.article-body h1 { @apply mt-10 mb-5 pb-2 text-3xl font-bold tracking-tight border-b-2 border-gray-300; }
 	.article-body h2 { @apply mt-8 mb-4 pb-1 text-2xl font-bold tracking-tight border-b border-gray-200; }
 	.article-body h3 { @apply mt-6 mb-3 text-xl font-semibold; }
 	.article-body h4 { @apply mt-5 mb-2 text-lg font-semibold; }
