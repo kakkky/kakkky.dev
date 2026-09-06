@@ -19,6 +19,7 @@ type ArticleRepository interface {
 	FindByIDs(ctx context.Context, ids ...ArticleID) ([]*Article, error)
 	List(ctx context.Context, afterID ArticleID, afterCreatedAt time.Time, limit int) ([]*Article, error)
 	Store(ctx context.Context, article *Article) error
+	Update(ctx context.Context, article *Article) error
 }
 
 type SeriesRepository interface {

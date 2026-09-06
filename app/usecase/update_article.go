@@ -5,43 +5,48 @@ import (
 	"errors"
 	"fmt"
 	"slices"
-	"time"
-	"unicode/utf8"
 
 	"github.com/kakkky/kakkky.dev/domain"
 )
 
-type CreateArticleUsecase struct {
+type UpdateArticleUsecase struct {
 	repo domain.Repository
 }
 
-func (us *UseCase) NewCreateArticleUsecase() *CreateArticleUsecase {
-	return &CreateArticleUsecase{repo: us.repo}
+func (us *UseCase) NewUpdateArticleUsecase() *UpdateArticleUsecase {
+	return &UpdateArticleUsecase{repo: us.repo}
 }
 
-type CreateArticleUsecaseInput struct {
+type UpdateArticleUsecaseInput struct {
+	Slug           domain.Slug
 	Title          string
+	Body           string
+	Status         domain.ArticleStatus
 	ExistingTagIDs []domain.TagID
 	NewTagNames    []string
 }
 
-type CreateArticleUsecaseOutput struct {
+type UpdateArticleUsecaseOutput struct {
 	ArticleSlug domain.Slug
 }
 
-func (us *CreateArticleUsecase) Exec(ctx context.Context, in CreateArticleUsecaseInput) (CreateArticleUsecaseOutput, error) {
+func (us *UpdateArticleUsecase) Exec(ctx context.Context, in UpdateArticleUsecaseInput) (UpdateArticleUsecaseOutput, error) {
 	if err := in.validate(); err != nil {
-		return CreateArticleUsecaseOutput{}, err
-	}
-	baseSlug, err := domain.GenerateSlug(in.Title)
-	if err != nil {
-		return CreateArticleUsecaseOutput{}, err
+		return UpdateArticleUsecaseOutput{}, err
 	}
 
-	var out CreateArticleUsecaseOutput
-	err = us.repo.WithTx(ctx, func(tx domain.Repository) error {
-		tagRepo := tx.NewTagRepository()
+	var out UpdateArticleUsecaseOutput
+	err := us.repo.WithTx(ctx, func(tx domain.Repository) error {
 		articleRepo := tx.NewArticleRepository()
+		tagRepo := tx.NewTagRepository()
+
+		article, err := articleRepo.FindBySlug(ctx, in.Slug)
+		if err != nil {
+			if errors.Is(err, domain.ErrNotFound) {
+				return domain.ErrNotFound.With("記事 が 見つかりません")
+			}
+			return err
+		}
 
 		newTagIDs := make([]domain.TagID, 0, len(in.NewTagNames))
 		for _, name := range in.NewTagNames {
@@ -65,36 +70,26 @@ func (us *CreateArticleUsecase) Exec(ctx context.Context, in CreateArticleUsecas
 		}
 
 		tagIDs := append(slices.Clone(in.ExistingTagIDs), newTagIDs...)
-		article, err := domain.NewArticle(baseSlug, in.Title, "", domain.ArticleStatusDraft, time.Time{}, tagIDs)
-		if err != nil {
+		if err := article.Update(in.Title, in.Body, in.Status, tagIDs); err != nil {
 			return err
 		}
 
-		if err := articleRepo.Store(ctx, article); err != nil {
-			if errors.Is(err, domain.ErrAlreadyExists) {
-				return domain.ErrInvalidArgument.With(
-					fmt.Sprintf("タイトル「%s」から生成した slug は 既に 存在 します", in.Title),
-				)
-			}
+		if err := articleRepo.Update(ctx, article); err != nil {
 			return err
 		}
+
 		out.ArticleSlug = article.Slug
 		return nil
 	})
 	if err != nil {
-		return CreateArticleUsecaseOutput{}, err
+		return UpdateArticleUsecaseOutput{}, err
 	}
 	return out, nil
 }
 
-func (in CreateArticleUsecaseInput) validate() error {
-	if in.Title == "" {
-		return domain.ErrInvalidArgument.With("タイトル は 必須 です")
-	}
-	if utf8.RuneCountInString(in.Title) > domain.ArticleTitleMaxLength {
-		return domain.ErrInvalidArgument.With(
-			fmt.Sprintf("タイトル は %d 文字以内 です", domain.ArticleTitleMaxLength),
-		)
+func (in UpdateArticleUsecaseInput) validate() error {
+	if in.Slug == "" {
+		return domain.ErrInvalidArgument.With("slug は 必須 です")
 	}
 	seen := make(map[string]struct{}, len(in.NewTagNames))
 	for _, name := range in.NewTagNames {

@@ -14,7 +14,7 @@ var articleEditorCtrl = js.ArticleEditorController.Name
 templ ArticleEditor(body string) {
 	@turbo.Frame(EditorFrameID) {
 		<div class="flex h-full flex-col rounded-md border border-gray-200 bg-white overflow-hidden">
-			@editorToolbar("Preview", "/admin/articles/editor?state=preview")
+			@editorToolbar("Preview", "/admin/preview?state=preview")
 			<textarea
 				name="body"
 				maxlength="50000"
@@ -30,7 +30,7 @@ templ ArticleEditor(body string) {
 templ ArticleEditorPreview(body, bodyHTML string) {
 	@turbo.Frame(EditorFrameID) {
 		<div class="flex h-full flex-col rounded-md border border-gray-200 bg-white overflow-hidden">
-			@editorToolbar("Edit", "/admin/articles/editor?state=source")
+			@editorToolbar("Edit", "/admin/preview?state=source")
 			<div class="flex-1 min-h-0 overflow-y-auto px-6 py-6">
 				if bodyHTML == "" {
 					<p class="text-sm text-gray-400">プレビューする内容がありません</p>

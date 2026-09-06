@@ -70,8 +70,14 @@ func (h *Handler) AdminRoutes() []Route {
 			),
 		},
 		{
-			Pattern: "POST /articles/editor",
-			Handler: NewPostArticlesEditorHandler(),
+			Pattern: "POST /articles/{slug}",
+			Handler: NewPostArticleHandler(
+				h.usecase.NewUpdateArticleUsecase(),
+			),
+		},
+		{
+			Pattern: "POST /preview",
+			Handler: NewPostPreviewHandler(),
 		},
 	}
 }

@@ -114,10 +114,6 @@ WHERE a.id = ANY($1::uuid[])
 }
 
 func (ar *ArticleRepository) Store(ctx context.Context, article *domain.Article) error {
-	if article.ID != "" {
-		return domain.ErrInternal.With("article update is not implemented yet")
-	}
-
 	var id string
 	if err := sqlx.GetContext(ctx, ar.db, &id, `
 INSERT INTO articles (slug, title, body, status, published_at)
@@ -151,6 +147,53 @@ RETURNING id::text
 	query := "INSERT INTO article_tags (article_id, tag_id) VALUES " + strings.Join(values, ", ")
 	if _, err := ar.db.ExecContext(ctx, query, args...); err != nil {
 		return domain.ErrInternal.Wrap(err, "insert article_tags")
+	}
+	return nil
+}
+
+func (ar *ArticleRepository) Update(ctx context.Context, article *domain.Article) error {
+	res, err := ar.db.ExecContext(ctx, `
+UPDATE articles
+SET title        = $2,
+    body         = $3,
+    status       = $4,
+    published_at = $5,
+    updated_at   = now()
+WHERE id = $1
+`,
+		string(article.ID),
+		article.Title,
+		article.Body,
+		string(article.Status),
+		nullTime(article.PublishedAt),
+	)
+	if err != nil {
+		return domain.ErrInternal.Wrap(err, "update article")
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return domain.ErrInternal.Wrap(err, "update article rows affected")
+	}
+	if n == 0 {
+		return domain.ErrNotFound.With("article not found")
+	}
+
+	tagIDs := make([]string, len(article.TagIDs))
+	for i, id := range article.TagIDs {
+		tagIDs[i] = string(id)
+	}
+	if _, err := ar.db.ExecContext(ctx, `
+INSERT INTO article_tags (article_id, tag_id)
+SELECT $1, unnest($2::uuid[])
+ON CONFLICT DO NOTHING
+`, string(article.ID), pq.Array(tagIDs)); err != nil {
+		return domain.ErrInternal.Wrap(err, "attach article_tags")
+	}
+	if _, err := ar.db.ExecContext(ctx, `
+DELETE FROM article_tags
+WHERE article_id = $1 AND tag_id <> ALL($2::uuid[])
+`, string(article.ID), pq.Array(tagIDs)); err != nil {
+		return domain.ErrInternal.Wrap(err, "detach article_tags")
 	}
 	return nil
 }

@@ -12,8 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kakkky/hotwire-go/turbo"
-
 	"github.com/kakkky/kakkky.dev/adapter/view/components"
 	"github.com/kakkky/kakkky.dev/adapter/view/layout"
 	"github.com/kakkky/kakkky.dev/adapter/view/partials"
@@ -75,7 +73,7 @@ func EditArticle(vm EditArticleViewModel) templ.Component {
 			var templ_7745c5c3_Var3 templ.SafeURL
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL("/admin/articles/" + vm.Slug))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 34, Col: 55}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 32, Col: 55}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -88,7 +86,7 @@ func EditArticle(vm EditArticleViewModel) templ.Component {
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.ResolveAttributeValue(vm.Title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 45, Col: 23}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 43, Col: 23}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var4)
 			if templ_7745c5c3_Err != nil {
@@ -106,7 +104,7 @@ func EditArticle(vm EditArticleViewModel) templ.Component {
 				var templ_7745c5c3_Var5 string
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.ResolveAttributeValue(s.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 59, Col: 30}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 57, Col: 30}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var5)
 				if templ_7745c5c3_Err != nil {
@@ -129,7 +127,7 @@ func EditArticle(vm EditArticleViewModel) templ.Component {
 				var templ_7745c5c3_Var6 string
 				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(statusLabel(s.Name))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 59, Col: 81}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 57, Col: 81}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 				if templ_7745c5c3_Err != nil {
@@ -140,15 +138,7 @@ func EditArticle(vm EditArticleViewModel) templ.Component {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</select></label> <button type=\"submit\"")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templ.RenderAttributes(ctx, templ_7745c5c3_Buffer, turbo.AttrMethodPut())
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, " class=\"inline-flex items-center gap-1.5 rounded-md border border-gray-900 bg-gray-900 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-white hover:text-gray-900 transition-colors\">更新</button></div></div><div class=\"mx-auto flex w-full max-w-screen-2xl flex-1 min-h-0\"><aside class=\"hidden xl:flex flex-col w-60 shrink-0 overflow-y-auto px-4 py-6\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</select></label> <button type=\"submit\" class=\"inline-flex items-center gap-1.5 rounded-md border border-gray-900 bg-gray-900 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-white hover:text-gray-900 transition-colors\">更新</button></div></div><div class=\"mx-auto flex w-full max-w-screen-2xl flex-1 min-h-0\"><aside class=\"hidden xl:flex flex-col w-60 shrink-0 overflow-y-auto px-4 py-6\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -157,64 +147,64 @@ func EditArticle(vm EditArticleViewModel) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			if !vm.CreatedAt.IsZero() && !vm.UpdatedAt.IsZero() {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<div class=\"my-auto flex flex-col gap-2 border-t border-gray-200 pt-6\"><div class=\"flex flex-col gap-0.5\"><span class=\"text-xs font-medium uppercase tracking-wide text-gray-500\">作成日</span> <time datetime=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<div class=\"my-auto flex flex-col gap-2 border-t border-gray-200 pt-6\"><div class=\"flex flex-col gap-0.5\"><span class=\"text-xs font-medium uppercase tracking-wide text-gray-500\">作成日</span> <time datetime=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var7 string
 				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.ResolveAttributeValue(vm.CreatedAt.Format(time.RFC3339))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 79, Col: 58}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 76, Col: 58}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var7)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\" class=\"text-xs text-gray-800\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\" class=\"text-xs text-gray-800\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var8 string
 				templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(vm.CreatedAt.Local().Format("2006-01-02 15:04"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 80, Col: 58}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 77, Col: 58}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</time></div><div class=\"flex flex-col gap-0.5\"><span class=\"text-xs font-medium uppercase tracking-wide text-gray-500\">最終更新</span> <time datetime=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</time></div><div class=\"flex flex-col gap-0.5\"><span class=\"text-xs font-medium uppercase tracking-wide text-gray-500\">最終更新</span> <time datetime=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var9 string
 				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.ResolveAttributeValue(vm.UpdatedAt.Format(time.RFC3339))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 85, Col: 58}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 82, Col: 58}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var9)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "\" class=\"text-xs text-gray-800\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\" class=\"text-xs text-gray-800\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var10 string
 				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(vm.UpdatedAt.Local().Format("2006-01-02 15:04"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 86, Col: 58}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 83, Col: 58}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</time></div></div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</time></div></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</aside><div class=\"flex flex-1 min-h-0 flex-col px-4 py-6\"><div class=\"mx-auto flex w-full max-w-4xl flex-1 min-h-0 flex-col\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</aside><div class=\"flex flex-1 min-h-0 flex-col px-4 py-6\"><div class=\"mx-auto flex w-full max-w-4xl flex-1 min-h-0 flex-col\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -222,7 +212,7 @@ func EditArticle(vm EditArticleViewModel) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</div></div><div class=\"hidden xl:block w-60 shrink-0\" aria-hidden=\"true\"></div></div></form>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</div></div><div class=\"hidden xl:block w-60 shrink-0\" aria-hidden=\"true\"></div></div></form>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

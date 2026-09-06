@@ -4,8 +4,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kakkky/hotwire-go/turbo"
-
 	"github.com/kakkky/kakkky.dev/adapter/view/components"
 	"github.com/kakkky/kakkky.dev/adapter/view/layout"
 	"github.com/kakkky/kakkky.dev/adapter/view/partials"
@@ -62,7 +60,6 @@ templ EditArticle(vm EditArticleViewModel) {
 					</label>
 					<button
 						type="submit"
-						{ turbo.AttrMethodPut()... }
 						class="inline-flex items-center gap-1.5 rounded-md border border-gray-900 bg-gray-900 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-white hover:text-gray-900 transition-colors"
 					>
 						更新

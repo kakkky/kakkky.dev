@@ -56,7 +56,7 @@ func ArticleEditor(body string) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = editorToolbar("Preview", "/admin/articles/editor?state=preview").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = editorToolbar("Preview", "/admin/preview?state=preview").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -136,7 +136,7 @@ func ArticleEditorPreview(body, bodyHTML string) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = editorToolbar("Edit", "/admin/articles/editor?state=source").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = editorToolbar("Edit", "/admin/preview?state=source").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

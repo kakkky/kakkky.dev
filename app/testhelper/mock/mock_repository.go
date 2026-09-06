@@ -186,6 +186,20 @@ func (mr *MockArticleRepositoryMockRecorder) Store(ctx, article any) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockArticleRepository)(nil).Store), ctx, article)
 }
 
+// Update mocks base method.
+func (m *MockArticleRepository) Update(ctx context.Context, article *domain.Article) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, article)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockArticleRepositoryMockRecorder) Update(ctx, article any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockArticleRepository)(nil).Update), ctx, article)
+}
+
 // MockSeriesRepository is a mock of SeriesRepository interface.
 type MockSeriesRepository struct {
 	ctrl     *gomock.Controller
