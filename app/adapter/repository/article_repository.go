@@ -30,6 +30,7 @@ type articleRow struct {
 	Status      string         `db:"status"`
 	PublishedAt sql.NullTime   `db:"published_at"`
 	CreatedAt   time.Time      `db:"created_at"`
+	UpdatedAt   time.Time      `db:"updated_at"`
 	TagIDs      pq.StringArray `db:"tag_ids"`
 }
 
@@ -50,6 +51,7 @@ func (r articleRow) toArticle() *domain.Article {
 		Status:      domain.ArticleStatus(r.Status),
 		PublishedAt: publishedAt,
 		CreatedAt:   r.CreatedAt.UTC(),
+		UpdatedAt:   r.UpdatedAt.UTC(),
 		TagIDs:      tagIDs,
 	}
 }
@@ -64,6 +66,7 @@ SELECT a.id::text     AS id,
        a.status       AS status,
        a.published_at AS published_at,
        a.created_at   AS created_at,
+       a.updated_at   AS updated_at,
        ARRAY(SELECT tag_id::text FROM article_tags WHERE article_id = a.id ORDER BY tag_id) AS tag_ids
 FROM articles a
 WHERE a.slug = $1
@@ -95,6 +98,7 @@ SELECT a.id::text     AS id,
        a.status       AS status,
        a.published_at AS published_at,
        a.created_at   AS created_at,
+       a.updated_at   AS updated_at,
        ARRAY(SELECT tag_id::text FROM article_tags WHERE article_id = a.id ORDER BY tag_id) AS tag_ids
 FROM articles a
 WHERE a.id = ANY($1::uuid[])
@@ -172,6 +176,7 @@ SELECT a.id::text     AS id,
        a.status       AS status,
        a.published_at AS published_at,
        a.created_at   AS created_at,
+       a.updated_at   AS updated_at,
        ARRAY(SELECT tag_id::text FROM article_tags WHERE article_id = a.id ORDER BY tag_id) AS tag_ids
 FROM articles a
 WHERE (a.created_at, a.id) < (

@@ -64,7 +64,10 @@ func (h *Handler) AdminRoutes() []Route {
 		},
 		{
 			Pattern: "GET /articles/{slug}/edit",
-			Handler: NewGetEditArticleHandler(),
+			Handler: NewGetEditArticleHandler(
+				h.usecase.NewGetArticleUsecase(),
+				h.usecase.NewListTagsUsecase(),
+			),
 		},
 	}
 }

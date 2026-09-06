@@ -1,14 +1,111 @@
 package pages
 
-import "github.com/kakkky/kakkky.dev/adapter/view/layout"
+import (
+	"strings"
+	"time"
+
+	"github.com/kakkky/hotwire-go/turbo"
+
+	"github.com/kakkky/kakkky.dev/adapter/view/components"
+	"github.com/kakkky/kakkky.dev/adapter/view/layout"
+)
+
+type Status struct {
+	Name       string
+	IsSelected bool
+}
 
 type EditArticleViewModel struct {
+	Slug      string
+	Title     string
+	Body      string
+	Statuses  []Status
+	TagInput  components.TagInputViewModel
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 templ EditArticle(vm EditArticleViewModel) {
 	@layout.Base("Edit Article", "max-w-none") {
-		<section class="mx-auto max-w-2xl py-8 px-4">
-			<h1 class="text-xl font-semibold tracking-tight text-gray-900 mb-6">Edit Article</h1>
-		</section>
+		<form
+			method="post"
+			action={ templ.SafeURL("/admin/articles/" + vm.Slug) }
+			style="height: calc(100dvh - 3.5rem);"
+			class="flex flex-col"
+		>
+			<div class="shrink-0 border-b border-gray-200 bg-white">
+				<div class="mx-auto flex max-w-4xl flex-wrap items-center gap-3 px-4 py-3">
+					<label class="flex flex-1 min-w-52 items-center gap-2">
+						<span class="text-xs font-medium text-gray-600">Title</span>
+						<input
+							type="text"
+							name="title"
+							value={ vm.Title }
+							maxlength="100"
+							required
+							placeholder="タイトル"
+							class="flex-1 rounded-md border border-gray-300 bg-white px-2 py-1 text-sm focus:border-gray-900 focus:outline-none"
+						/>
+					</label>
+					<label class="flex items-center gap-2">
+						<span class="text-xs font-medium text-gray-600">Status</span>
+						<select
+							name="status"
+							class="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm focus:border-gray-900 focus:outline-none"
+						>
+							for _, s := range vm.Statuses {
+								<option value={ s.Name } selected?={ s.IsSelected }>{ statusLabel(s.Name) }</option>
+							}
+						</select>
+					</label>
+					<button
+						type="submit"
+						{ turbo.AttrMethodPut()... }
+						class="inline-flex items-center gap-1.5 rounded-md border border-gray-900 bg-gray-900 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-white hover:text-gray-900 transition-colors"
+					>
+						更新
+					</button>
+				</div>
+			</div>
+			<div class="flex flex-1 min-h-0">
+				<aside class="hidden xl:flex flex-col w-60 shrink-0 overflow-y-auto px-4 py-6">
+					@components.TagInput(vm.TagInput)
+					if !vm.CreatedAt.IsZero() && !vm.UpdatedAt.IsZero() {
+						<div class="my-auto flex flex-col gap-2 border-t border-gray-200 pt-6">
+							<div class="flex flex-col gap-0.5">
+								<span class="text-xs font-medium uppercase tracking-wide text-gray-500">作成日</span>
+								<time datetime={ vm.CreatedAt.Format(time.RFC3339) } class="text-xs text-gray-800">
+									{ vm.CreatedAt.Local().Format("2006-01-02 15:04") }
+								</time>
+							</div>
+							<div class="flex flex-col gap-0.5">
+								<span class="text-xs font-medium uppercase tracking-wide text-gray-500">最終更新</span>
+								<time datetime={ vm.UpdatedAt.Format(time.RFC3339) } class="text-xs text-gray-800">
+									{ vm.UpdatedAt.Local().Format("2006-01-02 15:04") }
+								</time>
+							</div>
+						</div>
+					}
+				</aside>
+				<div class="flex flex-1 min-h-0 flex-col px-4 py-6">
+					<div class="mx-auto flex w-full max-w-4xl flex-1 min-h-0 flex-col">
+						<textarea
+							name="body"
+							maxlength="50000"
+							class="flex-1 min-h-0 resize-none rounded-md border border-gray-200 bg-white px-6 py-6 font-mono text-sm leading-relaxed focus:border-gray-900 focus:outline-none"
+						>{ vm.Body }</textarea>
+					</div>
+				</div>
+				<div class="hidden xl:block w-60 shrink-0" aria-hidden="true"></div>
+			</div>
+		</form>
 	}
+}
+
+// statusLabel は "draft" → "Draft" のように先頭を大文字にする。
+func statusLabel(v string) string {
+	if v == "" {
+		return v
+	}
+	return strings.ToUpper(v[:1]) + v[1:]
 }
