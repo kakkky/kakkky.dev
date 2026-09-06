@@ -13,6 +13,11 @@ turbo-frame#article-editor {
 	min-height: 0;
 }
 
+@keyframes flash-dismiss {
+	0%, 90% { opacity: 1; display: block; }
+	100%    { opacity: 0; display: none; }
+}
+
 @layer base {
 	/* sticky header (mobile: 目次ヘッダ 41px / xl+: サイトヘッダ 57px) の下に見出しが隠れないようオフセット */
 	.article-body :is(h1, h2, h3, h4, h5, h6) {

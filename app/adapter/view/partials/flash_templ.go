@@ -56,7 +56,7 @@ func Flash(vm FlashViewModel) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			var templ_7745c5c3_Var3 = []any{"rounded-md border px-4 py-3 text-sm shadow-lg", flashColorClass(vm.Kind)}
+			var templ_7745c5c3_Var3 = []any{"rounded-md border px-6 py-4 text-sm text-center shadow-lg animate-[flash-dismiss_3s_forwards]", flashColorClass(vm.Kind)}
 			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var3...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
