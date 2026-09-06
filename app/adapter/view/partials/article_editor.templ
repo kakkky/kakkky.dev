@@ -1,0 +1,79 @@
+package partials
+
+import (
+	"github.com/kakkky/hotwire-go/stimulus"
+	"github.com/kakkky/hotwire-go/turbo"
+
+	"github.com/kakkky/kakkky.dev/assets/js"
+)
+
+const EditorFrameID = "article-editor"
+
+var articleEditorCtrl = js.ArticleEditorController.Name
+
+templ ArticleEditor(body string) {
+	@turbo.Frame(EditorFrameID) {
+		<div class="flex h-full flex-col rounded-md border border-gray-200 bg-white overflow-hidden">
+			@editorToolbar("Preview", "/admin/articles/editor?state=preview")
+			<textarea
+				name="body"
+				maxlength="50000"
+				spellcheck="false"
+				hidden
+				{ stimulus.AttrControllers(articleEditorCtrl)... }
+				{ stimulus.AttrTargets(articleEditorCtrl, "body")... }
+			>{ body }</textarea>
+		</div>
+	}
+}
+
+templ ArticleEditorPreview(body, bodyHTML string) {
+	@turbo.Frame(EditorFrameID) {
+		<div class="flex h-full flex-col rounded-md border border-gray-200 bg-white overflow-hidden">
+			@editorToolbar("Edit", "/admin/articles/editor?state=source")
+			<div class="flex-1 min-h-0 overflow-y-auto px-6 py-6">
+				if bodyHTML == "" {
+					<p class="text-sm text-gray-400">プレビューする内容がありません</p>
+				} else {
+					<div class="article-body">
+						@templ.Raw(bodyHTML)
+					</div>
+				}
+			</div>
+			<textarea name="body" hidden>{ body }</textarea>
+		</div>
+	}
+}
+
+templ editorToolbar(label, formaction string) {
+	<div class="flex items-center justify-end border-b border-gray-200 bg-gray-50 px-3 py-1.5">
+		<button
+			type="submit"
+			formaction={ templ.SafeURL(formaction) }
+			formmethod="post"
+			formnovalidate
+			{ turbo.AttrFrame(EditorFrameID)... }
+			class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-colors"
+		>
+			@editorToolbarIcon(label)
+			{ label }
+		</button>
+	</div>
+}
+
+templ editorToolbarIcon(label string) {
+	switch label {
+		case "Preview":
+			// eye icon
+			<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+				<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+				<circle cx="12" cy="12" r="3"></circle>
+			</svg>
+		case "Edit":
+			// pencil icon
+			<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+				<path d="M12 20h9"></path>
+				<path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+			</svg>
+	}
+}

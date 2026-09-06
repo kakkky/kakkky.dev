@@ -69,6 +69,10 @@ func (h *Handler) AdminRoutes() []Route {
 				h.usecase.NewListTagsUsecase(),
 			),
 		},
+		{
+			Pattern: "POST /articles/editor",
+			Handler: NewPostArticlesEditorHandler(),
+		},
 	}
 }
 

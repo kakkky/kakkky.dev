@@ -20,3 +20,8 @@ var TagInputController = Controller{
 	Path: "/assets/js/tag_input_controller.js",
 }
 
+var ArticleEditorController = Controller{
+	Name: "article-editor",
+	Path: "/assets/js/article_editor_controller.js",
+}
+

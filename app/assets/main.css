@@ -3,6 +3,16 @@
 @source "../adapter/view/**/*.templ";
 @source "../adapter/view/**/*.go";
 
+/* editor 用 turbo-frame は親 (flex-col) の中で flex-1 で伸ばして
+ * CodeMirror の内部 scroll を効かせる。turbo-frame は default で
+ * display:inline なので block 相当にした上で flex column にする。 */
+turbo-frame#article-editor {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 0%;
+	min-height: 0;
+}
+
 @layer base {
 	/* sticky header (mobile: 目次ヘッダ 41px / xl+: サイトヘッダ 57px) の下に見出しが隠れないようオフセット */
 	.article-body :is(h1, h2, h3, h4, h5, h6) {
