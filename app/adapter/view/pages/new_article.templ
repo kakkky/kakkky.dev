@@ -3,6 +3,7 @@ package pages
 import (
 	"github.com/kakkky/kakkky.dev/adapter/view/components"
 	"github.com/kakkky/kakkky.dev/adapter/view/layout"
+	"github.com/kakkky/kakkky.dev/assets/js"
 )
 
 type NewArticleViewModel struct {
@@ -10,7 +11,7 @@ type NewArticleViewModel struct {
 }
 
 templ NewArticle(vm NewArticleViewModel) {
-	@layout.Base("New Article", "max-w-none") {
+	@layout.Base("New Article", "max-w-none", []string{js.TagInputController.Path}) {
 		<section class="mx-auto max-w-2xl py-8 px-4">
 			<h1 class="text-xl font-semibold tracking-tight text-gray-900 mb-6">New Article</h1>
 			<form method="post" action="/admin/articles" class="flex flex-col gap-6">

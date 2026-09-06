@@ -8,6 +8,7 @@ import (
 
 	"github.com/kakkky/kakkky.dev/adapter/view/components"
 	"github.com/kakkky/kakkky.dev/adapter/view/layout"
+	"github.com/kakkky/kakkky.dev/assets/js"
 )
 
 type Status struct {
@@ -26,7 +27,7 @@ type EditArticleViewModel struct {
 }
 
 templ EditArticle(vm EditArticleViewModel) {
-	@layout.Base("Edit Article", "max-w-none") {
+	@layout.Base("Edit Article", "max-w-none", []string{js.TagInputController.Path}) {
 		<form
 			method="post"
 			action={ templ.SafeURL("/admin/articles/" + vm.Slug) }

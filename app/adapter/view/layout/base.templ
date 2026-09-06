@@ -3,10 +3,9 @@ package layout
 import "github.com/kakkky/hotwire-go/stimulus"
 import "github.com/kakkky/hotwire-go/turbo"
 import "github.com/kakkky/kakkky.dev/adapter/view"
-import "github.com/kakkky/kakkky.dev/assets/js"
 import "fmt"
 
-templ Base(subTitle, contentMaxW string) {
+templ Base(subTitle, contentMaxW string, controllers []string, extraHead ...templ.Component) {
 	<!DOCTYPE html>
 	<html lang="ja">
 		<head>
@@ -15,7 +14,10 @@ templ Base(subTitle, contentMaxW string) {
 			<title>{ pageTitle(subTitle) }</title>
 			<link rel="stylesheet" href="/assets/main.css"/>
 			@turbo.ScriptImport()
-			@stimulus.ScriptLoad(js.ControllerPaths...)
+			@stimulus.ScriptLoad(controllers...)
+			for _, h := range extraHead {
+				@h
+			}
 		</head>
 		<body class="min-h-screen bg-zinc-50 text-black font-sans antialiased text-md">
 			@Header()

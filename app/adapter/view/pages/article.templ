@@ -6,6 +6,7 @@ import (
 	"github.com/kakkky/kakkky.dev/adapter/view"
 	"github.com/kakkky/kakkky.dev/adapter/view/components"
 	"github.com/kakkky/kakkky.dev/adapter/view/layout"
+	"github.com/kakkky/kakkky.dev/assets/js"
 )
 
 type ArticleViewModel struct {
@@ -17,7 +18,7 @@ type ArticleViewModel struct {
 }
 
 templ Article(vm ArticleViewModel) {
-	@layout.Base(vm.Title, "max-w-7xl") {
+	@layout.Base(vm.Title, "max-w-7xl", []string{js.OutlineDialogController.Path}) {
 		// モバイル表示の場合目次ヘッダーを表示する
 		<div class="contents xl:hidden">
 			@components.ArticleOutlineHeader(vm.Outline)

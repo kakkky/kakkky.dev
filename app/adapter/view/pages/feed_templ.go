@@ -12,6 +12,7 @@ import (
 	"github.com/kakkky/kakkky.dev/adapter/view/components"
 	"github.com/kakkky/kakkky.dev/adapter/view/layout"
 	"github.com/kakkky/kakkky.dev/adapter/view/partials"
+	"github.com/kakkky/kakkky.dev/assets/js"
 )
 
 type FeedViewModel struct {
@@ -74,7 +75,7 @@ func Feed(vm FeedViewModel) templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = layout.Base("Feed", "max-w-4xl").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = layout.Base("Feed", "max-w-4xl", []string{js.TagFilterController.Path}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

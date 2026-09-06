@@ -12,7 +12,7 @@ type DashboardViewModel struct {
 }
 
 templ Dashboard(vm DashboardViewModel) {
-	@layout.Base("Dashboard", "max-w-none") {
+	@layout.Base("Dashboard", "max-w-none", nil) {
 		<section class="flex flex-col gap-4 py-4 md:pt-6 md:pb-8 md:px-4 lg:px-8 md:h-[calc(100dvh-3.5rem)]">
 			@dashboardHeader()
 			<div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:flex-1 md:min-h-0">

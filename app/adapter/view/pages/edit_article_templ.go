@@ -16,6 +16,7 @@ import (
 
 	"github.com/kakkky/kakkky.dev/adapter/view/components"
 	"github.com/kakkky/kakkky.dev/adapter/view/layout"
+	"github.com/kakkky/kakkky.dev/assets/js"
 )
 
 type Status struct {
@@ -73,7 +74,7 @@ func EditArticle(vm EditArticleViewModel) templ.Component {
 			var templ_7745c5c3_Var3 templ.SafeURL
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL("/admin/articles/" + vm.Slug))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 32, Col: 55}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 33, Col: 55}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -86,7 +87,7 @@ func EditArticle(vm EditArticleViewModel) templ.Component {
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.ResolveAttributeValue(vm.Title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 43, Col: 23}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 44, Col: 23}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var4)
 			if templ_7745c5c3_Err != nil {
@@ -104,7 +105,7 @@ func EditArticle(vm EditArticleViewModel) templ.Component {
 				var templ_7745c5c3_Var5 string
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.ResolveAttributeValue(s.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 57, Col: 30}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 58, Col: 30}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var5)
 				if templ_7745c5c3_Err != nil {
@@ -127,7 +128,7 @@ func EditArticle(vm EditArticleViewModel) templ.Component {
 				var templ_7745c5c3_Var6 string
 				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(statusLabel(s.Name))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 57, Col: 81}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 58, Col: 81}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 				if templ_7745c5c3_Err != nil {
@@ -162,7 +163,7 @@ func EditArticle(vm EditArticleViewModel) templ.Component {
 				var templ_7745c5c3_Var7 string
 				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.ResolveAttributeValue(vm.CreatedAt.Format(time.RFC3339))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 77, Col: 58}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 78, Col: 58}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var7)
 				if templ_7745c5c3_Err != nil {
@@ -175,7 +176,7 @@ func EditArticle(vm EditArticleViewModel) templ.Component {
 				var templ_7745c5c3_Var8 string
 				templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(vm.CreatedAt.Local().Format("2006-01-02 15:04"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 78, Col: 58}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 79, Col: 58}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 				if templ_7745c5c3_Err != nil {
@@ -188,7 +189,7 @@ func EditArticle(vm EditArticleViewModel) templ.Component {
 				var templ_7745c5c3_Var9 string
 				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.ResolveAttributeValue(vm.UpdatedAt.Format(time.RFC3339))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 83, Col: 58}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 84, Col: 58}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var9)
 				if templ_7745c5c3_Err != nil {
@@ -201,7 +202,7 @@ func EditArticle(vm EditArticleViewModel) templ.Component {
 				var templ_7745c5c3_Var10 string
 				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(vm.UpdatedAt.Local().Format("2006-01-02 15:04"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 84, Col: 58}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 85, Col: 58}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {
@@ -219,7 +220,7 @@ func EditArticle(vm EditArticleViewModel) templ.Component {
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(vm.Body)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 96, Col: 16}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_article.templ`, Line: 97, Col: 16}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -231,7 +232,7 @@ func EditArticle(vm EditArticleViewModel) templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = layout.Base("Edit Article", "max-w-none").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = layout.Base("Edit Article", "max-w-none", []string{js.TagInputController.Path}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

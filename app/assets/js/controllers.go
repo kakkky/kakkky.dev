@@ -20,8 +20,3 @@ var TagInputController = Controller{
 	Path: "/assets/js/tag_input_controller.js",
 }
 
-var ControllerPaths = []string{
-	TagFilterController.Path,
-	OutlineDialogController.Path,
-	TagInputController.Path,
-}
