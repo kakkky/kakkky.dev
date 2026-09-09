@@ -8,13 +8,13 @@ import (
 	"github.com/kakkky/kakkky.dev/domain"
 )
 
-type PostPreviewHandler struct{}
+type PostArticleEditorPreviewHandler struct{}
 
-func NewPostPreviewHandler() *PostPreviewHandler {
-	return &PostPreviewHandler{}
+func NewPostArticleEditorPreviewHandler() *PostArticleEditorPreviewHandler {
+	return &PostArticleEditorPreviewHandler{}
 }
 
-func (h *PostPreviewHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+func (h *PostArticleEditorPreviewHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	if err := r.ParseForm(); err != nil {

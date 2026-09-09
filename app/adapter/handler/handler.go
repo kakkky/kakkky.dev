@@ -76,8 +76,8 @@ func (h *Handler) AdminRoutes() []Route {
 			),
 		},
 		{
-			Pattern: "POST /preview",
-			Handler: NewPostPreviewHandler(),
+			Pattern: "POST /article-editor/preview",
+			Handler: NewPostArticleEditorPreviewHandler(),
 		},
 	}
 }
