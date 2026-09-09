@@ -4,6 +4,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kakkky/hotwire-go/stimulus"
+
 	"github.com/kakkky/kakkky.dev/adapter/view/components"
 	"github.com/kakkky/kakkky.dev/adapter/view/layout"
 	"github.com/kakkky/kakkky.dev/adapter/view/partials"
@@ -26,12 +28,13 @@ type EditArticleViewModel struct {
 }
 
 templ EditArticle(vm EditArticleViewModel) {
-	@layout.Base("Edit Article", "max-w-none", []string{js.TagInputController.Path, js.ArticleEditorController.Path}, js.CodeMirrorImportMap()) {
+	@layout.Base("Edit Article", "max-w-none", []string{js.TagInputController.Path, js.ArticleEditorController.Path, js.EditArticleController.Path}, js.CodeMirrorImportMap()) {
 		<form
 			method="post"
 			action={ templ.SafeURL("/admin/articles/" + vm.Slug) }
 			style="height: calc(100dvh - 3.5rem);"
 			class="flex flex-col"
+			{ stimulus.AttrControllers(js.EditArticleController.Name)... }
 		>
 			<div class="shrink-0 border-b border-gray-200 bg-white">
 				<div class="mx-auto flex max-w-4xl flex-wrap items-center gap-3 px-4 py-3">
@@ -63,6 +66,7 @@ templ EditArticle(vm EditArticleViewModel) {
 						class="inline-flex items-center gap-1.5 rounded-md border border-gray-900 bg-gray-900 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-white hover:text-gray-900 transition-colors"
 					>
 						更新
+						<kbd class="ml-1 font-sans text-xs leading-none opacity-70">⌘S</kbd>
 					</button>
 				</div>
 			</div>

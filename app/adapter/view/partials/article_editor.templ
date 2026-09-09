@@ -9,10 +9,13 @@ import (
 
 const EditorFrameID = "article-editor"
 
-var articleEditorCtrl = js.ArticleEditorController.Name
+var (
+	articleEditorCtrl = js.ArticleEditorController.Name
+	editArticleCtrl   = js.EditArticleController.Name
+)
 
 templ ArticleEditor(body string) {
-	@turbo.Frame(EditorFrameID) {
+	@turbo.Frame(EditorFrameID, stimulus.AttrTargets(editArticleCtrl, "frame")) {
 		<div class="flex h-full flex-col rounded-md border border-gray-200 bg-white overflow-hidden">
 			@editorToolbar("Preview", "/admin/article-editor?state=preview")
 			<textarea
@@ -28,10 +31,10 @@ templ ArticleEditor(body string) {
 }
 
 templ ArticleEditorPreview(body, bodyHTML string) {
-	@turbo.Frame(EditorFrameID) {
+	@turbo.Frame(EditorFrameID, stimulus.AttrTargets(editArticleCtrl, "frame")) {
 		<div class="flex h-full flex-col rounded-md border border-gray-200 bg-white overflow-hidden">
 			@editorToolbar("Edit", "/admin/article-editor?state=source")
-			<div class="flex-1 min-h-0 overflow-y-auto px-6 py-6">
+			<div class="flex-1 min-h-0 overflow-y-auto px-6 py-6" data-preview-scroller>
 				if bodyHTML == "" {
 					<p class="text-sm text-gray-400">プレビューする内容がありません</p>
 				} else {
@@ -53,10 +56,12 @@ templ editorToolbar(label, formaction string) {
 			formmethod="post"
 			formnovalidate
 			{ turbo.AttrFrame(EditorFrameID)... }
+			{ stimulus.AttrTargets(editArticleCtrl, "toggle")... }
 			class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-colors"
 		>
 			@editorToolbarIcon(label)
 			{ label }
+			<kbd class="ml-1 font-sans text-xs leading-none opacity-70">⌘E</kbd>
 		</button>
 	</div>
 }

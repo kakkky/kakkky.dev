@@ -25,3 +25,8 @@ var ArticleEditorController = Controller{
 	Path: "/assets/js/article_editor_controller.js",
 }
 
+var EditArticleController = Controller{
+	Name: "edit-article",
+	Path: "/assets/js/edit_article_controller.js",
+}
+
