@@ -10,17 +10,17 @@ import (
 )
 
 type GetEditArticleHandler struct {
-	getArticleUsecase *usecase.GetArticleUsecase
-	listTagsUsecase   *usecase.ListTagsUsecase
+	getArticleForAdminUsecase *usecase.GetArticleForAdminUsecase
+	listTagsUsecase           *usecase.ListTagsUsecase
 }
 
 func NewGetEditArticleHandler(
-	getArticleUsecase *usecase.GetArticleUsecase,
+	getArticleForAdminUsecase *usecase.GetArticleForAdminUsecase,
 	listTagsUsecase *usecase.ListTagsUsecase,
 ) *GetEditArticleHandler {
 	return &GetEditArticleHandler{
-		getArticleUsecase: getArticleUsecase,
-		listTagsUsecase:   listTagsUsecase,
+		getArticleForAdminUsecase: getArticleForAdminUsecase,
+		listTagsUsecase:           listTagsUsecase,
 	}
 }
 
@@ -28,7 +28,7 @@ func (h *GetEditArticleHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reques
 	ctx := r.Context()
 	slug := domain.Slug(r.PathValue("slug"))
 
-	articleOut, err := h.getArticleUsecase.Exec(ctx, usecase.GetArticleUsecaseInput{Slug: slug})
+	articleOut, err := h.getArticleForAdminUsecase.Exec(ctx, usecase.GetArticleForAdminUsecaseInput{Slug: slug})
 	if err != nil {
 		RenderError(rw, r, err)
 		return

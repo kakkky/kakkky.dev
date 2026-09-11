@@ -51,14 +51,37 @@ func (us *GetArticleUsecase) Exec(ctx context.Context, input GetArticleUsecaseIn
 	if err := input.validate(); err != nil {
 		return GetArticleUsecaseOutput{}, err
 	}
-	article, err := us.articleRepo.FindBySlug(ctx, input.Slug)
+	return getArticle(ctx, us.articleRepo, us.tagRepo, us.seriesRepo, input.Slug, false)
+}
+
+func (in GetArticleUsecaseInput) validate() error {
+	if in.Slug == "" {
+		return domain.ErrInvalidArgument.With("slug は 必須 です")
+	}
+	return nil
+}
+
+// getArticle は article 取得 の 共通ロジック。
+// includeDraft=false の 場合、draft article は ErrNotFound として 扱う (公開 面 の 挙動)。
+func getArticle(
+	ctx context.Context,
+	articleRepo domain.ArticleRepository,
+	tagRepo domain.TagRepository,
+	seriesRepo domain.SeriesRepository,
+	slug domain.Slug,
+	includeDraft bool,
+) (GetArticleUsecaseOutput, error) {
+	article, err := articleRepo.FindBySlug(ctx, slug)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
 			return GetArticleUsecaseOutput{}, domain.ErrNotFound.With("article が 見つかりません")
 		}
 		return GetArticleUsecaseOutput{}, err
 	}
-	tags, err := us.tagRepo.FindByIDs(ctx, article.TagIDs...)
+	if article.Status == domain.ArticleStatusDraft && !includeDraft {
+		return GetArticleUsecaseOutput{}, domain.ErrNotFound.With("article が 見つかりません")
+	}
+	tags, err := tagRepo.FindByIDs(ctx, article.TagIDs...)
 	if err != nil {
 		return GetArticleUsecaseOutput{}, err
 	}
@@ -67,7 +90,7 @@ func (us *GetArticleUsecase) Exec(ctx context.Context, input GetArticleUsecaseIn
 		tagsByID[tag.ID] = *tag
 	}
 
-	inSeriesRef, err := us.resolveSeriesRef(ctx, article.ID)
+	inSeriesRef, err := resolveArticleSeriesRef(ctx, articleRepo, seriesRepo, article.ID)
 	if err != nil {
 		return GetArticleUsecaseOutput{}, err
 	}
@@ -79,8 +102,13 @@ func (us *GetArticleUsecase) Exec(ctx context.Context, input GetArticleUsecaseIn
 	}, nil
 }
 
-func (us *GetArticleUsecase) resolveSeriesRef(ctx context.Context, articleID domain.ArticleID) (*GetArticleUsecaseSeriesRef, error) {
-	series, err := us.seriesRepo.FindByArticleID(ctx, articleID)
+func resolveArticleSeriesRef(
+	ctx context.Context,
+	articleRepo domain.ArticleRepository,
+	seriesRepo domain.SeriesRepository,
+	articleID domain.ArticleID,
+) (*GetArticleUsecaseSeriesRef, error) {
+	series, err := seriesRepo.FindByArticleID(ctx, articleID)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
 			return nil, nil
@@ -114,7 +142,7 @@ func (us *GetArticleUsecase) resolveSeriesRef(ctx context.Context, articleID dom
 	if nextSA != nil {
 		neighborIDs = append(neighborIDs, nextSA.ArticleID)
 	}
-	neighborArticles, err := us.articleRepo.FindByIDs(ctx, neighborIDs...)
+	neighborArticles, err := articleRepo.FindByIDs(ctx, neighborIDs...)
 	if err != nil {
 		return nil, err
 	}
@@ -143,11 +171,4 @@ func (us *GetArticleUsecase) resolveSeriesRef(ctx context.Context, articleID dom
 		PrevArticleRef:         prev,
 		NextArticleRef:         next,
 	}, nil
-}
-
-func (in GetArticleUsecaseInput) validate() error {
-	if in.Slug == "" {
-		return domain.ErrInvalidArgument.With("slug は 必須 です")
-	}
-	return nil
 }

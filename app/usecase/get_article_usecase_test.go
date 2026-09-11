@@ -310,6 +310,18 @@ func TestGetArticleUsecase_Exec(t *testing.T) {
 			},
 			wantErr: wantErr,
 		},
+		{
+			name:  "hides draft article from public caller",
+			input: GetArticleUsecaseInput{Slug: articleSlug},
+			mock: func(ar *mock.MockArticleRepository, tr *mock.MockTagRepository, sr *mock.MockSeriesRepository) {
+				draft := &domain.Article{
+					ID: currentID, Slug: articleSlug, Title: "Draft", Body: "",
+					Status: domain.ArticleStatusDraft,
+				}
+				ar.EXPECT().FindBySlug(ctx, articleSlug).Return(draft, nil)
+			},
+			wantErr: domain.ErrNotFound,
+		},
 	}
 
 	for _, tt := range tests {
