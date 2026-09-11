@@ -48,6 +48,9 @@ type GetArticleUsecaseSeriesNeighborArticleRef struct {
 }
 
 func (us *GetArticleUsecase) Exec(ctx context.Context, input GetArticleUsecaseInput) (GetArticleUsecaseOutput, error) {
+	if err := input.validate(); err != nil {
+		return GetArticleUsecaseOutput{}, err
+	}
 	article, err := us.articleRepo.FindBySlug(ctx, input.Slug)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
@@ -140,4 +143,11 @@ func (us *GetArticleUsecase) resolveSeriesRef(ctx context.Context, articleID dom
 		PrevArticleRef:         prev,
 		NextArticleRef:         next,
 	}, nil
+}
+
+func (in GetArticleUsecaseInput) validate() error {
+	if in.Slug == "" {
+		return domain.ErrInvalidArgument.With("slug は 必須 です")
+	}
+	return nil
 }

@@ -38,6 +38,9 @@ type GetSeriesUsecaseSeriesArticle struct {
 }
 
 func (us *GetSeriesUsecase) Exec(ctx context.Context, in GetSeriesUsecaseInput) (GetSeriesUsecaseOutput, error) {
+	if err := in.validate(); err != nil {
+		return GetSeriesUsecaseOutput{}, err
+	}
 	series, err := us.seriesRepo.FindBySlug(ctx, in.Slug)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
@@ -102,4 +105,11 @@ func (us *GetSeriesUsecase) Exec(ctx context.Context, in GetSeriesUsecaseInput) 
 		Articles: seriesArticles,
 		Tags:     tagsByID,
 	}, nil
+}
+
+func (in GetSeriesUsecaseInput) validate() error {
+	if in.Slug == "" {
+		return domain.ErrInvalidArgument.With("slug は 必須 です")
+	}
+	return nil
 }
