@@ -36,12 +36,12 @@ func SeriesStatusLabel(status string) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		case "published_ongoing":
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<span class=\"inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700\"><span class=\"h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse\" aria-hidden=\"true\"></span> Ongoing</span>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<span class=\"inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-700\"><span class=\"h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse\" aria-hidden=\"true\"></span> Ongoing</span>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		case "published_completed":
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<span class=\"inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-blue-700\"><span class=\"h-1.5 w-1.5 rounded-full bg-blue-500\" aria-hidden=\"true\"></span> Completed</span>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<span class=\"inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700\"><span class=\"h-1.5 w-1.5 rounded-full bg-emerald-500\" aria-hidden=\"true\"></span> Completed</span>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
