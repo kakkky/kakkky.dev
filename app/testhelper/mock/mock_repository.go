@@ -269,6 +269,20 @@ func (mr *MockSeriesRepositoryMockRecorder) List(ctx, afterID, afterCreatedAt, l
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockSeriesRepository)(nil).List), ctx, afterID, afterCreatedAt, limit)
 }
 
+// Store mocks base method.
+func (m *MockSeriesRepository) Store(ctx context.Context, series *domain.Series) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Store", ctx, series)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Store indicates an expected call of Store.
+func (mr *MockSeriesRepositoryMockRecorder) Store(ctx, series any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockSeriesRepository)(nil).Store), ctx, series)
+}
+
 // MockTagRepository is a mock of TagRepository interface.
 type MockTagRepository struct {
 	ctrl     *gomock.Controller

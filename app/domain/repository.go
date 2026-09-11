@@ -26,6 +26,7 @@ type SeriesRepository interface {
 	FindBySlug(ctx context.Context, slug Slug) (*Series, error)
 	FindByArticleID(ctx context.Context, articleID ArticleID) (*Series, error)
 	List(ctx context.Context, afterID SeriesID, afterCreatedAt time.Time, limit int) ([]*Series, error)
+	Store(ctx context.Context, series *Series) error
 }
 
 type TagRepository interface {

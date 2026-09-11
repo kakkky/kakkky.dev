@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -109,6 +111,57 @@ WHERE sa.article_id = $1
 		return nil, domain.ErrInternal.Wrap(err, "find series by article id")
 	}
 	return row.toSeries(), nil
+}
+
+func (sr *SeriesRepository) Store(ctx context.Context, series *domain.Series) error {
+	var id string
+	if err := sqlx.GetContext(ctx, sr.db, &id, `
+INSERT INTO series (slug, title, description, status, published_at)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id::text
+`,
+		string(series.Slug),
+		series.Title,
+		series.Description,
+		string(series.Status),
+		nullTime(series.PublishedAt),
+	); err != nil {
+		if isUniqueViolation(err) {
+			return domain.ErrAlreadyExists.Wrap(err, "series slug already exists")
+		}
+		return domain.ErrInternal.Wrap(err, "insert series")
+	}
+	series.ID = domain.SeriesID(id)
+
+	if len(series.TagIDs) > 0 {
+		values := make([]string, len(series.TagIDs))
+		args := make([]any, 0, 1+len(series.TagIDs))
+		args = append(args, id)
+		for i, tid := range series.TagIDs {
+			values[i] = fmt.Sprintf("($1, $%d)", i+2)
+			args = append(args, string(tid))
+		}
+		query := "INSERT INTO series_tags (series_id, tag_id) VALUES " + strings.Join(values, ", ")
+		if _, err := sr.db.ExecContext(ctx, query, args...); err != nil {
+			return domain.ErrInternal.Wrap(err, "insert series_tags")
+		}
+	}
+
+	if len(series.Articles) > 0 {
+		values := make([]string, len(series.Articles))
+		args := make([]any, 0, 1+2*len(series.Articles))
+		args = append(args, id)
+		for i, sa := range series.Articles {
+			values[i] = fmt.Sprintf("($1, $%d, $%d)", 2*i+2, 2*i+3)
+			args = append(args, string(sa.ArticleID), sa.Position)
+		}
+		query := "INSERT INTO series_articles (series_id, article_id, position) VALUES " + strings.Join(values, ", ")
+		if _, err := sr.db.ExecContext(ctx, query, args...); err != nil {
+			return domain.ErrInternal.Wrap(err, "insert series_articles")
+		}
+	}
+
+	return nil
 }
 
 func (sr *SeriesRepository) List(

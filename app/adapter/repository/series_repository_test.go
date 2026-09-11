@@ -120,6 +120,115 @@ func TestSeriesRepository_FindBySlug(t *testing.T) {
 	}
 }
 
+func TestSeriesRepository_Store(t *testing.T) {
+	ctx := t.Context()
+
+	var (
+		article1 domain.ArticleID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+		article2 domain.ArticleID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2"
+		tag1     domain.TagID     = "11111111-1111-1111-1111-111111111111"
+		tag2     domain.TagID     = "22222222-2222-2222-2222-222222222222"
+	)
+	publishedAt := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name             string
+		existingTags     []*domain.Tag
+		existingArticles []*domain.Article
+		existingSeries   []*domain.Series
+		series           *domain.Series
+		wantTagIDs       []domain.TagID
+		wantArticles     []domain.SeriesArticle
+		wantErr          error
+	}{
+		{
+			name: "inserts series with tags and article associations, writes back generated ID",
+			existingTags: []*domain.Tag{
+				{ID: tag1, Slug: "go", Name: "Go"},
+				{ID: tag2, Slug: "db", Name: "DB"},
+			},
+			existingArticles: []*domain.Article{
+				{ID: article1, Slug: "a1", Title: "A1", Status: domain.ArticleStatusDraft},
+				{ID: article2, Slug: "a2", Title: "A2", Status: domain.ArticleStatusDraft},
+			},
+			series: &domain.Series{
+				Slug:        "clean-arch",
+				Title:       "Clean Arch",
+				Description: "desc",
+				Status:      domain.SeriesStatusPublishedOngoing,
+				PublishedAt: publishedAt,
+				TagIDs:      []domain.TagID{tag1, tag2},
+				Articles: []domain.SeriesArticle{
+					{ArticleID: article1, Position: 1},
+					{ArticleID: article2, Position: 2},
+				},
+			},
+			wantTagIDs: []domain.TagID{tag1, tag2},
+			wantArticles: []domain.SeriesArticle{
+				{ArticleID: article1, Position: 1},
+				{ArticleID: article2, Position: 2},
+			},
+		},
+		{
+			name: "inserts draft series without tags or articles",
+			series: &domain.Series{
+				Slug:   "solo",
+				Title:  "Solo",
+				Status: domain.SeriesStatusDraft,
+			},
+			wantTagIDs:   []domain.TagID{},
+			wantArticles: []domain.SeriesArticle{},
+		},
+		{
+			name: "returns ErrAlreadyExists when slug conflicts",
+			existingSeries: []*domain.Series{
+				{
+					ID: "cccccccc-cccc-cccc-cccc-ccccccccccc1", Slug: "dup", Title: "Dup",
+					Status: domain.SeriesStatusDraft,
+				},
+			},
+			series: &domain.Series{
+				Slug:   "dup",
+				Title:  "New",
+				Status: domain.SeriesStatusDraft,
+			},
+			wantErr: domain.ErrAlreadyExists,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Cleanup(func() {
+				testhelper.TruncateAll(t, ctx, testDB)
+			})
+
+			testhelper.Insert(t, ctx, testDB, testhelper.Fixtures{
+				Tags:     tt.existingTags,
+				Articles: tt.existingArticles,
+				Series:   tt.existingSeries,
+			})
+
+			sr := &SeriesRepository{db: testDB}
+			err := sr.Store(ctx, tt.series)
+			if tt.wantErr != nil {
+				require.ErrorIs(t, err, tt.wantErr)
+				return
+			}
+			require.NoError(t, err)
+			assert.NotEmpty(t, tt.series.ID)
+
+			got, err := sr.FindBySlug(ctx, tt.series.Slug)
+			require.NoError(t, err)
+			assert.Equal(t, tt.series.ID, got.ID)
+			assert.Equal(t, tt.series.Title, got.Title)
+			assert.Equal(t, tt.series.Description, got.Description)
+			assert.Equal(t, tt.series.Status, got.Status)
+			assert.ElementsMatch(t, tt.wantTagIDs, got.TagIDs)
+			assert.Equal(t, tt.wantArticles, got.Articles)
+		})
+	}
+}
+
 func TestSeriesRepository_List(t *testing.T) {
 	ctx := t.Context()
 
