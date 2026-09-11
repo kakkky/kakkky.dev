@@ -83,6 +83,18 @@ func (h *Handler) AdminRoutes() []Route {
 			Pattern: "POST /article-editor",
 			Handler: NewPostArticleEditorHandler(),
 		},
+		{
+			Pattern: "GET /series/new",
+			Handler: NewGetNewSeriesHandler(
+				h.usecase.NewListTagsUsecase(),
+			),
+		},
+		{
+			Pattern: "POST /series",
+			Handler: NewPostSeriesHandler(
+				h.usecase.NewCreateSeriesUsecase(),
+			),
+		},
 	}
 }
 
