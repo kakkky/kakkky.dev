@@ -1,0 +1,33 @@
+package pages
+
+import (
+	"time"
+
+	"github.com/kakkky/kakkky.dev/adapter/view/layout"
+)
+
+type SeriesArticleViewModel struct {
+	Position    int
+	Title       string
+	Href        string
+	PublishedAt time.Time
+	Tags        []string
+}
+
+type SeriesViewModel struct {
+	Title       string
+	Description string
+	Status      string
+	PublishedAt time.Time
+	Tags        []string
+	Articles    []SeriesArticleViewModel
+}
+
+templ Series(vm SeriesViewModel) {
+	@layout.Base(vm.Title, "max-w-4xl", nil) {
+		<section class="py-16">
+			// TODO: series header (title / description / status / tags / len(vm.Articles))
+			// TODO: article list (position 順)
+		</section>
+	}
+}

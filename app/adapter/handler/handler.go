@@ -35,6 +35,10 @@ func (h *Handler) PublicRoutes() []Route {
 			Handler: NewGetArticleHandler(h.usecase.NewGetArticleUsecase()),
 		},
 		{
+			Pattern: "GET /series/{slug}",
+			Handler: NewGetSeriesHandler(h.usecase.NewGetSeriesUsecase()),
+		},
+		{
 			Pattern: "GET /link-preview",
 			Handler: NewGetLinkPreviewHandler(h.ogpFetcher),
 		},
