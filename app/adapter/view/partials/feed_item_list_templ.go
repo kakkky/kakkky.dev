@@ -65,7 +65,7 @@ func FeedItemList(vm FeedItemListViewModel) templ.Component {
 				}
 			}
 			if len(vm.Items) == 0 {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<p class=\"py-12 text-center text-sm text-gray-500\">該当する記事はありません。</p>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<p class=\"py-12 text-center text-sm text-gray-500\">該当する article はありません。</p>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

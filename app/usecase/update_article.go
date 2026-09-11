@@ -43,7 +43,7 @@ func (us *UpdateArticleUsecase) Exec(ctx context.Context, in UpdateArticleUsecas
 		article, err := articleRepo.FindBySlug(ctx, in.Slug)
 		if err != nil {
 			if errors.Is(err, domain.ErrNotFound) {
-				return domain.ErrNotFound.With("記事 が 見つかりません")
+				return domain.ErrNotFound.With("article が 見つかりません")
 			}
 			return err
 		}

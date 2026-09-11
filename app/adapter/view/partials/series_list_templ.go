@@ -65,7 +65,7 @@ func SeriesList(vm SeriesListViewModel) templ.Component {
 				}
 			}
 			if len(vm.Items) == 0 {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<p class=\"py-12 text-center text-sm text-gray-500\">連載がありません。</p>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<p class=\"py-12 text-center text-sm text-gray-500\">series がありません。</p>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

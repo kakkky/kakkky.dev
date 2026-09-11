@@ -70,7 +70,7 @@ func (s *Series) AddArticle(articleID ArticleID, position int) error {
 	}
 	for _, a := range s.Articles {
 		if a.ArticleID == articleID {
-			return ErrInvalidArgument.With("この記事は既にこの連載に含まれています")
+			return ErrInvalidArgument.With("この article は既にこの series に含まれています")
 		}
 		if a.Position == position {
 			return ErrInvalidArgument.With(fmt.Sprintf("position %d は既に使用されています", position))

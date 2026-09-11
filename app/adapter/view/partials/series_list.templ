@@ -20,7 +20,7 @@ templ SeriesList(vm SeriesListViewModel) {
 				@components.SeriesRow(item)
 			}
 			if len(vm.Items) == 0 {
-				<p class="py-12 text-center text-sm text-gray-500">連載がありません。</p>
+				<p class="py-12 text-center text-sm text-gray-500">series がありません。</p>
 			}
 			if vm.NextCursorURL != "" {
 				@turbo.Frame(SeriesListID, turbo.AttrSrc(vm.NextCursorURL), turbo.AttrLoadingLazy()) {

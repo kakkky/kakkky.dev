@@ -51,7 +51,7 @@ func (us *GetArticleUsecase) Exec(ctx context.Context, input GetArticleUsecaseIn
 	article, err := us.articleRepo.FindBySlug(ctx, input.Slug)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
-			return GetArticleUsecaseOutput{}, domain.ErrNotFound.With("記事 が 見つかりません")
+			return GetArticleUsecaseOutput{}, domain.ErrNotFound.With("article が 見つかりません")
 		}
 		return GetArticleUsecaseOutput{}, err
 	}
@@ -93,7 +93,7 @@ func (us *GetArticleUsecase) resolveSeriesRef(ctx context.Context, articleID dom
 		return sa.ArticleID == articleID
 	})
 	if currentIdx < 0 {
-		return nil, domain.ErrInternal.With("series に含まれるはずの article が見つかりません")
+		return nil, domain.ErrInternal.With("series に含まれるはずの article が 見つかりません")
 	}
 
 	var prevSA, nextSA *domain.SeriesArticle

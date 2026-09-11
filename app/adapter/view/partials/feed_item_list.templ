@@ -20,7 +20,7 @@ templ FeedItemList(vm FeedItemListViewModel) {
 				@components.FeedItemCard(item)
 			}
 			if len(vm.Items) == 0 {
-				<p class="py-12 text-center text-sm text-gray-500">該当する記事はありません。</p>
+				<p class="py-12 text-center text-sm text-gray-500">該当する article はありません。</p>
 			}
 			if vm.NextCursorURL != "" {
 				@turbo.Frame(FeedItemListID, turbo.AttrSrc(vm.NextCursorURL), turbo.AttrLoadingLazy()) {

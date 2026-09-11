@@ -20,7 +20,7 @@ templ ArticlesList(vm ArticlesListViewModel) {
 				@components.ArticleRow(item)
 			}
 			if len(vm.Items) == 0 {
-				<p class="py-12 text-center text-sm text-gray-500">記事がありません。</p>
+				<p class="py-12 text-center text-sm text-gray-500">article がありません。</p>
 			}
 			if vm.NextCursorURL != "" {
 				@turbo.Frame(ArticlesListID, turbo.AttrSrc(vm.NextCursorURL), turbo.AttrLoadingLazy()) {

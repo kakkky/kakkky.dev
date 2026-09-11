@@ -43,7 +43,7 @@ templ Article(vm ArticleViewModel) {
 			<div class="hidden xl:block" aria-hidden="true"></div>
 			<div>
 				if vm.InSeriesRef != nil {
-					// TODO: series banner (連載: {InSeriesRef.Title})
+					// TODO: series banner (series: {InSeriesRef.Title})
 				}
 				@components.ArticleBody(components.ArticleBodyViewModel{
 					Title:       vm.Title,
