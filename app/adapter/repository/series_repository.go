@@ -86,6 +86,31 @@ WHERE s.slug = $1
 	return row.toSeries(), nil
 }
 
+func (sr *SeriesRepository) FindByArticleID(ctx context.Context, articleID domain.ArticleID) (*domain.Series, error) {
+	var row seriesRow
+	if err := sqlx.GetContext(ctx, sr.db, &row, `
+SELECT s.id::text                 AS id,
+       s.slug                     AS slug,
+       s.title                    AS title,
+       s.description              AS description,
+       s.status                   AS status,
+       s.published_at             AS published_at,
+       s.created_at               AS created_at,
+       ARRAY(SELECT tag_id::text     FROM series_tags     WHERE series_id = s.id ORDER BY tag_id)   AS tag_ids,
+       ARRAY(SELECT article_id::text FROM series_articles WHERE series_id = s.id ORDER BY position) AS article_ids,
+       ARRAY(SELECT position         FROM series_articles WHERE series_id = s.id ORDER BY position) AS positions
+FROM series s
+JOIN series_articles sa ON sa.series_id = s.id
+WHERE sa.article_id = $1
+`, string(articleID)); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrNotFound.With("series not found")
+		}
+		return nil, domain.ErrInternal.Wrap(err, "find series by article id")
+	}
+	return row.toSeries(), nil
+}
+
 func (sr *SeriesRepository) List(
 	ctx context.Context,
 	afterID domain.SeriesID,

@@ -23,6 +23,22 @@ type ArticleViewModel struct {
 	Tags        []string
 	Body        string
 	Outline     []*view.OutlineNode
+	InSeriesRef *SeriesRefViewModel
+}
+
+type SeriesRefViewModel struct {
+	Slug                   string
+	Title                  string
+	Status                 string
+	CurrentArticlePosition int
+	PrevArticleRef         *SeriesNeighborArticleRefViewModel
+	NextArticleRef         *SeriesNeighborArticleRefViewModel
+}
+
+type SeriesNeighborArticleRefViewModel struct {
+	Slug     string
+	Title    string
+	Position int
 }
 
 func Article(vm ArticleViewModel) templ.Component {
@@ -66,9 +82,11 @@ func Article(vm ArticleViewModel) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div><div class=\"grid grid-cols-1 gap-10 py-12 xl:grid-cols-[240px_minmax(0,1fr)_240px]\"><div class=\"hidden xl:block\" aria-hidden=\"true\"></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div><div class=\"grid grid-cols-1 gap-10 py-12 xl:grid-cols-[240px_minmax(0,1fr)_240px]\"><div class=\"hidden xl:block\" aria-hidden=\"true\"></div><div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
+			}
+			if vm.InSeriesRef != nil {
 			}
 			templ_7745c5c3_Err = components.ArticleBody(components.ArticleBodyViewModel{
 				Title:       vm.Title,
@@ -79,7 +97,9 @@ func Article(vm ArticleViewModel) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"hidden xl:block\">")
+			if vm.InSeriesRef != nil && (vm.InSeriesRef.PrevArticleRef != nil || vm.InSeriesRef.NextArticleRef != nil) {
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div><div class=\"hidden xl:block\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

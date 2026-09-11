@@ -224,6 +224,21 @@ func (m *MockSeriesRepository) EXPECT() *MockSeriesRepositoryMockRecorder {
 	return m.recorder
 }
 
+// FindByArticleID mocks base method.
+func (m *MockSeriesRepository) FindByArticleID(ctx context.Context, articleID domain.ArticleID) (*domain.Series, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByArticleID", ctx, articleID)
+	ret0, _ := ret[0].(*domain.Series)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByArticleID indicates an expected call of FindByArticleID.
+func (mr *MockSeriesRepositoryMockRecorder) FindByArticleID(ctx, articleID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByArticleID", reflect.TypeOf((*MockSeriesRepository)(nil).FindByArticleID), ctx, articleID)
+}
+
 // FindBySlug mocks base method.
 func (m *MockSeriesRepository) FindBySlug(ctx context.Context, slug domain.Slug) (*domain.Series, error) {
 	m.ctrl.T.Helper()

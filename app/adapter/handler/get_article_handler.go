@@ -44,6 +44,32 @@ func (h *GetArticleHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		Tags:        tagNames,
 		Body:        htmlBody,
 		Outline:     outline,
+		InSeriesRef: toArticleSeriesVM(out.InSeriesRef),
 	}
 	_ = pages.Article(vm).Render(ctx, rw)
+}
+
+func toArticleSeriesVM(s *usecase.GetArticleUsecaseSeriesRef) *pages.SeriesRefViewModel {
+	if s == nil {
+		return nil
+	}
+	return &pages.SeriesRefViewModel{
+		Slug:                   string(s.Slug),
+		Title:                  s.Title,
+		Status:                 string(s.Status),
+		CurrentArticlePosition: s.CurrentArticlePosition,
+		PrevArticleRef:         toSeriesNeighborArticleRefVM(s.PrevArticleRef),
+		NextArticleRef:         toSeriesNeighborArticleRefVM(s.NextArticleRef),
+	}
+}
+
+func toSeriesNeighborArticleRefVM(n *usecase.GetArticleUsecaseSeriesNeighborArticleRef) *pages.SeriesNeighborArticleRefViewModel {
+	if n == nil {
+		return nil
+	}
+	return &pages.SeriesNeighborArticleRefViewModel{
+		Slug:     string(n.Slug),
+		Title:    n.Title,
+		Position: n.Position,
+	}
 }
