@@ -41,14 +41,35 @@ func (us *GetSeriesUsecase) Exec(ctx context.Context, in GetSeriesUsecaseInput) 
 	if err := in.validate(); err != nil {
 		return GetSeriesUsecaseOutput{}, err
 	}
-	series, err := us.seriesRepo.FindBySlug(ctx, in.Slug)
+	return getSeries(ctx, us.seriesRepo, us.articleRepo, us.tagRepo, in.Slug, false)
+}
+
+func (in GetSeriesUsecaseInput) validate() error {
+	if in.Slug == "" {
+		return domain.ErrInvalidArgument.With("slug は 必須 です")
+	}
+	return nil
+}
+
+// getSeries は series 取得 の 共通ロジック。
+// includeDraft=false の 場合、draft series は ErrNotFound として 扱い、
+// article 一覧 も published の みに 絞る (公開 面 の 挙動)。
+func getSeries(
+	ctx context.Context,
+	seriesRepo domain.SeriesRepository,
+	articleRepo domain.ArticleRepository,
+	tagRepo domain.TagRepository,
+	slug domain.Slug,
+	includeDraft bool,
+) (GetSeriesUsecaseOutput, error) {
+	series, err := seriesRepo.FindBySlug(ctx, slug)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
 			return GetSeriesUsecaseOutput{}, domain.ErrNotFound.With("series が 見つかりません")
 		}
 		return GetSeriesUsecaseOutput{}, err
 	}
-	if series.Status == domain.SeriesStatusDraft {
+	if series.Status == domain.SeriesStatusDraft && !includeDraft {
 		return GetSeriesUsecaseOutput{}, domain.ErrNotFound.With("series が 見つかりません")
 	}
 
@@ -59,14 +80,14 @@ func (us *GetSeriesUsecase) Exec(ctx context.Context, in GetSeriesUsecaseInput) 
 		positionByID[sa.ArticleID] = sa.Position
 	}
 
-	articles, err := us.articleRepo.FindByIDs(ctx, articleIDs...)
+	articles, err := articleRepo.FindByIDs(ctx, articleIDs...)
 	if err != nil {
 		return GetSeriesUsecaseOutput{}, err
 	}
 
 	seriesArticles := make([]GetSeriesUsecaseSeriesArticle, 0, len(articles))
 	for _, a := range articles {
-		if a.Status != domain.ArticleStatusPublished {
+		if !includeDraft && a.Status != domain.ArticleStatusPublished {
 			continue
 		}
 		seriesArticles = append(seriesArticles, GetSeriesUsecaseSeriesArticle{
@@ -91,7 +112,7 @@ func (us *GetSeriesUsecase) Exec(ctx context.Context, in GetSeriesUsecaseInput) 
 	for tid := range tagIDSet {
 		tagIDs = append(tagIDs, tid)
 	}
-	tags, err := us.tagRepo.FindByIDs(ctx, tagIDs...)
+	tags, err := tagRepo.FindByIDs(ctx, tagIDs...)
 	if err != nil {
 		return GetSeriesUsecaseOutput{}, err
 	}
@@ -105,11 +126,4 @@ func (us *GetSeriesUsecase) Exec(ctx context.Context, in GetSeriesUsecaseInput) 
 		Articles: seriesArticles,
 		Tags:     tagsByID,
 	}, nil
-}
-
-func (in GetSeriesUsecaseInput) validate() error {
-	if in.Slug == "" {
-		return domain.ErrInvalidArgument.With("slug は 必須 です")
-	}
-	return nil
 }

@@ -124,7 +124,7 @@ func TestGetSeriesUsecase_Exec(t *testing.T) {
 			wantErr: domain.ErrNotFound,
 		},
 		{
-			name:  "returns ErrNotFound when series status is draft",
+			name:  "hides draft series from public caller",
 			input: GetSeriesUsecaseInput{Slug: seriesSlug},
 			mock: func(sr *mock.MockSeriesRepository, ar *mock.MockArticleRepository, tr *mock.MockTagRepository) {
 				sr.EXPECT().FindBySlug(ctx, seriesSlug).Return(draftSeries, nil)
