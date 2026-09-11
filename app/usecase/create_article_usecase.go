@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"slices"
 	"time"
 	"unicode/utf8"
 
@@ -43,28 +42,10 @@ func (us *CreateArticleUsecase) Exec(ctx context.Context, in CreateArticleUsecas
 		tagRepo := tx.NewTagRepository()
 		articleRepo := tx.NewArticleRepository()
 
-		newTagIDs := make([]domain.TagID, 0, len(in.NewTagNames))
-		for _, name := range in.NewTagNames {
-			slug, err := domain.GenerateSlug(name)
-			if err != nil {
-				return err
-			}
-			tag, err := domain.NewTag(slug, name)
-			if err != nil {
-				return err
-			}
-			if err := tagRepo.Store(ctx, tag); err != nil {
-				if errors.Is(err, domain.ErrAlreadyExists) {
-					return domain.ErrInvalidArgument.With(
-						fmt.Sprintf("タグ「%s」は 既に 存在 します", name),
-					)
-				}
-				return err
-			}
-			newTagIDs = append(newTagIDs, tag.ID)
+		tagIDs, err := resolveTagIDs(ctx, tagRepo, in.ExistingTagIDs, in.NewTagNames)
+		if err != nil {
+			return err
 		}
-
-		tagIDs := append(slices.Clone(in.ExistingTagIDs), newTagIDs...)
 		article, err := domain.NewArticle(baseSlug, in.Title, "", domain.ArticleStatusDraft, time.Time{}, tagIDs)
 		if err != nil {
 			return err
