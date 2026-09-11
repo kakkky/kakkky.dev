@@ -12,6 +12,7 @@ import "github.com/kakkky/kakkky.dev/adapter/view"
 
 type ArticleSidebarViewModel struct {
 	Outline []*view.OutlineNode
+	Series  *ArticleSeriesBannerCardViewModel
 }
 
 func ArticleSidebar(vm ArticleSidebarViewModel) templ.Component {
@@ -35,7 +36,17 @@ func ArticleSidebar(vm ArticleSidebarViewModel) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<aside class=\"sticky top-20 max-h-[calc(100vh-6rem)] space-y-4 overflow-y-auto pr-1\"><section class=\"rounded-lg border border-gray-200 bg-gray-100 p-4\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<aside class=\"sticky top-20 max-h-[calc(100vh-6rem)] space-y-4 overflow-y-auto pr-1\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if vm.Series != nil {
+			templ_7745c5c3_Err = ArticleSeriesBannerCard(*vm.Series).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<section class=\"rounded-lg border border-gray-200 bg-gray-100 p-4\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -43,7 +54,7 @@ func ArticleSidebar(vm ArticleSidebarViewModel) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</section></aside>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</section></aside>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

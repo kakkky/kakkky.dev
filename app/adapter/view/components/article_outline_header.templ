@@ -1,7 +1,10 @@
 package components
 
 import (
+	"strconv"
+
 	"github.com/kakkky/hotwire-go/stimulus"
+	"github.com/kakkky/hotwire-go/turbo"
 
 	"github.com/kakkky/kakkky.dev/adapter/view"
 	"github.com/kakkky/kakkky.dev/assets/js"
@@ -9,15 +12,32 @@ import (
 
 var outlineDialogController = js.OutlineDialogController.Name
 
-templ ArticleOutlineHeader(outline []*view.OutlineNode) {
+type ArticleOutlineHeaderViewModel struct {
+	Outline []*view.OutlineNode
+	Series  *ArticleSeriesBannerCardViewModel
+}
+
+templ ArticleOutlineHeader(vm ArticleOutlineHeaderViewModel) {
 	<div class="contents" { stimulus.AttrControllers(outlineDialogController)... }>
 		<div class="sticky top-0 z-10 -mx-6 border-b border-gray-200 bg-white/80 backdrop-blur">
-			<div class="h-11 px-6 flex items-center justify-end">
+			<div class="h-11 px-6 flex items-center justify-between gap-3">
+				if vm.Series != nil {
+					<a
+						href={ templ.SafeURL("/series/" + vm.Series.Slug) }
+						{ turbo.AttrFrame("_top")... }
+						class="min-w-0 flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900"
+					>
+						<span class="truncate hover:underline">{ vm.Series.Title }</span>
+						<span class="shrink-0 text-[10px] text-gray-400">Part { strconv.Itoa(vm.Series.Position) }</span>
+					</a>
+				} else {
+					<span aria-hidden="true"></span>
+				}
 				<button
 					type="button"
 					{ stimulus.AttrActions("click->outline-dialog#open")... }
 					aria-label="目次を開く"
-					class="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-base text-gray-700 hover:bg-gray-100"
+					class="shrink-0 inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-base text-gray-700 hover:bg-gray-100"
 				>
 					<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 						<line x1="3" y1="6" x2="21" y2="6"></line>
@@ -33,7 +53,7 @@ templ ArticleOutlineHeader(outline []*view.OutlineNode) {
 			{ stimulus.AttrActions("click->outline-dialog#closeOnBackdrop")... }
 			class="fixed origin-top-right opacity-0 scale-[0.85] open:opacity-100 open:scale-100 starting:open:opacity-0 starting:open:scale-[0.85] transition-[opacity,scale,overlay,display] transition-discrete duration-150 ease-out mt-[90px] mr-6 mb-auto ml-auto w-64 max-w-[calc(100vw-3rem)] max-h-[calc(100vh-6rem)] rounded-lg border border-gray-200 bg-gray-100 p-4 shadow-lg backdrop:bg-transparent"
 		>
-			@ArticleOutlineList(outline)
+			@ArticleOutlineList(vm.Outline)
 		</dialog>
 	</div>
 }

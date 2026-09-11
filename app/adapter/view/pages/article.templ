@@ -1,8 +1,10 @@
 package pages
 
 import (
+	"strconv"
 	"time"
 
+	"github.com/kakkky/hotwire-go/turbo"
 	"github.com/kakkky/kakkky.dev/adapter/view"
 	"github.com/kakkky/kakkky.dev/adapter/view/components"
 	"github.com/kakkky/kakkky.dev/adapter/view/layout"
@@ -37,14 +39,14 @@ templ Article(vm ArticleViewModel) {
 	@layout.Base(vm.Title, "max-w-7xl", []string{js.OutlineDialogController.Path}) {
 		// モバイル表示の場合目次ヘッダーを表示する
 		<div class="contents xl:hidden">
-			@components.ArticleOutlineHeader(vm.Outline)
+			@components.ArticleOutlineHeader(components.ArticleOutlineHeaderViewModel{
+				Outline: vm.Outline,
+				Series:  toSeriesBannerCardVM(vm.InSeriesRef),
+			})
 		</div>
 		<div class="grid grid-cols-1 gap-10 py-12 xl:grid-cols-[240px_minmax(0,1fr)_240px]">
 			<div class="hidden xl:block" aria-hidden="true"></div>
 			<div>
-				if vm.InSeriesRef != nil {
-					// TODO: series banner (series: {InSeriesRef.Title})
-				}
 				@components.ArticleBody(components.ArticleBodyViewModel{
 					Title:       vm.Title,
 					PublishedAt: vm.PublishedAt,
@@ -52,14 +54,56 @@ templ Article(vm ArticleViewModel) {
 					BodyHTML:    vm.Body,
 				})
 				if vm.InSeriesRef != nil && (vm.InSeriesRef.PrevArticleRef != nil || vm.InSeriesRef.NextArticleRef != nil) {
-					// TODO: prev / next navigation
+					@articleSeriesNav(*vm.InSeriesRef)
 				}
 			</div>
 			<div class="hidden xl:block">
 				@components.ArticleSidebar(components.ArticleSidebarViewModel{
 					Outline: vm.Outline,
+					Series:  toSeriesBannerCardVM(vm.InSeriesRef),
 				})
 			</div>
 		</div>
 	}
+}
+
+func toSeriesBannerCardVM(ref *SeriesRefViewModel) *components.ArticleSeriesBannerCardViewModel {
+	if ref == nil {
+		return nil
+	}
+	return &components.ArticleSeriesBannerCardViewModel{
+		Slug:     ref.Slug,
+		Title:    ref.Title,
+		Position: ref.CurrentArticlePosition,
+	}
+}
+
+templ articleSeriesNav(ref SeriesRefViewModel) {
+	<nav aria-label="series navigation" class="mt-12 flex items-start justify-between gap-2 sm:gap-4">
+		if ref.PrevArticleRef != nil {
+			@articleSeriesNavLink("/articles/"+ref.PrevArticleRef.Slug, "← Prev", ref.PrevArticleRef.Position, ref.PrevArticleRef.Title, false)
+		} else {
+			<span aria-hidden="true"></span>
+		}
+		if ref.NextArticleRef != nil {
+			@articleSeriesNavLink("/articles/"+ref.NextArticleRef.Slug, "Next →", ref.NextArticleRef.Position, ref.NextArticleRef.Title, true)
+		} else {
+			<span aria-hidden="true"></span>
+		}
+	</nav>
+}
+
+templ articleSeriesNavLink(href, label string, position int, title string, alignRight bool) {
+	<a
+		href={ templ.SafeURL(href) }
+		{ turbo.AttrFrame("_top")... }
+		class={ "group flex flex-col gap-1 rounded-md border border-gray-200 bg-white px-4 py-3 hover:bg-gray-50 transition-colors min-w-0 flex-1 sm:flex-none sm:w-64",
+			templ.KV("text-right", alignRight) }
+	>
+		<span class="text-[11px] font-semibold uppercase tracking-wider text-gray-500">{ label }</span>
+		<span class="text-xs text-gray-400">Part { strconv.Itoa(position) }</span>
+		<span class="truncate text-sm font-medium text-gray-900 group-hover:underline">
+			{ title }
+		</span>
+	</a>
 }

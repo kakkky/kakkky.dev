@@ -1,0 +1,28 @@
+package components
+
+import (
+	"strconv"
+
+	"github.com/kakkky/hotwire-go/turbo"
+)
+
+type ArticleSeriesBannerCardViewModel struct {
+	Slug     string
+	Title    string
+	Position int
+}
+
+templ ArticleSeriesBannerCard(vm ArticleSeriesBannerCardViewModel) {
+	<a
+		href={ templ.SafeURL("/series/" + vm.Slug) }
+		{ turbo.AttrFrame("_top")... }
+		class="group block rounded-lg border border-gray-200 bg-white px-4 py-4 hover:bg-gray-50 transition-colors"
+	>
+		<div class="text-sm font-medium text-gray-900 line-clamp-2 group-hover:underline">
+			{ vm.Title }
+		</div>
+		<div class="mt-2 text-[11px] text-gray-500">
+			Part { strconv.Itoa(vm.Position) }
+		</div>
+	</a>
+}
