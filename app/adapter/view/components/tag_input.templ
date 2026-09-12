@@ -19,6 +19,9 @@ const (
 type TagInputViewModel struct {
 	ExistingTags []TagViewModel
 	SelectedTags []TagViewModel
+	// FormID を セット する と、chip 内 の hidden input が form 属性 で 指定 form に 紐付く。
+	// 空 の 場合 は 従来 通り 自身 を 包む form に 属する。
+	FormID string
 }
 
 templ TagInput(vm TagInputViewModel) {
@@ -28,15 +31,16 @@ templ TagInput(vm TagInputViewModel) {
 			{ stimulus.AttrControllers(tagInputController)... }
 			{ stimulus.AttrValue(tagInputController, "max-selected-tag-count", strconv.Itoa(TagInputMaxSelected))... }
 			{ stimulus.AttrValue(tagInputController, "existing-tag-index", tagIndexJSON(vm.ExistingTags))... }
+			data-tag-input-form-id={ vm.FormID }
 			class="relative"
 		>
 			<div class="flex flex-wrap items-center gap-1.5 rounded-md border border-gray-300 bg-white px-2 py-1.5">
 				<div { stimulus.AttrTargets(tagInputController, "tagChips")... } class="contents">
 					for _, t := range vm.SelectedTags {
 						if t.ID != "" {
-							@tagChipExisting(t.ID, t.Name)
+							@tagChipExisting(t.ID, t.Name, vm.FormID)
 						} else {
-							@tagChipNew(t.Name)
+							@tagChipNew(t.Name, vm.FormID)
 						}
 					}
 				</div>
@@ -62,25 +66,33 @@ templ TagInput(vm TagInputViewModel) {
 				class="absolute left-0 top-full z-20 mt-1 w-full max-h-56 overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg"
 			></ul>
 			<template { stimulus.AttrTargets(tagInputController, "existingTagChipTemplate")... }>
-				@tagChipExisting("", "")
+				@tagChipExisting("", "", vm.FormID)
 			</template>
 			<template { stimulus.AttrTargets(tagInputController, "newTagChipTemplate")... }>
-				@tagChipNew("")
+				@tagChipNew("", vm.FormID)
 			</template>
 		</div>
 	</div>
 }
 
-templ tagChipExisting(id, name string) {
+templ tagChipExisting(id, name, formID string) {
 	@TagBadge(name, stimulus.AttrTargets(tagInputController, "tagChip")) {
-		<input type="hidden" name="tag_id" value={ id } data-name={ name }/>
+		if formID != "" {
+			<input type="hidden" name="tag_id" value={ id } data-name={ name } form={ formID }/>
+		} else {
+			<input type="hidden" name="tag_id" value={ id } data-name={ name }/>
+		}
 		@tagChipRemoveButton(name)
 	}
 }
 
-templ tagChipNew(name string) {
+templ tagChipNew(name, formID string) {
 	@TagBadge(name, stimulus.AttrTargets(tagInputController, "tagChip")) {
-		<input type="hidden" name="new_tag" value={ name } data-name={ name }/>
+		if formID != "" {
+			<input type="hidden" name="new_tag" value={ name } data-name={ name } form={ formID }/>
+		} else {
+			<input type="hidden" name="new_tag" value={ name } data-name={ name }/>
+		}
 		@tagChipRemoveButton(name)
 	}
 }

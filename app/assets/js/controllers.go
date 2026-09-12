@@ -30,3 +30,8 @@ var EditArticleController = Controller{
 	Path: "/assets/js/edit_article_controller.js",
 }
 
+var SeriesArticlesController = Controller{
+	Name: "series-articles",
+	Path: "/assets/js/series_articles_controller.js",
+}
+

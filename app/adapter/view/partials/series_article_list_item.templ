@@ -1,0 +1,60 @@
+package partials
+
+import "github.com/kakkky/hotwire-go/turbo"
+
+const SeriesArticlesListID = "series-articles-list"
+
+type SeriesArticleListItemViewModel struct {
+	SeriesSlug string
+	ArticleID  string
+	Slug       string
+	Title      string
+}
+
+templ SeriesArticleListItem(vm SeriesArticleListItemViewModel) {
+	<li
+		id={ "series-article-" + vm.ArticleID }
+		data-series-articles-target="item"
+		draggable="true"
+		class="flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2"
+	>
+		<input type="hidden" name="article_id" value={ vm.ArticleID } form="series-update-form"/>
+		<span
+			data-series-articles-target="handle"
+			class="cursor-grab select-none text-gray-400"
+			aria-hidden="true"
+		>⋮⋮</span>
+		<a
+			href={ templ.SafeURL("/admin/articles/" + vm.Slug + "/edit") }
+			class="flex-1 truncate text-sm text-gray-900 hover:underline"
+		>
+			{ vm.Title }
+		</a>
+		<form
+			method="post"
+			action={ templ.SafeURL("/admin/series/" + vm.SeriesSlug + "/articles/" + vm.ArticleID + "/delete") }
+			data-turbo-stream
+			data-turbo-confirm={ "記事「" + vm.Title + "」を 削除 しますか?" }
+		>
+			<button
+				type="submit"
+				class="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600"
+				aria-label="削除"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+					<path d="M3 6h18"></path>
+					<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+					<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+					<path d="M10 11v6"></path>
+					<path d="M14 11v6"></path>
+				</svg>
+			</button>
+		</form>
+	</li>
+}
+
+templ SeriesArticleListItemStream(vm SeriesArticleListItemViewModel) {
+	@turbo.StreamAppend(SeriesArticlesListID) {
+		@SeriesArticleListItem(vm)
+	}
+}

@@ -1,0 +1,65 @@
+package partials
+
+import "github.com/kakkky/hotwire-go/turbo"
+
+const SeriesNewArticleSlotID = "series-new-article-slot"
+
+type SeriesNewArticleViewModel struct {
+	SeriesSlug string
+}
+
+templ seriesNewArticleButtonInner(vm SeriesNewArticleViewModel) {
+	<a
+		href={ templ.SafeURL("/admin/series/" + vm.SeriesSlug + "/articles/new") }
+		data-turbo-frame={ SeriesNewArticleSlotID }
+		class="inline-flex items-center gap-1.5 rounded-md border border-dashed border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:border-gray-900 hover:text-gray-900"
+	>
+		+ 新規記事
+	</a>
+}
+
+templ SeriesNewArticleButton(vm SeriesNewArticleViewModel) {
+	@turbo.Frame(SeriesNewArticleSlotID) {
+		@seriesNewArticleButtonInner(vm)
+	}
+}
+
+templ SeriesNewArticleForm(vm SeriesNewArticleViewModel) {
+	@turbo.Frame(SeriesNewArticleSlotID) {
+		<form
+			method="post"
+			action={ templ.SafeURL("/admin/series/" + vm.SeriesSlug + "/articles") }
+			data-turbo-frame={ SeriesNewArticleSlotID }
+			class="flex items-center gap-2"
+		>
+			<input
+				type="text"
+				name="title"
+				maxlength="100"
+				required
+				autofocus
+				placeholder="記事 の タイトル"
+				class="flex-1 rounded-md border border-gray-300 bg-white px-2 py-1 text-sm focus:border-gray-900 focus:outline-none"
+			/>
+			<button
+				type="submit"
+				class="rounded-md border border-gray-900 bg-gray-900 px-3 py-1 text-xs font-medium text-white hover:bg-white hover:text-gray-900"
+			>
+				作成
+			</button>
+			<a
+				href={ templ.SafeURL("/admin/series/" + vm.SeriesSlug + "/articles/new/cancel") }
+				data-turbo-frame={ SeriesNewArticleSlotID }
+				class="text-xs text-gray-500 hover:text-gray-900"
+			>
+				キャンセル
+			</a>
+		</form>
+	}
+}
+
+templ SeriesNewArticleButtonStream(vm SeriesNewArticleViewModel) {
+	@turbo.StreamUpdate(SeriesNewArticleSlotID) {
+		@seriesNewArticleButtonInner(vm)
+	}
+}
