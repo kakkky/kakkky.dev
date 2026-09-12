@@ -1,0 +1,96 @@
+package pages
+
+import (
+	"github.com/kakkky/kakkky.dev/adapter/view/components"
+	"github.com/kakkky/kakkky.dev/adapter/view/layout"
+	"github.com/kakkky/kakkky.dev/assets/js"
+)
+
+type EditSeriesViewModel struct {
+	Slug        string
+	Title       string
+	Description string
+	Statuses    []Status
+	TagInput    components.TagInputViewModel
+}
+
+templ EditSeries(vm EditSeriesViewModel) {
+	@layout.Base("Edit Series", "max-w-none", []string{js.TagInputController.Path}) {
+		<form
+			method="post"
+			action={ templ.SafeURL("/admin/series/" + vm.Slug) }
+			style="height: calc(100dvh - 3.5rem);"
+			class="flex flex-col"
+		>
+			<div class="shrink-0 border-b border-gray-200 bg-white">
+				<div class="mx-auto flex max-w-4xl flex-wrap items-center gap-3 px-4 py-3">
+					<label class="flex flex-1 min-w-52 items-center gap-2">
+						<span class="text-xs font-medium text-gray-600">Title</span>
+						<input
+							type="text"
+							name="title"
+							value={ vm.Title }
+							maxlength="100"
+							required
+							placeholder="タイトル"
+							class="flex-1 rounded-md border border-gray-300 bg-white px-2 py-1 text-sm focus:border-gray-900 focus:outline-none"
+						/>
+					</label>
+					<label class="flex items-center gap-2">
+						<span class="text-xs font-medium text-gray-600">Status</span>
+						<select
+							name="status"
+							class="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm focus:border-gray-900 focus:outline-none"
+						>
+							for _, s := range vm.Statuses {
+								<option value={ s.Name } selected?={ s.IsSelected }>{ seriesStatusLabel(s.Name) }</option>
+							}
+						</select>
+					</label>
+					<button
+						type="submit"
+						class="inline-flex items-center gap-1.5 rounded-md border border-gray-900 bg-gray-900 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-white hover:text-gray-900 transition-colors"
+					>
+						更新
+					</button>
+				</div>
+			</div>
+			<div class="mx-auto flex w-full max-w-screen-2xl flex-1 min-h-0">
+				<aside class="hidden xl:flex flex-col w-60 shrink-0 overflow-y-auto px-4 py-6 gap-6">
+					@components.TagInput(vm.TagInput)
+					<label class="flex flex-col gap-2">
+						<span class="text-xs font-medium text-gray-600">Description</span>
+						<textarea
+							name="description"
+							maxlength="500"
+							rows="8"
+							placeholder="連載 の 概要"
+							class="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm focus:border-gray-900 focus:outline-none"
+						>{ vm.Description }</textarea>
+					</label>
+				</aside>
+				<div class="flex flex-1 min-h-0 flex-col px-4 py-6">
+					<div class="mx-auto flex w-full max-w-4xl flex-1 min-h-0 flex-col items-center justify-center text-sm text-gray-400">
+						Articles の 追加 / 並び替え は 今後 実装
+					</div>
+				</div>
+				<div class="hidden xl:block w-60 shrink-0" aria-hidden="true"></div>
+			</div>
+		</form>
+	}
+}
+
+// series の status は draft / published_ongoing / published_completed。
+// 表示 は "Draft" / "Published(Ongoing)" / "Published(Completed)" に する。
+func seriesStatusLabel(v string) string {
+	switch v {
+	case "draft":
+		return "Draft"
+	case "published_ongoing":
+		return "Published(Ongoing)"
+	case "published_completed":
+		return "Published(Completed)"
+	default:
+		return v
+	}
+}
