@@ -264,43 +264,40 @@ func TestSeriesAddArticle(t *testing.T) {
 		name         string
 		original     []domain.SeriesArticle
 		addArticleID domain.ArticleID
-		addPosition  int
 		wantArticles []domain.SeriesArticle
 		wantErr      error
 	}{
 		{
-			name:         "success: add first article",
+			name:         "success: first article gets position 1",
 			original:     nil,
 			addArticleID: "a1",
-			addPosition:  1,
 			wantArticles: []domain.SeriesArticle{{ArticleID: "a1", Position: 1}},
-			wantErr:      nil,
 		},
 		{
-			name: "success: add second article with different position",
+			name: "success: appends after existing max position",
 			original: []domain.SeriesArticle{
-				{ArticleID: "a1", Position: 1},
-			},
-			addArticleID: "a2",
-			addPosition:  2,
-			wantArticles: []domain.SeriesArticle{
 				{ArticleID: "a1", Position: 1},
 				{ArticleID: "a2", Position: 2},
 			},
-			wantErr: nil,
+			addArticleID: "a3",
+			wantArticles: []domain.SeriesArticle{
+				{ArticleID: "a1", Position: 1},
+				{ArticleID: "a2", Position: 2},
+				{ArticleID: "a3", Position: 3},
+			},
 		},
 		{
-			name: "success: allow position gap",
+			name: "success: uses max position + 1 even with gaps",
 			original: []domain.SeriesArticle{
-				{ArticleID: "a1", Position: 1},
-			},
-			addArticleID: "a2",
-			addPosition:  5,
-			wantArticles: []domain.SeriesArticle{
 				{ArticleID: "a1", Position: 1},
 				{ArticleID: "a2", Position: 5},
 			},
-			wantErr: nil,
+			addArticleID: "a3",
+			wantArticles: []domain.SeriesArticle{
+				{ArticleID: "a1", Position: 1},
+				{ArticleID: "a2", Position: 5},
+				{ArticleID: "a3", Position: 6},
+			},
 		},
 		{
 			name: "error: duplicate article id",
@@ -308,39 +305,10 @@ func TestSeriesAddArticle(t *testing.T) {
 				{ArticleID: "a1", Position: 1},
 			},
 			addArticleID: "a1",
-			addPosition:  2,
 			wantArticles: []domain.SeriesArticle{
 				{ArticleID: "a1", Position: 1},
 			},
 			wantErr: domain.ErrInvalidArgument,
-		},
-		{
-			name: "error: duplicate position",
-			original: []domain.SeriesArticle{
-				{ArticleID: "a1", Position: 1},
-			},
-			addArticleID: "a2",
-			addPosition:  1,
-			wantArticles: []domain.SeriesArticle{
-				{ArticleID: "a1", Position: 1},
-			},
-			wantErr: domain.ErrInvalidArgument,
-		},
-		{
-			name:         "error: position zero",
-			original:     nil,
-			addArticleID: "a1",
-			addPosition:  0,
-			wantArticles: nil,
-			wantErr:      domain.ErrInvalidArgument,
-		},
-		{
-			name:         "error: position negative",
-			original:     nil,
-			addArticleID: "a1",
-			addPosition:  -1,
-			wantArticles: nil,
-			wantErr:      domain.ErrInvalidArgument,
 		},
 	}
 
@@ -356,7 +324,7 @@ func TestSeriesAddArticle(t *testing.T) {
 			assert.NoError(t, err)
 			s.Articles = tt.original
 
-			err = s.AddArticle(tt.addArticleID, tt.addPosition)
+			err = s.AddArticle(tt.addArticleID)
 			if tt.wantErr == nil {
 				assert.NoError(t, err)
 			} else {
@@ -364,6 +332,123 @@ func TestSeriesAddArticle(t *testing.T) {
 				assert.True(t, errors.Is(err, tt.wantErr))
 			}
 			assert.Equal(t, tt.wantArticles, s.Articles)
+		})
+	}
+}
+
+func TestSeriesReorderArticles(t *testing.T) {
+	tests := []struct {
+		name         string
+		original     []domain.SeriesArticle
+		input        []domain.ArticleID
+		wantArticles []domain.SeriesArticle
+		wantErr      error
+	}{
+		{
+			name: "success: reorder assigns 1..n in input order",
+			original: []domain.SeriesArticle{
+				{ArticleID: "a1", Position: 1},
+				{ArticleID: "a2", Position: 2},
+				{ArticleID: "a3", Position: 3},
+			},
+			input: []domain.ArticleID{"a3", "a1", "a2"},
+			wantArticles: []domain.SeriesArticle{
+				{ArticleID: "a3", Position: 1},
+				{ArticleID: "a1", Position: 2},
+				{ArticleID: "a2", Position: 3},
+			},
+		},
+		{
+			name: "success: same order compacts gaps",
+			original: []domain.SeriesArticle{
+				{ArticleID: "a1", Position: 1},
+				{ArticleID: "a2", Position: 5},
+			},
+			input: []domain.ArticleID{"a1", "a2"},
+			wantArticles: []domain.SeriesArticle{
+				{ArticleID: "a1", Position: 1},
+				{ArticleID: "a2", Position: 2},
+			},
+		},
+		{
+			name:         "success: empty when originally empty",
+			original:     nil,
+			input:        nil,
+			wantArticles: []domain.SeriesArticle{},
+		},
+		{
+			name: "error: count mismatch (missing)",
+			original: []domain.SeriesArticle{
+				{ArticleID: "a1", Position: 1},
+				{ArticleID: "a2", Position: 2},
+			},
+			input: []domain.ArticleID{"a1"},
+			wantArticles: []domain.SeriesArticle{
+				{ArticleID: "a1", Position: 1},
+				{ArticleID: "a2", Position: 2},
+			},
+			wantErr: domain.ErrInvalidArgument,
+		},
+		{
+			name: "error: count mismatch (extra)",
+			original: []domain.SeriesArticle{
+				{ArticleID: "a1", Position: 1},
+			},
+			input: []domain.ArticleID{"a1", "a2"},
+			wantArticles: []domain.SeriesArticle{
+				{ArticleID: "a1", Position: 1},
+			},
+			wantErr: domain.ErrInvalidArgument,
+		},
+		{
+			name: "error: duplicate article id in input",
+			original: []domain.SeriesArticle{
+				{ArticleID: "a1", Position: 1},
+				{ArticleID: "a2", Position: 2},
+			},
+			input: []domain.ArticleID{"a1", "a1"},
+			wantArticles: []domain.SeriesArticle{
+				{ArticleID: "a1", Position: 1},
+				{ArticleID: "a2", Position: 2},
+			},
+			wantErr: domain.ErrInvalidArgument,
+		},
+		{
+			name: "error: unknown article id",
+			original: []domain.SeriesArticle{
+				{ArticleID: "a1", Position: 1},
+				{ArticleID: "a2", Position: 2},
+			},
+			input: []domain.ArticleID{"a1", "a3"},
+			wantArticles: []domain.SeriesArticle{
+				{ArticleID: "a1", Position: 1},
+				{ArticleID: "a2", Position: 2},
+			},
+			wantErr: domain.ErrInvalidArgument,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s, err := domain.NewSeries(
+				domain.Slug("valid-slug"),
+				"タイトル",
+				"説明",
+				domain.SeriesStatusDraft,
+				time.Time{},
+			)
+			assert.NoError(t, err)
+			s.Articles = tt.original
+
+			err = s.ReorderArticles(tt.input)
+			if tt.wantErr == nil {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.wantArticles, s.Articles)
+			} else {
+				assert.Error(t, err)
+				assert.True(t, errors.Is(err, tt.wantErr))
+				assert.Equal(t, tt.wantArticles, s.Articles)
+			}
 		})
 	}
 }

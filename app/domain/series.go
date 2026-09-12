@@ -94,19 +94,45 @@ func (s *Series) Update(title string, description string, status SeriesStatus, t
 	return nil
 }
 
-func (s *Series) AddArticle(articleID ArticleID, position int) error {
-	if position <= 0 {
-		return ErrInvalidArgument.With("position は 1 以上 です")
-	}
+func (s *Series) AddArticle(articleID ArticleID) error {
+	maxPosition := 0
 	for _, a := range s.Articles {
 		if a.ArticleID == articleID {
 			return ErrInvalidArgument.With("この article は既にこの series に含まれています")
 		}
-		if a.Position == position {
-			return ErrInvalidArgument.With(fmt.Sprintf("position %d は既に使用されています", position))
+		if a.Position > maxPosition {
+			maxPosition = a.Position
 		}
 	}
-	s.Articles = append(s.Articles, SeriesArticle{ArticleID: articleID, Position: position})
+	s.Articles = append(s.Articles, SeriesArticle{ArticleID: articleID, Position: maxPosition + 1})
+	return nil
+}
+
+func (s *Series) ReorderArticles(articleIDs []ArticleID) error {
+	if len(articleIDs) != len(s.Articles) {
+		return ErrInvalidArgument.With("articles の 個数 が 一致 しません")
+	}
+	seen := make(map[ArticleID]struct{}, len(articleIDs))
+	for _, id := range articleIDs {
+		if _, ok := seen[id]; ok {
+			return ErrInvalidArgument.With(fmt.Sprintf("article %s が 重複 しています", id))
+		}
+		seen[id] = struct{}{}
+	}
+	current := make(map[ArticleID]struct{}, len(s.Articles))
+	for _, a := range s.Articles {
+		current[a.ArticleID] = struct{}{}
+	}
+	for _, id := range articleIDs {
+		if _, ok := current[id]; !ok {
+			return ErrInvalidArgument.With(fmt.Sprintf("article %s は この series に 含まれていません", id))
+		}
+	}
+	next := make([]SeriesArticle, len(articleIDs))
+	for i, id := range articleIDs {
+		next[i] = SeriesArticle{ArticleID: id, Position: i + 1}
+	}
+	s.Articles = next
 	return nil
 }
 
