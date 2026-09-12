@@ -51,7 +51,8 @@ func TestArticleRepository_FindBySlug(t *testing.T) {
 			slug: "first",
 			want: &domain.Article{
 				ID: article1, Slug: "first", Title: "First", Body: "body1",
-				Status: domain.ArticleStatusPublished, PublishedAt: publishedAt, CreatedAt: createdAt,
+				Status: domain.ArticleStatusPublished, PublishedAt: publishedAt,
+				CreatedAt: createdAt, UpdatedAt: createdAt,
 				TagIDs: []domain.TagID{tag1, tag2},
 			},
 		},
@@ -485,6 +486,101 @@ func TestArticleRepository_List(t *testing.T) {
 				gotIDs[i] = a.ID
 			}
 			assert.Equal(t, tt.wantIDs, gotIDs)
+		})
+	}
+}
+
+func TestArticleRepository_Delete(t *testing.T) {
+	ctx := t.Context()
+
+	var (
+		article1  domain.ArticleID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+		article2  domain.ArticleID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2"
+		missingID domain.ArticleID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa9"
+		tag1      domain.TagID     = "11111111-1111-1111-1111-111111111111"
+		seriesID  domain.SeriesID  = "cccccccc-cccc-cccc-cccc-ccccccccccc1"
+	)
+
+	tests := []struct {
+		name             string
+		existingTags     []*domain.Tag
+		existingArticles []*domain.Article
+		existingSeries   []*domain.Series
+		targetID         domain.ArticleID
+		wantErr          error
+	}{
+		{
+			name: "deletes article and cascades to article_tags",
+			existingTags: []*domain.Tag{
+				{ID: tag1, Slug: "go", Name: "Go"},
+			},
+			existingArticles: []*domain.Article{
+				{
+					ID: article1, Slug: "target", Title: "Target",
+					Status: domain.ArticleStatusDraft, TagIDs: []domain.TagID{tag1},
+				},
+				{
+					ID: article2, Slug: "keep", Title: "Keep",
+					Status: domain.ArticleStatusDraft,
+				},
+			},
+			targetID: article1,
+		},
+		{
+			name: "deletes article and cascades to series_articles",
+			existingArticles: []*domain.Article{
+				{ID: article1, Slug: "target", Title: "Target", Status: domain.ArticleStatusDraft},
+			},
+			existingSeries: []*domain.Series{
+				{
+					ID: seriesID, Slug: "s", Title: "S", Status: domain.SeriesStatusDraft,
+					Articles: []domain.SeriesArticle{{ArticleID: article1, Position: 1}},
+				},
+			},
+			targetID: article1,
+		},
+		{
+			name:     "returns ErrNotFound when id does not exist",
+			targetID: missingID,
+			wantErr:  domain.ErrNotFound,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Cleanup(func() {
+				testhelper.TruncateAll(t, ctx, testDB)
+			})
+
+			testhelper.Insert(t, ctx, testDB, testhelper.Fixtures{
+				Tags:     tt.existingTags,
+				Articles: tt.existingArticles,
+				Series:   tt.existingSeries,
+			})
+
+			ar := &ArticleRepository{db: testDB}
+			err := ar.Delete(ctx, tt.targetID)
+			if tt.wantErr != nil {
+				require.ErrorIs(t, err, tt.wantErr)
+				return
+			}
+			require.NoError(t, err)
+
+			var count int
+			require.NoError(t, testDB.QueryRowxContext(ctx,
+				`SELECT COUNT(*) FROM articles WHERE id = $1`, string(tt.targetID),
+			).Scan(&count))
+			assert.Equal(t, 0, count)
+
+			require.NoError(t, testDB.QueryRowxContext(ctx,
+				`SELECT COUNT(*) FROM article_tags WHERE article_id = $1`, string(tt.targetID),
+			).Scan(&count))
+			assert.Equal(t, 0, count)
+
+			require.NoError(t, testDB.QueryRowxContext(ctx,
+				`SELECT COUNT(*) FROM series_articles WHERE article_id = $1`, string(tt.targetID),
+			).Scan(&count))
+			assert.Equal(t, 0, count)
 		})
 	}
 }

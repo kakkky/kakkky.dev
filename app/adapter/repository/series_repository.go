@@ -208,6 +208,30 @@ WHERE series_id = $1 AND tag_id <> ALL($2::uuid[])
 `, string(series.ID), pq.Array(tagIDs)); err != nil {
 		return domain.ErrInternal.Wrap(err, "detach series_tags")
 	}
+
+	if _, err := sr.db.ExecContext(ctx, `
+DELETE FROM series_articles
+WHERE series_id = $1
+`, string(series.ID)); err != nil {
+		return domain.ErrInternal.Wrap(err, "clear series_articles")
+	}
+	if len(series.Articles) > 0 {
+		articleIDs := make([]string, len(series.Articles))
+		positions := make([]int64, len(series.Articles))
+		for i, a := range series.Articles {
+			articleIDs[i] = string(a.ArticleID)
+			positions[i] = int64(a.Position)
+		}
+		if _, err := sr.db.ExecContext(ctx, `
+INSERT INTO series_articles (series_id, article_id, position)
+SELECT $1, unnest($2::uuid[]), unnest($3::int[])
+`, string(series.ID), pq.Array(articleIDs), pq.Array(positions)); err != nil {
+			if isUniqueViolation(err) {
+				return domain.ErrAlreadyExists.Wrap(err, "series_articles article already assigned to another series")
+			}
+			return domain.ErrInternal.Wrap(err, "insert series_articles")
+		}
+	}
 	return nil
 }
 

@@ -233,11 +233,14 @@ func TestSeriesRepository_Update(t *testing.T) {
 	ctx := t.Context()
 
 	var (
-		seriesID  domain.SeriesID = "cccccccc-cccc-cccc-cccc-ccccccccccc1"
-		missingID domain.SeriesID = "cccccccc-cccc-cccc-cccc-ccccccccccc9"
-		tag1      domain.TagID    = "11111111-1111-1111-1111-111111111111"
-		tag2      domain.TagID    = "22222222-2222-2222-2222-222222222222"
-		tag3      domain.TagID    = "33333333-3333-3333-3333-333333333333"
+		seriesID  domain.SeriesID  = "cccccccc-cccc-cccc-cccc-ccccccccccc1"
+		missingID domain.SeriesID  = "cccccccc-cccc-cccc-cccc-ccccccccccc9"
+		tag1      domain.TagID     = "11111111-1111-1111-1111-111111111111"
+		tag2      domain.TagID     = "22222222-2222-2222-2222-222222222222"
+		tag3      domain.TagID     = "33333333-3333-3333-3333-333333333333"
+		article1  domain.ArticleID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+		article2  domain.ArticleID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2"
+		article3  domain.ArticleID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3"
 	)
 	oldPublishedAt := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	newPublishedAt := time.Date(2026, 2, 1, 0, 0, 0, 0, time.UTC)
@@ -245,6 +248,7 @@ func TestSeriesRepository_Update(t *testing.T) {
 	tests := []struct {
 		name             string
 		existingTags     []*domain.Tag
+		existingArticles []*domain.Article
 		existingSeries   []*domain.Series
 		target           *domain.Series
 		wantTitle        string
@@ -252,6 +256,7 @@ func TestSeriesRepository_Update(t *testing.T) {
 		wantStatus       domain.SeriesStatus
 		wantPublishedAt  time.Time
 		wantTagIDs       []domain.TagID
+		wantArticles     []domain.SeriesArticle
 		wantErr          error
 	}{
 		{
@@ -271,6 +276,7 @@ func TestSeriesRepository_Update(t *testing.T) {
 			wantStatus:      domain.SeriesStatusPublishedOngoing,
 			wantPublishedAt: newPublishedAt,
 			wantTagIDs:      []domain.TagID{},
+			wantArticles:    []domain.SeriesArticle{},
 		},
 		{
 			name: "attaches new tags and detaches removed ones",
@@ -295,6 +301,7 @@ func TestSeriesRepository_Update(t *testing.T) {
 			wantDescription: "D",
 			wantStatus:      domain.SeriesStatusDraft,
 			wantTagIDs:      []domain.TagID{tag1, tag3},
+			wantArticles:    []domain.SeriesArticle{},
 		},
 		{
 			name: "detaches all when tags become empty",
@@ -316,6 +323,7 @@ func TestSeriesRepository_Update(t *testing.T) {
 			wantDescription: "D",
 			wantStatus:      domain.SeriesStatusDraft,
 			wantTagIDs:      []domain.TagID{},
+			wantArticles:    []domain.SeriesArticle{},
 		},
 		{
 			name: "no-op tag change keeps associations",
@@ -340,6 +348,90 @@ func TestSeriesRepository_Update(t *testing.T) {
 			wantStatus:      domain.SeriesStatusPublishedOngoing,
 			wantPublishedAt: oldPublishedAt,
 			wantTagIDs:      []domain.TagID{tag1, tag2},
+			wantArticles:    []domain.SeriesArticle{},
+		},
+		{
+			name: "reorders articles by replacing positions",
+			existingArticles: []*domain.Article{
+				{ID: article1, Slug: "a1", Title: "A1", Status: domain.ArticleStatusDraft},
+				{ID: article2, Slug: "a2", Title: "A2", Status: domain.ArticleStatusDraft},
+				{ID: article3, Slug: "a3", Title: "A3", Status: domain.ArticleStatusDraft},
+			},
+			existingSeries: []*domain.Series{
+				{
+					ID: seriesID, Slug: "clean-arch", Title: "T", Status: domain.SeriesStatusDraft,
+					Articles: []domain.SeriesArticle{
+						{ArticleID: article1, Position: 1},
+						{ArticleID: article2, Position: 2},
+						{ArticleID: article3, Position: 3},
+					},
+				},
+			},
+			target: &domain.Series{
+				ID: seriesID, Slug: "clean-arch", Title: "T", Status: domain.SeriesStatusDraft,
+				Articles: []domain.SeriesArticle{
+					{ArticleID: article3, Position: 1},
+					{ArticleID: article1, Position: 2},
+					{ArticleID: article2, Position: 3},
+				},
+			},
+			wantTitle:  "T",
+			wantStatus: domain.SeriesStatusDraft,
+			wantTagIDs: []domain.TagID{},
+			wantArticles: []domain.SeriesArticle{
+				{ArticleID: article3, Position: 1},
+				{ArticleID: article1, Position: 2},
+				{ArticleID: article2, Position: 3},
+			},
+		},
+		{
+			name: "removes articles when target has fewer",
+			existingArticles: []*domain.Article{
+				{ID: article1, Slug: "a1", Title: "A1", Status: domain.ArticleStatusDraft},
+				{ID: article2, Slug: "a2", Title: "A2", Status: domain.ArticleStatusDraft},
+			},
+			existingSeries: []*domain.Series{
+				{
+					ID: seriesID, Slug: "clean-arch", Title: "T", Status: domain.SeriesStatusDraft,
+					Articles: []domain.SeriesArticle{
+						{ArticleID: article1, Position: 1},
+						{ArticleID: article2, Position: 2},
+					},
+				},
+			},
+			target: &domain.Series{
+				ID: seriesID, Slug: "clean-arch", Title: "T", Status: domain.SeriesStatusDraft,
+				Articles: []domain.SeriesArticle{
+					{ArticleID: article1, Position: 1},
+				},
+			},
+			wantTitle:  "T",
+			wantStatus: domain.SeriesStatusDraft,
+			wantTagIDs: []domain.TagID{},
+			wantArticles: []domain.SeriesArticle{
+				{ArticleID: article1, Position: 1},
+			},
+		},
+		{
+			name: "clears articles when target has none",
+			existingArticles: []*domain.Article{
+				{ID: article1, Slug: "a1", Title: "A1", Status: domain.ArticleStatusDraft},
+			},
+			existingSeries: []*domain.Series{
+				{
+					ID: seriesID, Slug: "clean-arch", Title: "T", Status: domain.SeriesStatusDraft,
+					Articles: []domain.SeriesArticle{
+						{ArticleID: article1, Position: 1},
+					},
+				},
+			},
+			target: &domain.Series{
+				ID: seriesID, Slug: "clean-arch", Title: "T", Status: domain.SeriesStatusDraft,
+			},
+			wantTitle:    "T",
+			wantStatus:   domain.SeriesStatusDraft,
+			wantTagIDs:   []domain.TagID{},
+			wantArticles: []domain.SeriesArticle{},
 		},
 		{
 			name: "returns ErrNotFound when series id does not exist",
@@ -358,8 +450,9 @@ func TestSeriesRepository_Update(t *testing.T) {
 			})
 
 			testhelper.Insert(t, ctx, testDB, testhelper.Fixtures{
-				Tags:   tt.existingTags,
-				Series: tt.existingSeries,
+				Tags:     tt.existingTags,
+				Articles: tt.existingArticles,
+				Series:   tt.existingSeries,
 			})
 
 			sr := &SeriesRepository{db: testDB}
@@ -379,6 +472,7 @@ func TestSeriesRepository_Update(t *testing.T) {
 				assert.Equal(t, tt.wantPublishedAt, got.PublishedAt)
 			}
 			assert.ElementsMatch(t, tt.wantTagIDs, got.TagIDs)
+			assert.Equal(t, tt.wantArticles, got.Articles)
 		})
 	}
 }

@@ -198,6 +198,24 @@ WHERE article_id = $1 AND tag_id <> ALL($2::uuid[])
 	return nil
 }
 
+func (ar *ArticleRepository) Delete(ctx context.Context, id domain.ArticleID) error {
+	res, err := ar.db.ExecContext(ctx, `
+DELETE FROM articles
+WHERE id = $1
+`, string(id))
+	if err != nil {
+		return domain.ErrInternal.Wrap(err, "delete article")
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return domain.ErrInternal.Wrap(err, "delete article rows affected")
+	}
+	if n == 0 {
+		return domain.ErrNotFound.With("article not found")
+	}
+	return nil
+}
+
 func (ar *ArticleRepository) List(
 	ctx context.Context,
 	afterID domain.ArticleID,

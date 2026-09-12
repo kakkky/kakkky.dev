@@ -20,6 +20,7 @@ type ArticleRepository interface {
 	List(ctx context.Context, afterID ArticleID, afterCreatedAt time.Time, limit int) ([]*Article, error)
 	Store(ctx context.Context, article *Article) error
 	Update(ctx context.Context, article *Article) error
+	Delete(ctx context.Context, id ArticleID) error
 }
 
 type SeriesRepository interface {
