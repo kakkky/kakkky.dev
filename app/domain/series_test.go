@@ -111,6 +111,154 @@ func TestNewSeries(t *testing.T) {
 	}
 }
 
+func TestSeriesUpdate(t *testing.T) {
+	baseTime := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name           string
+		originalStatus domain.SeriesStatus
+		originalPubAt  time.Time
+		originalTagIDs []domain.TagID
+		title          string
+		description    string
+		status         domain.SeriesStatus
+		tagIDs         []domain.TagID
+		wantPubAtZero  bool
+		wantPubAtNow   bool // now と 一致 する か (draft → published の 初回 セット)
+		wantPubAt      time.Time
+		wantErr        error
+	}{
+		{
+			name:           "success: draft to published_ongoing sets PublishedAt to now",
+			originalStatus: domain.SeriesStatusDraft,
+			originalPubAt:  time.Time{},
+			title:          "new title",
+			description:    "new desc",
+			status:         domain.SeriesStatusPublishedOngoing,
+			tagIDs:         []domain.TagID{"t1"},
+			wantPubAtNow:   true,
+		},
+		{
+			name:           "success: draft to published_completed sets PublishedAt to now",
+			originalStatus: domain.SeriesStatusDraft,
+			originalPubAt:  time.Time{},
+			title:          "t",
+			status:         domain.SeriesStatusPublishedCompleted,
+			wantPubAtNow:   true,
+		},
+		{
+			name:           "success: published_ongoing to published_completed preserves PublishedAt",
+			originalStatus: domain.SeriesStatusPublishedOngoing,
+			originalPubAt:  baseTime,
+			title:          "t",
+			status:         domain.SeriesStatusPublishedCompleted,
+			wantPubAt:      baseTime,
+		},
+		{
+			name:           "success: published to draft preserves PublishedAt",
+			originalStatus: domain.SeriesStatusPublishedOngoing,
+			originalPubAt:  baseTime,
+			title:          "t",
+			status:         domain.SeriesStatusDraft,
+			wantPubAt:      baseTime,
+		},
+		{
+			name:           "success: replaces tag ids",
+			originalStatus: domain.SeriesStatusDraft,
+			originalTagIDs: []domain.TagID{"t1", "t2"},
+			title:          "t",
+			status:         domain.SeriesStatusDraft,
+			tagIDs:         []domain.TagID{"t3"},
+			wantPubAtZero:  true,
+		},
+		{
+			name:           "success: empty tag ids clears tags",
+			originalStatus: domain.SeriesStatusDraft,
+			originalTagIDs: []domain.TagID{"t1"},
+			title:          "t",
+			status:         domain.SeriesStatusDraft,
+			tagIDs:         nil,
+			wantPubAtZero:  true,
+		},
+		{
+			name:           "error: empty title",
+			originalStatus: domain.SeriesStatusDraft,
+			title:          "",
+			status:         domain.SeriesStatusDraft,
+			wantErr:        domain.ErrInvalidArgument,
+		},
+		{
+			name:           "error: title exceeds max length",
+			originalStatus: domain.SeriesStatusDraft,
+			title:          strings.Repeat("あ", domain.SeriesTitleMaxLength+1),
+			status:         domain.SeriesStatusDraft,
+			wantErr:        domain.ErrInvalidArgument,
+		},
+		{
+			name:           "error: description exceeds max length",
+			originalStatus: domain.SeriesStatusDraft,
+			title:          "t",
+			description:    strings.Repeat("あ", domain.SeriesDescriptionMaxLength+1),
+			status:         domain.SeriesStatusDraft,
+			wantErr:        domain.ErrInvalidArgument,
+		},
+		{
+			name:           "error: invalid status",
+			originalStatus: domain.SeriesStatusDraft,
+			title:          "t",
+			status:         domain.SeriesStatus("invalid"),
+			wantErr:        domain.ErrInvalidArgument,
+		},
+		{
+			name:           "error: tag ids exceed max",
+			originalStatus: domain.SeriesStatusDraft,
+			title:          "t",
+			status:         domain.SeriesStatusDraft,
+			tagIDs:         []domain.TagID{"t1", "t2", "t3", "t4", "t5", "t6"},
+			wantErr:        domain.ErrInvalidArgument,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s, err := domain.NewSeries(
+				domain.Slug("valid-slug"),
+				"original",
+				"original desc",
+				tt.originalStatus,
+				tt.originalPubAt,
+			)
+			assert.NoError(t, err)
+			s.TagIDs = tt.originalTagIDs
+
+			before := time.Now().UTC()
+			err = s.Update(tt.title, tt.description, tt.status, tt.tagIDs)
+			after := time.Now().UTC()
+
+			if tt.wantErr != nil {
+				assert.Error(t, err)
+				assert.True(t, errors.Is(err, tt.wantErr))
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.title, s.Title)
+			assert.Equal(t, tt.description, s.Description)
+			assert.Equal(t, tt.status, s.Status)
+			assert.Equal(t, tt.tagIDs, s.TagIDs)
+
+			switch {
+			case tt.wantPubAtNow:
+				assert.False(t, s.PublishedAt.Before(before), "PublishedAt should be >= before")
+				assert.False(t, s.PublishedAt.After(after), "PublishedAt should be <= after")
+			case tt.wantPubAtZero:
+				assert.True(t, s.PublishedAt.IsZero())
+			default:
+				assert.Equal(t, tt.wantPubAt, s.PublishedAt)
+			}
+		})
+	}
+}
+
 func TestSeriesAddArticle(t *testing.T) {
 	tests := []struct {
 		name         string

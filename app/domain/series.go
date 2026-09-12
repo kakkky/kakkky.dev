@@ -64,6 +64,36 @@ func NewSeries(slug Slug, title string, description string, status SeriesStatus,
 	}, nil
 }
 
+func (s *Series) Update(title string, description string, status SeriesStatus, tagIDs []TagID) error {
+	if title == "" {
+		return ErrInvalidArgument.With("タイトル は 必須 です")
+	}
+	if utf8.RuneCountInString(title) > SeriesTitleMaxLength {
+		return ErrInvalidArgument.With(fmt.Sprintf("タイトル は %d 文字以内 です", SeriesTitleMaxLength))
+	}
+	if utf8.RuneCountInString(description) > SeriesDescriptionMaxLength {
+		return ErrInvalidArgument.With(fmt.Sprintf("説明 は %d 文字以内 です", SeriesDescriptionMaxLength))
+	}
+	if status != SeriesStatusDraft &&
+		status != SeriesStatusPublishedOngoing &&
+		status != SeriesStatusPublishedCompleted {
+		return ErrInvalidArgument.With("ステータス は draft, published_ongoing, published_completed のいずれか です")
+	}
+	if len(tagIDs) > SeriesMaxTags {
+		return ErrInvalidArgument.With(fmt.Sprintf("タグ は 最大 %d 個 です", SeriesMaxTags))
+	}
+
+	if (status == SeriesStatusPublishedOngoing || status == SeriesStatusPublishedCompleted) && s.PublishedAt.IsZero() {
+		s.PublishedAt = time.Now().UTC()
+	}
+
+	s.Title = title
+	s.Description = description
+	s.Status = status
+	s.TagIDs = tagIDs
+	return nil
+}
+
 func (s *Series) AddArticle(articleID ArticleID, position int) error {
 	if position <= 0 {
 		return ErrInvalidArgument.With("position は 1 以上 です")

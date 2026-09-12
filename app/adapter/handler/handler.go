@@ -95,6 +95,19 @@ func (h *Handler) AdminRoutes() []Route {
 				h.usecase.NewCreateSeriesUsecase(),
 			),
 		},
+		{
+			Pattern: "GET /series/{slug}/edit",
+			Handler: NewGetEditSeriesHandler(
+				h.usecase.NewGetSeriesForAdminUsecase(),
+				h.usecase.NewListTagsUsecase(),
+			),
+		},
+		{
+			Pattern: "POST /series/{slug}",
+			Handler: NewPostSeriesBySlugHandler(
+				h.usecase.NewUpdateSeriesUsecase(),
+			),
+		},
 	}
 }
 

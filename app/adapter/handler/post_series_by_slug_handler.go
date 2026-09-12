@@ -7,18 +7,19 @@ import (
 	"github.com/kakkky/kakkky.dev/usecase"
 )
 
-type PostSeriesHandler struct {
-	createSeriesUsecase *usecase.CreateSeriesUsecase
+type PostSeriesBySlugHandler struct {
+	updateSeriesUsecase *usecase.UpdateSeriesUsecase
 }
 
-func NewPostSeriesHandler(createSeriesUsecase *usecase.CreateSeriesUsecase) *PostSeriesHandler {
-	return &PostSeriesHandler{
-		createSeriesUsecase: createSeriesUsecase,
+func NewPostSeriesBySlugHandler(updateSeriesUsecase *usecase.UpdateSeriesUsecase) *PostSeriesBySlugHandler {
+	return &PostSeriesBySlugHandler{
+		updateSeriesUsecase: updateSeriesUsecase,
 	}
 }
 
-func (h *PostSeriesHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+func (h *PostSeriesBySlugHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	slug := domain.Slug(r.PathValue("slug"))
 
 	if err := r.ParseForm(); err != nil {
 		RenderError(rw, r, domain.ErrInvalidArgument.Wrap(err, "フォーム を 解釈 できません"))
@@ -27,6 +28,7 @@ func (h *PostSeriesHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	title := r.FormValue("title")
 	description := r.FormValue("description")
+	status := domain.SeriesStatus(r.FormValue("status"))
 	tagIDStrs := r.Form["tag_id"]
 	newTagNames := r.Form["new_tag"]
 
@@ -38,9 +40,11 @@ func (h *PostSeriesHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		existingTagIDs = append(existingTagIDs, domain.TagID(s))
 	}
 
-	out, err := h.createSeriesUsecase.Exec(ctx, usecase.CreateSeriesUsecaseInput{
+	out, err := h.updateSeriesUsecase.Exec(ctx, usecase.UpdateSeriesUsecaseInput{
+		Slug:           slug,
 		Title:          title,
 		Description:    description,
+		Status:         status,
 		ExistingTagIDs: existingTagIDs,
 		NewTagNames:    newTagNames,
 	})

@@ -164,6 +164,53 @@ RETURNING id::text
 	return nil
 }
 
+func (sr *SeriesRepository) Update(ctx context.Context, series *domain.Series) error {
+	res, err := sr.db.ExecContext(ctx, `
+UPDATE series
+SET title        = $2,
+    description  = $3,
+    status       = $4,
+    published_at = $5,
+    updated_at   = now()
+WHERE id = $1
+`,
+		string(series.ID),
+		series.Title,
+		series.Description,
+		string(series.Status),
+		nullTime(series.PublishedAt),
+	)
+	if err != nil {
+		return domain.ErrInternal.Wrap(err, "update series")
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return domain.ErrInternal.Wrap(err, "update series rows affected")
+	}
+	if n == 0 {
+		return domain.ErrNotFound.With("series not found")
+	}
+
+	tagIDs := make([]string, len(series.TagIDs))
+	for i, id := range series.TagIDs {
+		tagIDs[i] = string(id)
+	}
+	if _, err := sr.db.ExecContext(ctx, `
+INSERT INTO series_tags (series_id, tag_id)
+SELECT $1, unnest($2::uuid[])
+ON CONFLICT DO NOTHING
+`, string(series.ID), pq.Array(tagIDs)); err != nil {
+		return domain.ErrInternal.Wrap(err, "attach series_tags")
+	}
+	if _, err := sr.db.ExecContext(ctx, `
+DELETE FROM series_tags
+WHERE series_id = $1 AND tag_id <> ALL($2::uuid[])
+`, string(series.ID), pq.Array(tagIDs)); err != nil {
+		return domain.ErrInternal.Wrap(err, "detach series_tags")
+	}
+	return nil
+}
+
 func (sr *SeriesRepository) List(
 	ctx context.Context,
 	afterID domain.SeriesID,

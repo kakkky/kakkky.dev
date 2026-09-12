@@ -229,6 +229,160 @@ func TestSeriesRepository_Store(t *testing.T) {
 	}
 }
 
+func TestSeriesRepository_Update(t *testing.T) {
+	ctx := t.Context()
+
+	var (
+		seriesID  domain.SeriesID = "cccccccc-cccc-cccc-cccc-ccccccccccc1"
+		missingID domain.SeriesID = "cccccccc-cccc-cccc-cccc-ccccccccccc9"
+		tag1      domain.TagID    = "11111111-1111-1111-1111-111111111111"
+		tag2      domain.TagID    = "22222222-2222-2222-2222-222222222222"
+		tag3      domain.TagID    = "33333333-3333-3333-3333-333333333333"
+	)
+	oldPublishedAt := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	newPublishedAt := time.Date(2026, 2, 1, 0, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name             string
+		existingTags     []*domain.Tag
+		existingSeries   []*domain.Series
+		target           *domain.Series
+		wantTitle        string
+		wantDescription  string
+		wantStatus       domain.SeriesStatus
+		wantPublishedAt  time.Time
+		wantTagIDs       []domain.TagID
+		wantErr          error
+	}{
+		{
+			name: "updates title/description/status/published_at",
+			existingSeries: []*domain.Series{
+				{
+					ID: seriesID, Slug: "clean-arch", Title: "Old", Description: "old desc",
+					Status: domain.SeriesStatusDraft,
+				},
+			},
+			target: &domain.Series{
+				ID: seriesID, Slug: "clean-arch", Title: "New", Description: "new desc",
+				Status: domain.SeriesStatusPublishedOngoing, PublishedAt: newPublishedAt,
+			},
+			wantTitle:       "New",
+			wantDescription: "new desc",
+			wantStatus:      domain.SeriesStatusPublishedOngoing,
+			wantPublishedAt: newPublishedAt,
+			wantTagIDs:      []domain.TagID{},
+		},
+		{
+			name: "attaches new tags and detaches removed ones",
+			existingTags: []*domain.Tag{
+				{ID: tag1, Slug: "go", Name: "Go"},
+				{ID: tag2, Slug: "ts", Name: "TypeScript"},
+				{ID: tag3, Slug: "rust", Name: "Rust"},
+			},
+			existingSeries: []*domain.Series{
+				{
+					ID: seriesID, Slug: "clean-arch", Title: "T", Description: "D",
+					Status: domain.SeriesStatusDraft,
+					TagIDs: []domain.TagID{tag1, tag2},
+				},
+			},
+			target: &domain.Series{
+				ID: seriesID, Slug: "clean-arch", Title: "T", Description: "D",
+				Status: domain.SeriesStatusDraft,
+				TagIDs: []domain.TagID{tag1, tag3},
+			},
+			wantTitle:       "T",
+			wantDescription: "D",
+			wantStatus:      domain.SeriesStatusDraft,
+			wantTagIDs:      []domain.TagID{tag1, tag3},
+		},
+		{
+			name: "detaches all when tags become empty",
+			existingTags: []*domain.Tag{
+				{ID: tag1, Slug: "go", Name: "Go"},
+			},
+			existingSeries: []*domain.Series{
+				{
+					ID: seriesID, Slug: "clean-arch", Title: "T", Description: "D",
+					Status: domain.SeriesStatusDraft,
+					TagIDs: []domain.TagID{tag1},
+				},
+			},
+			target: &domain.Series{
+				ID: seriesID, Slug: "clean-arch", Title: "T", Description: "D",
+				Status: domain.SeriesStatusDraft,
+			},
+			wantTitle:       "T",
+			wantDescription: "D",
+			wantStatus:      domain.SeriesStatusDraft,
+			wantTagIDs:      []domain.TagID{},
+		},
+		{
+			name: "no-op tag change keeps associations",
+			existingTags: []*domain.Tag{
+				{ID: tag1, Slug: "go", Name: "Go"},
+				{ID: tag2, Slug: "ts", Name: "TypeScript"},
+			},
+			existingSeries: []*domain.Series{
+				{
+					ID: seriesID, Slug: "clean-arch", Title: "T", Description: "D",
+					Status: domain.SeriesStatusPublishedOngoing, PublishedAt: oldPublishedAt,
+					TagIDs: []domain.TagID{tag1, tag2},
+				},
+			},
+			target: &domain.Series{
+				ID: seriesID, Slug: "clean-arch", Title: "T", Description: "D",
+				Status: domain.SeriesStatusPublishedOngoing, PublishedAt: oldPublishedAt,
+				TagIDs: []domain.TagID{tag1, tag2},
+			},
+			wantTitle:       "T",
+			wantDescription: "D",
+			wantStatus:      domain.SeriesStatusPublishedOngoing,
+			wantPublishedAt: oldPublishedAt,
+			wantTagIDs:      []domain.TagID{tag1, tag2},
+		},
+		{
+			name: "returns ErrNotFound when series id does not exist",
+			target: &domain.Series{
+				ID: missingID, Slug: "nope", Title: "T", Description: "D",
+				Status: domain.SeriesStatusDraft,
+			},
+			wantErr: domain.ErrNotFound,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Cleanup(func() {
+				testhelper.TruncateAll(t, ctx, testDB)
+			})
+
+			testhelper.Insert(t, ctx, testDB, testhelper.Fixtures{
+				Tags:   tt.existingTags,
+				Series: tt.existingSeries,
+			})
+
+			sr := &SeriesRepository{db: testDB}
+			err := sr.Update(ctx, tt.target)
+			if tt.wantErr != nil {
+				require.ErrorIs(t, err, tt.wantErr)
+				return
+			}
+			require.NoError(t, err)
+
+			got, err := sr.FindBySlug(ctx, tt.target.Slug)
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantTitle, got.Title)
+			assert.Equal(t, tt.wantDescription, got.Description)
+			assert.Equal(t, tt.wantStatus, got.Status)
+			if !tt.wantPublishedAt.IsZero() {
+				assert.Equal(t, tt.wantPublishedAt, got.PublishedAt)
+			}
+			assert.ElementsMatch(t, tt.wantTagIDs, got.TagIDs)
+		})
+	}
+}
+
 func TestSeriesRepository_List(t *testing.T) {
 	ctx := t.Context()
 
