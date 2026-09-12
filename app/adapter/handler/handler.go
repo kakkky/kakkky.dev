@@ -108,6 +108,26 @@ func (h *Handler) AdminRoutes() []Route {
 				h.usecase.NewUpdateSeriesUsecase(),
 			),
 		},
+		{
+			Pattern: "GET /series/{slug}/articles/new",
+			Handler: NewGetNewSeriesArticleHandler(),
+		},
+		{
+			Pattern: "GET /series/{slug}/articles/new/cancel",
+			Handler: NewGetCancelNewSeriesArticleHandler(),
+		},
+		{
+			Pattern: "POST /series/{slug}/articles",
+			Handler: NewPostSeriesArticlesHandler(
+				h.usecase.NewCreateArticleInSeriesUsecase(),
+			),
+		},
+		{
+			Pattern: "POST /series/{slug}/articles/{article_id}/delete",
+			Handler: NewPostDeleteSeriesArticleHandler(
+				h.usecase.NewDeleteArticleUsecase(),
+			),
+		},
 	}
 }
 

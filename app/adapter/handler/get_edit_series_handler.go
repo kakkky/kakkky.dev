@@ -5,6 +5,7 @@ import (
 
 	"github.com/kakkky/kakkky.dev/adapter/view/components"
 	"github.com/kakkky/kakkky.dev/adapter/view/pages"
+	"github.com/kakkky/kakkky.dev/adapter/view/partials"
 	"github.com/kakkky/kakkky.dev/domain"
 	"github.com/kakkky/kakkky.dev/usecase"
 )
@@ -67,6 +68,16 @@ func (h *GetEditSeriesHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request
 		{Name: string(domain.SeriesStatusPublishedCompleted), IsSelected: current == domain.SeriesStatusPublishedCompleted},
 	}
 
+	articles := make([]partials.SeriesArticleListItemViewModel, len(seriesOut.Articles))
+	for i, sa := range seriesOut.Articles {
+		articles[i] = partials.SeriesArticleListItemViewModel{
+			SeriesSlug: string(seriesOut.Series.Slug),
+			ArticleID:  string(sa.Article.ID),
+			Slug:       string(sa.Article.Slug),
+			Title:      sa.Article.Title,
+		}
+	}
+
 	_ = pages.EditSeries(pages.EditSeriesViewModel{
 		Slug:        string(seriesOut.Series.Slug),
 		Title:       seriesOut.Series.Title,
@@ -75,6 +86,8 @@ func (h *GetEditSeriesHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request
 		TagInput: components.TagInputViewModel{
 			ExistingTags: existingTags,
 			SelectedTags: selectedTags,
+			FormID:       "series-update-form",
 		},
+		Articles: articles,
 	}).Render(ctx, rw)
 }
