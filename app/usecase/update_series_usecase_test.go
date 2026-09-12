@@ -165,6 +165,66 @@ func TestUpdateSeriesUsecase_Exec(t *testing.T) {
 			wantErr: domain.ErrInvalidArgument,
 		},
 		{
+			name: "reorders articles when ArticleIDs is provided",
+			input: UpdateSeriesUsecaseInput{
+				Slug:       "clean-arch",
+				Title:      "T",
+				Status:     domain.SeriesStatusDraft,
+				ArticleIDs: []domain.ArticleID{"a3", "a1", "a2"},
+			},
+			mock: func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, tr *mock.MockTagRepository) {
+				repo.EXPECT().WithTx(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(domain.Repository) error) error {
+					return fn(txRepo)
+				})
+				txRepo.EXPECT().NewSeriesRepository().Return(sr)
+				txRepo.EXPECT().NewTagRepository().Return(tr)
+
+				sr.EXPECT().FindBySlug(ctx, domain.Slug("clean-arch")).Return(&domain.Series{
+					ID: seriesID, Slug: "clean-arch", Title: "Old",
+					Status: domain.SeriesStatusDraft,
+					Articles: []domain.SeriesArticle{
+						{ArticleID: "a1", Position: 1},
+						{ArticleID: "a2", Position: 2},
+						{ArticleID: "a3", Position: 3},
+					},
+				}, nil)
+				sr.EXPECT().Update(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, s *domain.Series) error {
+					assert.Equal(t, []domain.SeriesArticle{
+						{ArticleID: "a3", Position: 1},
+						{ArticleID: "a1", Position: 2},
+						{ArticleID: "a2", Position: 3},
+					}, s.Articles)
+					return nil
+				})
+			},
+		},
+		{
+			name: "rejects reorder when ArticleIDs set mismatches",
+			input: UpdateSeriesUsecaseInput{
+				Slug:       "clean-arch",
+				Title:      "T",
+				Status:     domain.SeriesStatusDraft,
+				ArticleIDs: []domain.ArticleID{"a1"},
+			},
+			mock: func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, tr *mock.MockTagRepository) {
+				repo.EXPECT().WithTx(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(domain.Repository) error) error {
+					return fn(txRepo)
+				})
+				txRepo.EXPECT().NewSeriesRepository().Return(sr)
+				txRepo.EXPECT().NewTagRepository().Return(tr)
+
+				sr.EXPECT().FindBySlug(ctx, domain.Slug("clean-arch")).Return(&domain.Series{
+					ID: seriesID, Slug: "clean-arch", Title: "Old",
+					Status: domain.SeriesStatusDraft,
+					Articles: []domain.SeriesArticle{
+						{ArticleID: "a1", Position: 1},
+						{ArticleID: "a2", Position: 2},
+					},
+				}, nil)
+			},
+			wantErr: domain.ErrInvalidArgument,
+		},
+		{
 			name: "propagates invalid title validation from domain",
 			input: UpdateSeriesUsecaseInput{
 				Slug:   "clean-arch",

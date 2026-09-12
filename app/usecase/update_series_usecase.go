@@ -23,6 +23,7 @@ type UpdateSeriesUsecaseInput struct {
 	Status         domain.SeriesStatus
 	ExistingTagIDs []domain.TagID
 	NewTagNames    []string
+	ArticleIDs     []domain.ArticleID
 }
 
 type UpdateSeriesUsecaseOutput struct {
@@ -52,6 +53,9 @@ func (us *UpdateSeriesUsecase) Exec(ctx context.Context, in UpdateSeriesUsecaseI
 			return err
 		}
 		if err := series.Update(in.Title, in.Description, in.Status, tagIDs); err != nil {
+			return err
+		}
+		if err := series.ReorderArticles(in.ArticleIDs); err != nil {
 			return err
 		}
 
