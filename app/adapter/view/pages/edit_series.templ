@@ -1,6 +1,8 @@
 package pages
 
 import (
+	"github.com/kakkky/hotwire-go/stimulus"
+
 	"github.com/kakkky/kakkky.dev/adapter/view/components"
 	"github.com/kakkky/kakkky.dev/adapter/view/layout"
 	"github.com/kakkky/kakkky.dev/assets/js"
@@ -12,14 +14,20 @@ type EditSeriesViewModel struct {
 	Description string
 	Statuses    []Status
 	TagInput    components.TagInputViewModel
+	Articles    []components.EditSeriesArticleItemViewModel
 }
 
+const seriesUpdateFormID = "series-update-form"
+
+var editSeriesArticlesCtrl = js.EditSeriesArticlesController.Name
+
 templ EditSeries(vm EditSeriesViewModel) {
-	@layout.Base("Edit Series", "max-w-none", []string{js.TagInputController.Path}) {
+	@layout.Base("Edit Series", "max-w-none", []string{js.TagInputController.Path, js.EditSeriesArticlesController.Path}) {
 		<form
+			id={ seriesUpdateFormID }
 			method="post"
 			action={ templ.SafeURL("/admin/series/" + vm.Slug) }
-			style="height: calc(100dvh - 3.5rem);"
+			style="min-height: calc(100dvh - 3.5rem);"
 			class="flex flex-col"
 		>
 			<div class="shrink-0 border-b border-gray-200 bg-white">
@@ -70,8 +78,42 @@ templ EditSeries(vm EditSeriesViewModel) {
 					</label>
 				</aside>
 				<div class="flex flex-1 min-h-0 flex-col px-4 py-6">
-					<div class="mx-auto flex w-full max-w-4xl flex-1 min-h-0 flex-col items-center justify-center text-sm text-gray-400">
-						Articles の 追加 / 並び替え は 今後 実装
+					<div
+						{ stimulus.AttrControllers(editSeriesArticlesCtrl)... }
+						{ stimulus.AttrActions(
+							"dragstart->edit-series-articles#onDragStart",
+							"dragover->edit-series-articles#onDragOver",
+							"drop->edit-series-articles#onDrop",
+							"dragend->edit-series-articles#onDragEnd",
+						)... }
+						class="mx-auto flex w-full max-w-4xl flex-col gap-3"
+					>
+						<h2 class="text-xs font-medium text-gray-600">Articles</h2>
+						<ul
+							id={ components.EditSeriesArticlesListID }
+							{ stimulus.AttrTargets(editSeriesArticlesCtrl, "list")... }
+							class="flex flex-col gap-2"
+						>
+							for _, a := range vm.Articles {
+								@components.EditSeriesArticleItem(a)
+							}
+						</ul>
+						<button
+							type="button"
+							{ stimulus.AttrActions("click->edit-series-articles#addNewItem")... }
+							class="self-start inline-flex items-center gap-1.5 rounded-md border border-dashed border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:border-gray-900 hover:text-gray-900"
+						>
+							+ 新規記事
+						</button>
+						<div
+							id="edit-series-articles-deletions"
+							{ stimulus.AttrTargets(editSeriesArticlesCtrl, "deletions")... }
+							hidden
+						></div>
+						// 新規記事のテンプレートを置いておく。 Stimulus で複製して追加する。
+						<template { stimulus.AttrTargets(editSeriesArticlesCtrl, "newItemTemplate")... }>
+							@components.NewSeriesArticleItem()
+						</template>
 					</div>
 				</div>
 				<div class="hidden xl:block w-60 shrink-0" aria-hidden="true"></div>

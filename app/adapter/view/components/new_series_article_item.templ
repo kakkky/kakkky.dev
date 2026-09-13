@@ -1,0 +1,33 @@
+package components
+
+import "github.com/kakkky/hotwire-go/stimulus"
+
+templ NewSeriesArticleItem() {
+	<li
+		{ stimulus.AttrTargets(editSeriesArticlesCtrl, "item")... }
+		class="flex items-center gap-2 rounded-md border border-dashed border-gray-300 bg-white px-3 py-2"
+	>
+		<input
+			type="text"
+			name="new_article_title"
+			maxlength="100"
+			required
+			placeholder="タイトル"
+			class="flex-1 rounded-md border border-gray-300 bg-white px-2 py-1 text-sm focus:border-gray-900 focus:outline-none"
+		/>
+		<button
+			type="button"
+			{ stimulus.AttrActions("click->edit-series-articles#removeNewItem")... }
+			class="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600"
+			aria-label="削除"
+		>
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+				<path d="M3 6h18"></path>
+				<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+				<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+				<path d="M10 11v6"></path>
+				<path d="M14 11v6"></path>
+			</svg>
+		</button>
+	</li>
+}

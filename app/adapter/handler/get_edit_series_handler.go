@@ -67,6 +67,15 @@ func (h *GetEditSeriesHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request
 		{Name: string(domain.SeriesStatusPublishedCompleted), IsSelected: current == domain.SeriesStatusPublishedCompleted},
 	}
 
+	articles := make([]components.EditSeriesArticleItemViewModel, len(seriesOut.Articles))
+	for i, sa := range seriesOut.Articles {
+		articles[i] = components.EditSeriesArticleItemViewModel{
+			ArticleID: string(sa.Article.ID),
+			Slug:      string(sa.Article.Slug),
+			Title:     sa.Article.Title,
+		}
+	}
+
 	_ = pages.EditSeries(pages.EditSeriesViewModel{
 		Slug:        string(seriesOut.Series.Slug),
 		Title:       seriesOut.Series.Title,
@@ -76,5 +85,6 @@ func (h *GetEditSeriesHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request
 			ExistingTags: existingTags,
 			SelectedTags: selectedTags,
 		},
+		Articles: articles,
 	}).Render(ctx, rw)
 }
