@@ -17,10 +17,13 @@ func TestUpdateSeriesUsecase_Exec(t *testing.T) {
 	ctx := context.Background()
 
 	var (
-		seriesID     domain.SeriesID = "cccccccc-cccc-cccc-cccc-ccccccccccc1"
-		existingTag1 domain.TagID    = "11111111-1111-1111-1111-111111111111"
-		existingTag2 domain.TagID    = "22222222-2222-2222-2222-222222222222"
-		newTagID     domain.TagID    = "99999999-9999-9999-9999-999999999999"
+		seriesID     domain.SeriesID  = "cccccccc-cccc-cccc-cccc-ccccccccccc1"
+		existingTag1 domain.TagID     = "11111111-1111-1111-1111-111111111111"
+		existingTag2 domain.TagID     = "22222222-2222-2222-2222-222222222222"
+		newTagID     domain.TagID     = "99999999-9999-9999-9999-999999999999"
+		article1     domain.ArticleID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+		article2     domain.ArticleID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2"
+		newArticleID domain.ArticleID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa9"
 	)
 
 	wantDBErr := errors.New("boom")
@@ -28,7 +31,7 @@ func TestUpdateSeriesUsecase_Exec(t *testing.T) {
 	tests := []struct {
 		name    string
 		input   UpdateSeriesUsecaseInput
-		mock    func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, tr *mock.MockTagRepository)
+		mock    func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, ar *mock.MockArticleRepository, tr *mock.MockTagRepository)
 		wantErr error
 	}{
 		{
@@ -41,11 +44,12 @@ func TestUpdateSeriesUsecase_Exec(t *testing.T) {
 				ExistingTagIDs: []domain.TagID{existingTag2},
 				NewTagNames:    []string{"DDD"},
 			},
-			mock: func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, tr *mock.MockTagRepository) {
+			mock: func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, ar *mock.MockArticleRepository, tr *mock.MockTagRepository) {
 				repo.EXPECT().WithTx(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(domain.Repository) error) error {
 					return fn(txRepo)
 				})
 				txRepo.EXPECT().NewSeriesRepository().Return(sr)
+				txRepo.EXPECT().NewArticleRepository().Return(ar)
 				txRepo.EXPECT().NewTagRepository().Return(tr)
 
 				sr.EXPECT().FindBySlug(ctx, domain.Slug("clean-arch")).Return(&domain.Series{
@@ -70,17 +74,147 @@ func TestUpdateSeriesUsecase_Exec(t *testing.T) {
 			},
 		},
 		{
+			name: "reorders existing articles by OrderedArticleIDs order",
+			input: UpdateSeriesUsecaseInput{
+				Slug:              "clean-arch",
+				Title:             "T",
+				Status:            domain.SeriesStatusDraft,
+				OrderedArticleIDs: []domain.ArticleID{article2, article1},
+			},
+			mock: func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, ar *mock.MockArticleRepository, tr *mock.MockTagRepository) {
+				repo.EXPECT().WithTx(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(domain.Repository) error) error {
+					return fn(txRepo)
+				})
+				txRepo.EXPECT().NewSeriesRepository().Return(sr)
+				txRepo.EXPECT().NewArticleRepository().Return(ar)
+				txRepo.EXPECT().NewTagRepository().Return(tr)
+
+				sr.EXPECT().FindBySlug(ctx, domain.Slug("clean-arch")).Return(&domain.Series{
+					ID: seriesID, Slug: "clean-arch", Title: "Old",
+					Status: domain.SeriesStatusDraft,
+					Articles: []domain.SeriesArticle{
+						{ArticleID: article1, Position: 1},
+						{ArticleID: article2, Position: 2},
+					},
+				}, nil)
+				sr.EXPECT().Update(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, s *domain.Series) error {
+					assert.Equal(t, []domain.SeriesArticle{
+						{ArticleID: article2, Position: 1},
+						{ArticleID: article1, Position: 2},
+					}, s.Articles)
+					return nil
+				})
+			},
+		},
+		{
+			name: "deletes articles listed in DeleteArticleIDs",
+			input: UpdateSeriesUsecaseInput{
+				Slug:              "clean-arch",
+				Title:             "T",
+				Status:            domain.SeriesStatusDraft,
+				OrderedArticleIDs: []domain.ArticleID{article1},
+				DeleteArticleIDs:  []domain.ArticleID{article2},
+			},
+			mock: func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, ar *mock.MockArticleRepository, tr *mock.MockTagRepository) {
+				repo.EXPECT().WithTx(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(domain.Repository) error) error {
+					return fn(txRepo)
+				})
+				txRepo.EXPECT().NewSeriesRepository().Return(sr)
+				txRepo.EXPECT().NewArticleRepository().Return(ar)
+				txRepo.EXPECT().NewTagRepository().Return(tr)
+
+				sr.EXPECT().FindBySlug(ctx, domain.Slug("clean-arch")).Return(&domain.Series{
+					ID: seriesID, Slug: "clean-arch", Title: "T",
+					Status: domain.SeriesStatusDraft,
+					Articles: []domain.SeriesArticle{
+						{ArticleID: article1, Position: 1},
+						{ArticleID: article2, Position: 2},
+					},
+				}, nil)
+				ar.EXPECT().Delete(ctx, article2).Return(nil)
+				sr.EXPECT().Update(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, s *domain.Series) error {
+					assert.Equal(t, []domain.SeriesArticle{
+						{ArticleID: article1, Position: 1},
+					}, s.Articles)
+					return nil
+				})
+			},
+		},
+		{
+			name: "creates new articles from NewArticleTitles and appends at tail",
+			input: UpdateSeriesUsecaseInput{
+				Slug:              "clean-arch",
+				Title:             "T",
+				Status:            domain.SeriesStatusDraft,
+				OrderedArticleIDs: []domain.ArticleID{article1},
+				NewArticleTitles:  []string{"New Chapter"},
+			},
+			mock: func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, ar *mock.MockArticleRepository, tr *mock.MockTagRepository) {
+				repo.EXPECT().WithTx(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(domain.Repository) error) error {
+					return fn(txRepo)
+				})
+				txRepo.EXPECT().NewSeriesRepository().Return(sr)
+				txRepo.EXPECT().NewArticleRepository().Return(ar)
+				txRepo.EXPECT().NewTagRepository().Return(tr)
+
+				sr.EXPECT().FindBySlug(ctx, domain.Slug("clean-arch")).Return(&domain.Series{
+					ID: seriesID, Slug: "clean-arch", Title: "T",
+					Status: domain.SeriesStatusDraft,
+					Articles: []domain.SeriesArticle{
+						{ArticleID: article1, Position: 1},
+					},
+				}, nil)
+				ar.EXPECT().Store(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, a *domain.Article) error {
+					assert.Equal(t, "New Chapter", a.Title)
+					assert.Equal(t, domain.ArticleStatusDraft, a.Status)
+					a.ID = newArticleID
+					return nil
+				})
+				sr.EXPECT().Update(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, s *domain.Series) error {
+					assert.Equal(t, []domain.SeriesArticle{
+						{ArticleID: article1, Position: 1},
+						{ArticleID: newArticleID, Position: 2},
+					}, s.Articles)
+					return nil
+				})
+			},
+		},
+		{
+			name: "translates new article slug conflict to ErrInvalidArgument",
+			input: UpdateSeriesUsecaseInput{
+				Slug:             "clean-arch",
+				Title:            "T",
+				Status:           domain.SeriesStatusDraft,
+				NewArticleTitles: []string{"Duplicated"},
+			},
+			mock: func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, ar *mock.MockArticleRepository, tr *mock.MockTagRepository) {
+				repo.EXPECT().WithTx(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(domain.Repository) error) error {
+					return fn(txRepo)
+				})
+				txRepo.EXPECT().NewSeriesRepository().Return(sr)
+				txRepo.EXPECT().NewArticleRepository().Return(ar)
+				txRepo.EXPECT().NewTagRepository().Return(tr)
+
+				sr.EXPECT().FindBySlug(ctx, domain.Slug("clean-arch")).Return(&domain.Series{
+					ID: seriesID, Slug: "clean-arch", Title: "T", Status: domain.SeriesStatusDraft,
+				}, nil)
+				ar.EXPECT().Store(ctx, gomock.Any()).Return(domain.ErrAlreadyExists)
+			},
+			wantErr: domain.ErrInvalidArgument,
+		},
+		{
 			name: "returns not found when slug does not exist",
 			input: UpdateSeriesUsecaseInput{
 				Slug:   "missing",
 				Title:  "New",
 				Status: domain.SeriesStatusDraft,
 			},
-			mock: func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, tr *mock.MockTagRepository) {
+			mock: func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, ar *mock.MockArticleRepository, tr *mock.MockTagRepository) {
 				repo.EXPECT().WithTx(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(domain.Repository) error) error {
 					return fn(txRepo)
 				})
 				txRepo.EXPECT().NewSeriesRepository().Return(sr)
+				txRepo.EXPECT().NewArticleRepository().Return(ar)
 				txRepo.EXPECT().NewTagRepository().Return(tr)
 
 				sr.EXPECT().FindBySlug(ctx, domain.Slug("missing")).Return(nil, domain.ErrNotFound)
@@ -95,11 +229,12 @@ func TestUpdateSeriesUsecase_Exec(t *testing.T) {
 				Status:      domain.SeriesStatusDraft,
 				NewTagNames: []string{"Go"},
 			},
-			mock: func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, tr *mock.MockTagRepository) {
+			mock: func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, ar *mock.MockArticleRepository, tr *mock.MockTagRepository) {
 				repo.EXPECT().WithTx(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(domain.Repository) error) error {
 					return fn(txRepo)
 				})
 				txRepo.EXPECT().NewSeriesRepository().Return(sr)
+				txRepo.EXPECT().NewArticleRepository().Return(ar)
 				txRepo.EXPECT().NewTagRepository().Return(tr)
 
 				sr.EXPECT().FindBySlug(ctx, domain.Slug("clean-arch")).Return(&domain.Series{
@@ -117,11 +252,12 @@ func TestUpdateSeriesUsecase_Exec(t *testing.T) {
 				Title:  "New",
 				Status: domain.SeriesStatusDraft,
 			},
-			mock: func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, tr *mock.MockTagRepository) {
+			mock: func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, ar *mock.MockArticleRepository, tr *mock.MockTagRepository) {
 				repo.EXPECT().WithTx(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(domain.Repository) error) error {
 					return fn(txRepo)
 				})
 				txRepo.EXPECT().NewSeriesRepository().Return(sr)
+				txRepo.EXPECT().NewArticleRepository().Return(ar)
 				txRepo.EXPECT().NewTagRepository().Return(tr)
 
 				sr.EXPECT().FindBySlug(ctx, domain.Slug("clean-arch")).Return(&domain.Series{
@@ -139,7 +275,7 @@ func TestUpdateSeriesUsecase_Exec(t *testing.T) {
 				Title:  "New",
 				Status: domain.SeriesStatusDraft,
 			},
-			mock:    func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, tr *mock.MockTagRepository) {},
+			mock:    func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, ar *mock.MockArticleRepository, tr *mock.MockTagRepository) {},
 			wantErr: domain.ErrInvalidArgument,
 		},
 		{
@@ -150,7 +286,7 @@ func TestUpdateSeriesUsecase_Exec(t *testing.T) {
 				Status:      domain.SeriesStatusDraft,
 				NewTagNames: []string{"DDD", "DDD"},
 			},
-			mock:    func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, tr *mock.MockTagRepository) {},
+			mock:    func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, ar *mock.MockArticleRepository, tr *mock.MockTagRepository) {},
 			wantErr: domain.ErrInvalidArgument,
 		},
 		{
@@ -161,7 +297,18 @@ func TestUpdateSeriesUsecase_Exec(t *testing.T) {
 				Status:      domain.SeriesStatusDraft,
 				NewTagNames: []string{""},
 			},
-			mock:    func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, tr *mock.MockTagRepository) {},
+			mock:    func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, ar *mock.MockArticleRepository, tr *mock.MockTagRepository) {},
+			wantErr: domain.ErrInvalidArgument,
+		},
+		{
+			name: "rejects empty new article title before tx",
+			input: UpdateSeriesUsecaseInput{
+				Slug:             "clean-arch",
+				Title:            "T",
+				Status:           domain.SeriesStatusDraft,
+				NewArticleTitles: []string{""},
+			},
+			mock:    func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, ar *mock.MockArticleRepository, tr *mock.MockTagRepository) {},
 			wantErr: domain.ErrInvalidArgument,
 		},
 		{
@@ -171,11 +318,12 @@ func TestUpdateSeriesUsecase_Exec(t *testing.T) {
 				Title:  "",
 				Status: domain.SeriesStatusDraft,
 			},
-			mock: func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, tr *mock.MockTagRepository) {
+			mock: func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, ar *mock.MockArticleRepository, tr *mock.MockTagRepository) {
 				repo.EXPECT().WithTx(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(domain.Repository) error) error {
 					return fn(txRepo)
 				})
 				txRepo.EXPECT().NewSeriesRepository().Return(sr)
+				txRepo.EXPECT().NewArticleRepository().Return(ar)
 				txRepo.EXPECT().NewTagRepository().Return(tr)
 
 				sr.EXPECT().FindBySlug(ctx, domain.Slug("clean-arch")).Return(&domain.Series{
@@ -194,10 +342,11 @@ func TestUpdateSeriesUsecase_Exec(t *testing.T) {
 			repo := mock.NewMockRepository(ctrl)
 			txRepo := mock.NewMockRepository(ctrl)
 			sr := mock.NewMockSeriesRepository(ctrl)
+			ar := mock.NewMockArticleRepository(ctrl)
 			tr := mock.NewMockTagRepository(ctrl)
 			qs := mock.NewMockQueryService(ctrl)
 
-			tt.mock(repo, txRepo, sr, tr)
+			tt.mock(repo, txRepo, sr, ar, tr)
 
 			uc := NewUseCase(repo, qs).NewUpdateSeriesUsecase()
 			out, err := uc.Exec(ctx, tt.input)

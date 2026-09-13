@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+	"unicode/utf8"
 
 	"github.com/kakkky/kakkky.dev/domain"
 )
@@ -17,12 +19,15 @@ func (us *UseCase) NewUpdateSeriesUsecase() *UpdateSeriesUsecase {
 }
 
 type UpdateSeriesUsecaseInput struct {
-	Slug           domain.Slug
-	Title          string
-	Description    string
-	Status         domain.SeriesStatus
-	ExistingTagIDs []domain.TagID
-	NewTagNames    []string
+	Slug              domain.Slug
+	Title             string
+	Description       string
+	Status            domain.SeriesStatus
+	ExistingTagIDs    []domain.TagID
+	NewTagNames       []string
+	OrderedArticleIDs []domain.ArticleID
+	NewArticleTitles  []string
+	DeleteArticleIDs  []domain.ArticleID
 }
 
 type UpdateSeriesUsecaseOutput struct {
@@ -37,6 +42,7 @@ func (us *UpdateSeriesUsecase) Exec(ctx context.Context, in UpdateSeriesUsecaseI
 	var out UpdateSeriesUsecaseOutput
 	err := us.repo.WithTx(ctx, func(tx domain.Repository) error {
 		seriesRepo := tx.NewSeriesRepository()
+		articleRepo := tx.NewArticleRepository()
 		tagRepo := tx.NewTagRepository()
 
 		series, err := seriesRepo.FindBySlug(ctx, in.Slug)
@@ -47,11 +53,57 @@ func (us *UpdateSeriesUsecase) Exec(ctx context.Context, in UpdateSeriesUsecaseI
 			return err
 		}
 
+		for _, id := range in.DeleteArticleIDs {
+			if err := articleRepo.Delete(ctx, id); err != nil {
+				if errors.Is(err, domain.ErrNotFound) {
+					continue
+				}
+				return err
+			}
+			if err := series.RemoveArticle(id); err != nil {
+				if errors.Is(err, domain.ErrInvalidArgument) {
+					continue
+				}
+				return err
+			}
+		}
+
+		newArticleIDs := make([]domain.ArticleID, 0, len(in.NewArticleTitles))
+		for _, title := range in.NewArticleTitles {
+			baseSlug, err := domain.GenerateSlug(title)
+			if err != nil {
+				return err
+			}
+			article, err := domain.NewArticle(baseSlug, title, "", domain.ArticleStatusDraft, time.Time{}, nil)
+			if err != nil {
+				return err
+			}
+			if err := articleRepo.Store(ctx, article); err != nil {
+				if errors.Is(err, domain.ErrAlreadyExists) {
+					return domain.ErrInvalidArgument.With(
+						fmt.Sprintf("タイトル「%s」から生成した slug は 既に 存在 します", title),
+					)
+				}
+				return err
+			}
+			if err := series.AddArticle(article.ID); err != nil {
+				return err
+			}
+			newArticleIDs = append(newArticleIDs, article.ID)
+		}
+
 		tagIDs, err := resolveTagIDs(ctx, tagRepo, in.ExistingTagIDs, in.NewTagNames)
 		if err != nil {
 			return err
 		}
 		if err := series.Update(in.Title, in.Description, in.Status, tagIDs); err != nil {
+			return err
+		}
+
+		finalArticleOrder := make([]domain.ArticleID, 0, len(in.OrderedArticleIDs)+len(newArticleIDs))
+		finalArticleOrder = append(finalArticleOrder, in.OrderedArticleIDs...)
+		finalArticleOrder = append(finalArticleOrder, newArticleIDs...)
+		if err := series.ReorderArticles(finalArticleOrder); err != nil {
 			return err
 		}
 
@@ -83,6 +135,16 @@ func (in UpdateSeriesUsecaseInput) validate() error {
 			)
 		}
 		seen[name] = struct{}{}
+	}
+	for _, title := range in.NewArticleTitles {
+		if title == "" {
+			return domain.ErrInvalidArgument.With("新規記事タイトル に 空 が 含まれています")
+		}
+		if utf8.RuneCountInString(title) > domain.ArticleTitleMaxLength {
+			return domain.ErrInvalidArgument.With(
+				fmt.Sprintf("新規記事タイトル は %d 文字以内 です", domain.ArticleTitleMaxLength),
+			)
+		}
 	}
 	return nil
 }
