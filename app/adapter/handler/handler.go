@@ -106,6 +106,7 @@ func (h *Handler) AdminRoutes() []Route {
 			Pattern: "POST /series/{slug}",
 			Handler: NewPostSeriesBySlugHandler(
 				h.usecase.NewUpdateSeriesUsecase(),
+				h.usecase.NewGetSeriesForAdminUsecase(),
 			),
 		},
 	}

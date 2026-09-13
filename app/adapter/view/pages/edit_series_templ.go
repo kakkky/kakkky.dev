@@ -224,7 +224,7 @@ func EditSeries(vm EditSeriesViewModel) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, " class=\"self-start inline-flex items-center gap-1.5 rounded-md border border-dashed border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:border-gray-900 hover:text-gray-900\">+ 新規記事</button><div id=\"edit-series-articles-deletions\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, " class=\"self-start inline-flex items-center gap-1.5 rounded-md border border-dashed border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:border-gray-900 hover:text-gray-900\">+ 新規記事</button><div")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

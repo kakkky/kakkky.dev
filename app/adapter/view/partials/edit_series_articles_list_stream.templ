@@ -1,0 +1,15 @@
+package partials
+
+import (
+	"github.com/kakkky/hotwire-go/turbo"
+
+	"github.com/kakkky/kakkky.dev/adapter/view/components"
+)
+
+templ EditSeriesArticlesListStreamUpdate(items []components.EditSeriesArticleItemViewModel) {
+	@turbo.StreamUpdate(components.EditSeriesArticlesListID) {
+		for _, item := range items {
+			@components.EditSeriesArticleItem(item)
+		}
+	}
+}
