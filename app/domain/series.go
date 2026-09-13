@@ -94,19 +94,56 @@ func (s *Series) Update(title string, description string, status SeriesStatus, t
 	return nil
 }
 
-func (s *Series) AddArticle(articleID ArticleID, position int) error {
-	if position <= 0 {
-		return ErrInvalidArgument.With("position は 1 以上 です")
-	}
+func (s *Series) AddArticle(articleID ArticleID) error {
 	for _, a := range s.Articles {
 		if a.ArticleID == articleID {
 			return ErrInvalidArgument.With("この article は既にこの series に含まれています")
 		}
-		if a.Position == position {
-			return ErrInvalidArgument.With(fmt.Sprintf("position %d は既に使用されています", position))
+	}
+	// position は 1 始まり
+	nextPosition := 1
+	if n := len(s.Articles); n > 0 {
+		nextPosition = s.Articles[n-1].Position + 1
+	}
+	s.Articles = append(s.Articles, SeriesArticle{ArticleID: articleID, Position: nextPosition})
+	return nil
+}
+
+func (s *Series) RemoveArticle(articleID ArticleID) error {
+	for i, a := range s.Articles {
+		if a.ArticleID == articleID {
+			s.Articles = append(s.Articles[:i], s.Articles[i+1:]...)
+			return nil
 		}
 	}
-	s.Articles = append(s.Articles, SeriesArticle{ArticleID: articleID, Position: position})
+	return ErrInvalidArgument.With(fmt.Sprintf("article %s は この series に 含まれていません", articleID))
+}
+
+func (s *Series) ReorderArticles(articleIDs []ArticleID) error {
+	if len(articleIDs) != len(s.Articles) {
+		return ErrInvalidArgument.With("articles の 個数 が 一致 しません")
+	}
+	seen := make(map[ArticleID]struct{}, len(articleIDs))
+	for _, id := range articleIDs {
+		if _, ok := seen[id]; ok {
+			return ErrInvalidArgument.With(fmt.Sprintf("article %s が 重複 しています", id))
+		}
+		seen[id] = struct{}{}
+	}
+	current := make(map[ArticleID]struct{}, len(s.Articles))
+	for _, a := range s.Articles {
+		current[a.ArticleID] = struct{}{}
+	}
+	for _, id := range articleIDs {
+		if _, ok := current[id]; !ok {
+			return ErrInvalidArgument.With(fmt.Sprintf("article %s は この series に 含まれていません", id))
+		}
+	}
+	next := make([]SeriesArticle, len(articleIDs))
+	for i, id := range articleIDs {
+		next[i] = SeriesArticle{ArticleID: id, Position: i + 1}
+	}
+	s.Articles = next
 	return nil
 }
 
