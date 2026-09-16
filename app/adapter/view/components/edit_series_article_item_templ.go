@@ -53,7 +53,7 @@ func EditSeriesArticleItem(vm EditSeriesArticleItemViewModel) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, " draggable=\"true\" class=\"flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2\"><input type=\"hidden\" name=\"article_id\" value=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, " draggable=\"true\" class=\"flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2\"><input type=\"hidden\" name=\"article_id\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

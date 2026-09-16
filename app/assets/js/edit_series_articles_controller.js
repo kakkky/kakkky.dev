@@ -38,6 +38,9 @@ export default class extends Controller {
     if (!this.#dragging) return
     event.preventDefault()
     this.#dragging.classList.remove("opacity-50")
+    // 並び替え された 既存行 を dirty マーク (点線 + 灰色 で 「未保存」を 示す。
+    // 更新後 の Turbo Stream で 差し替え される と 自動 リセット)。
+    this.#dragging.classList.add("border-dashed", "bg-gray-50")
     this.#dragging = null
   }
 
