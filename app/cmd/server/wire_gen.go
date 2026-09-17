@@ -35,7 +35,7 @@ func InitServer(ctx context.Context) (*Server, func(), error) {
 	useCase := usecase.NewUseCase(repositoryRepository, queryService)
 	ogpFetcher := client.NewOGPFetcher()
 	handlerHandler := handler.NewHandler(configConfig, useCase, ogpFetcher)
-	middlewareMiddleware := middleware.NewMiddleware()
+	middlewareMiddleware := middleware.NewMiddleware(configConfig)
 	httpHandler := httpserver.NewMux(configConfig, handlerHandler, middlewareMiddleware)
 	httpServer := httpserver.NewHTTPServer(configConfig, httpHandler)
 	server := NewServer(httpServer)
