@@ -26,7 +26,7 @@ templ EditSeries(vm EditSeriesViewModel) {
 		<form
 			id={ seriesUpdateFormID }
 			method="post"
-			action={ templ.SafeURL("/admin/series/" + vm.Slug) }
+			action={ templ.SafeURL("/series/" + vm.Slug) }
 			style="min-height: calc(100dvh - 3.5rem);"
 			class="flex flex-col"
 		>

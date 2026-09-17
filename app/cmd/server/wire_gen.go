@@ -34,9 +34,9 @@ func InitServer(ctx context.Context) (*Server, func(), error) {
 	queryService := query.NewQueryService(sqlxDB)
 	useCase := usecase.NewUseCase(repositoryRepository, queryService)
 	ogpFetcher := client.NewOGPFetcher()
-	handlerHandler := handler.NewHandler(useCase, ogpFetcher)
+	handlerHandler := handler.NewHandler(configConfig, useCase, ogpFetcher)
 	middlewareMiddleware := middleware.NewMiddleware()
-	httpHandler := httpserver.NewMux(handlerHandler, middlewareMiddleware)
+	httpHandler := httpserver.NewMux(configConfig, handlerHandler, middlewareMiddleware)
 	httpServer := httpserver.NewHTTPServer(configConfig, httpHandler)
 	server := NewServer(httpServer)
 	return server, func() {

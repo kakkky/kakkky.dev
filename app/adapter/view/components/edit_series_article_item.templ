@@ -29,7 +29,7 @@ templ EditSeriesArticleItem(vm EditSeriesArticleItemViewModel) {
 			aria-hidden="true"
 		>⋮⋮</span>
 		<a
-			href={ templ.SafeURL("/admin/articles/" + vm.Slug + "/edit") }
+			href={ templ.SafeURL("/articles/" + vm.Slug + "/edit") }
 			class="flex-1 truncate text-sm text-gray-900 hover:underline"
 		>
 			{ vm.Title }

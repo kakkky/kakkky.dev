@@ -4,16 +4,19 @@ import (
 	"net/http"
 
 	"github.com/kakkky/kakkky.dev/adapter/client"
+	"github.com/kakkky/kakkky.dev/config"
 	"github.com/kakkky/kakkky.dev/usecase"
 )
 
 type Handler struct {
+	cfg        *config.Config
 	usecase    *usecase.UseCase
 	ogpFetcher *client.OGPFetcher // GetLinkPreviewHandler 専用
 }
 
-func NewHandler(usecase *usecase.UseCase, ogpFetcher *client.OGPFetcher) *Handler {
+func NewHandler(cfg *config.Config, usecase *usecase.UseCase, ogpFetcher *client.OGPFetcher) *Handler {
 	return &Handler{
+		cfg:        cfg,
 		usecase:    usecase,
 		ogpFetcher: ogpFetcher,
 	}
@@ -52,6 +55,7 @@ func (h *Handler) AdminRoutes() []Route {
 			Handler: NewGetDashboardHandler(
 				h.usecase.NewListArticlesUsecase(),
 				h.usecase.NewListSeriesUsecase(),
+				h.cfg.PublicBaseURL,
 			),
 		},
 		{

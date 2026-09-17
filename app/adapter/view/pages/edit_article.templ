@@ -31,7 +31,7 @@ templ EditArticle(vm EditArticleViewModel) {
 	@layout.Base("Edit Article", "max-w-none", []string{js.TagInputController.Path, js.ArticleEditorController.Path, js.EditArticleController.Path}, js.CodeMirrorImportMap()) {
 		<form
 			method="post"
-			action={ templ.SafeURL("/admin/articles/" + vm.Slug) }
+			action={ templ.SafeURL("/articles/" + vm.Slug) }
 			style="height: calc(100dvh - 3.5rem);"
 			class="flex flex-col"
 			{ stimulus.AttrControllers(js.EditArticleController.Name)... }

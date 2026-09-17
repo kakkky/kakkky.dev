@@ -37,8 +37,8 @@ templ dashboardHeader() {
 	<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 		<h1 class="text-xl font-semibold tracking-tight text-gray-900 leading-none">Dashboard</h1>
 		<div class="hidden md:flex flex-wrap items-center gap-2">
-			@components.NewButton("/admin/articles/new", "New Article", false)
-			@components.NewButton("/admin/series/new", "New Series", true)
+			@components.NewButton("/articles/new", "New Article", false)
+			@components.NewButton("/series/new", "New Series", true)
 		</div>
 	</div>
 }

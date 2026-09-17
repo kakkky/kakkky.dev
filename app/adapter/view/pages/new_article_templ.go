@@ -51,7 +51,7 @@ func NewArticle(vm NewArticleViewModel) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"mx-auto max-w-2xl py-8 px-4\"><h1 class=\"text-xl font-semibold tracking-tight text-gray-900 mb-6\">New Article</h1><form method=\"post\" action=\"/admin/articles\" class=\"flex flex-col gap-6\"><label class=\"flex flex-col gap-2\"><span class=\"text-sm font-medium text-gray-700\">Title</span> <input type=\"text\" name=\"title\" maxlength=\"100\" required placeholder=\"タイトル\" class=\"rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-gray-900 focus:outline-none\"></label>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"mx-auto max-w-2xl py-8 px-4\"><h1 class=\"text-xl font-semibold tracking-tight text-gray-900 mb-6\">New Article</h1><form method=\"post\" action=\"/articles\" class=\"flex flex-col gap-6\"><label class=\"flex flex-col gap-2\"><span class=\"text-sm font-medium text-gray-700\">Title</span> <input type=\"text\" name=\"title\" maxlength=\"100\" required placeholder=\"タイトル\" class=\"rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-gray-900 focus:outline-none\"></label>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

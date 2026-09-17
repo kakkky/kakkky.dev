@@ -22,15 +22,18 @@ const (
 type GetDashboardHandler struct {
 	listArticlesUsecase *usecase.ListArticlesUsecase
 	listSeriesUsecase   *usecase.ListSeriesUsecase
+	publicBaseURL       string
 }
 
 func NewGetDashboardHandler(
 	listArticlesUsecase *usecase.ListArticlesUsecase,
 	listSeriesUsecase *usecase.ListSeriesUsecase,
+	publicBaseURL string,
 ) *GetDashboardHandler {
 	return &GetDashboardHandler{
 		listArticlesUsecase: listArticlesUsecase,
 		listSeriesUsecase:   listSeriesUsecase,
+		publicBaseURL:       publicBaseURL,
 	}
 }
 
@@ -69,8 +72,8 @@ func (h *GetDashboardHandler) renderFullPage(rw http.ResponseWriter, r *http.Req
 		return
 	}
 	vm := pages.DashboardViewModel{
-		Articles: buildArticlesListViewModel(aOut.Articles, aOut.NextCursor),
-		Series:   buildSeriesListViewModel(sOut.Series, sOut.NextCursor),
+		Articles: buildArticlesListViewModel(aOut.Articles, aOut.NextCursor, h.publicBaseURL),
+		Series:   buildSeriesListViewModel(sOut.Series, sOut.NextCursor, h.publicBaseURL),
 	}
 	_ = pages.Dashboard(vm).Render(ctx, rw)
 }
@@ -90,7 +93,7 @@ func (h *GetDashboardHandler) renderArticlesPartial(rw http.ResponseWriter, r *h
 		RenderError(rw, r, err)
 		return
 	}
-	vm := buildArticlesListViewModel(out.Articles, out.NextCursor)
+	vm := buildArticlesListViewModel(out.Articles, out.NextCursor, h.publicBaseURL)
 	_ = partials.ArticlesList(vm).Render(ctx, rw)
 }
 
@@ -109,7 +112,7 @@ func (h *GetDashboardHandler) renderSeriesPartial(rw http.ResponseWriter, r *htt
 		RenderError(rw, r, err)
 		return
 	}
-	vm := buildSeriesListViewModel(out.Series, out.NextCursor)
+	vm := buildSeriesListViewModel(out.Series, out.NextCursor, h.publicBaseURL)
 	_ = partials.SeriesList(vm).Render(ctx, rw)
 }
 
@@ -156,6 +159,7 @@ func parseCursorParams(q url.Values) (cursorID string, cursorAt time.Time, err e
 func buildArticlesListViewModel(
 	articles []domain.Article,
 	nextCursor usecase.ListArticlesUsecaseCursor,
+	publicBaseURL string,
 ) partials.ArticlesListViewModel {
 	items := make([]components.ArticleRowViewModel, len(articles))
 	for i, a := range articles {
@@ -163,8 +167,8 @@ func buildArticlesListViewModel(
 			Title:     a.Title,
 			Status:    string(a.Status),
 			CreatedAt: a.CreatedAt,
-			Href:      "/articles/" + string(a.Slug),
-			EditHref:  "/admin/articles/" + string(a.Slug) + "/edit",
+			Href:      publicBaseURL + "/articles/" + string(a.Slug),
+			EditHref:  "/articles/" + string(a.Slug) + "/edit",
 		}
 	}
 	var nextURL string
@@ -173,7 +177,7 @@ func buildArticlesListViewModel(
 		v.Set("panel", "articles")
 		v.Set("cursor_id", string(nextCursor.AfterID))
 		v.Set("cursor_at", nextCursor.AfterCreatedAt.Format(time.RFC3339Nano))
-		nextURL = "/admin/dashboard?" + v.Encode()
+		nextURL = "/dashboard?" + v.Encode()
 	}
 	return partials.ArticlesListViewModel{Items: items, NextCursorURL: nextURL}
 }
@@ -181,6 +185,7 @@ func buildArticlesListViewModel(
 func buildSeriesListViewModel(
 	series []domain.Series,
 	nextCursor usecase.ListSeriesUsecaseCursor,
+	publicBaseURL string,
 ) partials.SeriesListViewModel {
 	items := make([]components.SeriesRowViewModel, len(series))
 	for i, s := range series {
@@ -189,8 +194,8 @@ func buildSeriesListViewModel(
 			Status:       string(s.Status),
 			ArticleCount: len(s.Articles),
 			CreatedAt:    s.CreatedAt,
-			Href:         "/series/" + string(s.Slug),
-			EditHref:     "/admin/series/" + string(s.Slug) + "/edit",
+			Href:         publicBaseURL + "/series/" + string(s.Slug),
+			EditHref:     "/series/" + string(s.Slug) + "/edit",
 		}
 	}
 	var nextURL string
@@ -199,7 +204,7 @@ func buildSeriesListViewModel(
 		v.Set("panel", "series")
 		v.Set("cursor_id", string(nextCursor.AfterID))
 		v.Set("cursor_at", nextCursor.AfterCreatedAt.Format(time.RFC3339Nano))
-		nextURL = "/admin/dashboard?" + v.Encode()
+		nextURL = "/dashboard?" + v.Encode()
 	}
 	return partials.SeriesListViewModel{Items: items, NextCursorURL: nextURL}
 }

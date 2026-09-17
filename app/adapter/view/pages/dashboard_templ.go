@@ -131,11 +131,11 @@ func dashboardHeader() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.NewButton("/admin/articles/new", "New Article", false).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.NewButton("/articles/new", "New Article", false).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.NewButton("/admin/series/new", "New Series", true).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.NewButton("/series/new", "New Series", true).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

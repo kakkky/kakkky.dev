@@ -47,5 +47,5 @@ func (h *PostArticlesHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	http.Redirect(rw, r, "/admin/articles/"+string(out.ArticleSlug)+"/edit", http.StatusSeeOther)
+	http.Redirect(rw, r, "/articles/"+string(out.ArticleSlug)+"/edit", http.StatusSeeOther)
 }

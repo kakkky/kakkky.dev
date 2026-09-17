@@ -49,5 +49,5 @@ func (h *PostSeriesHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(rw, r, "/admin/series/"+string(out.SeriesSlug)+"/edit", http.StatusSeeOther)
+	http.Redirect(rw, r, "/series/"+string(out.SeriesSlug)+"/edit", http.StatusSeeOther)
 }
