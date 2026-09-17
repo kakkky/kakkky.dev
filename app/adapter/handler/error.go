@@ -10,6 +10,8 @@ import (
 	"github.com/kakkky/kakkky.dev/domain"
 )
 
+// NOTE: エラー画面の Header は PublicBaseURL 空で描画されるため, admin サブドメイン上で
+// フルページでエラー画面を返す場合の Feed リンクは "/feed" のままになり、正しく遷移できない問題がある。
 func RenderError(w http.ResponseWriter, r *http.Request, err error) {
 	status, msg := errorStatusAndMessage(err)
 	isTurbo := turbo.IsFrameRequest(r) || turbo.IsStreamRequest(r)

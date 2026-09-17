@@ -7,11 +7,12 @@ import (
 )
 
 type NewArticleViewModel struct {
-	ExistingTags []components.TagViewModel
+	ExistingTags  []components.TagViewModel
+	PublicBaseURL string
 }
 
 templ NewArticle(vm NewArticleViewModel) {
-	@layout.Base("New Article", "max-w-none", []string{js.TagInputController.Path}) {
+	@layout.Base("New Article", "max-w-none", vm.PublicBaseURL, []string{js.TagInputController.Path}) {
 		<section class="mx-auto max-w-2xl py-8 px-4">
 			<h1 class="text-xl font-semibold tracking-tight text-gray-900 mb-6">New Article</h1>
 			<form method="post" action="/articles" class="flex flex-col gap-6">

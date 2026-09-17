@@ -16,8 +16,9 @@ import (
 )
 
 type FeedViewModel struct {
-	List      partials.FeedItemListViewModel
-	TagFilter components.TagFilterAreaViewModel
+	List          partials.FeedItemListViewModel
+	TagFilter     components.TagFilterAreaViewModel
+	PublicBaseURL string
 }
 
 func Feed(vm FeedViewModel) templ.Component {
@@ -75,7 +76,7 @@ func Feed(vm FeedViewModel) templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = layout.Base("Feed", "max-w-4xl", []string{js.TagFilterController.Path}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = layout.Base("Feed", "max-w-4xl", vm.PublicBaseURL, []string{js.TagFilterController.Path}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

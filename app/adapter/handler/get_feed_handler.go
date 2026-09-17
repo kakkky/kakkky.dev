@@ -23,10 +23,11 @@ const (
 
 type GetFeedHandler struct {
 	getFeedUsecase *usecase.GetFeedUsecase
+	publicBaseURL  string
 }
 
-func NewGetFeedHandler(getFeedUsecase *usecase.GetFeedUsecase) *GetFeedHandler {
-	return &GetFeedHandler{getFeedUsecase: getFeedUsecase}
+func NewGetFeedHandler(getFeedUsecase *usecase.GetFeedUsecase, publicBaseURL string) *GetFeedHandler {
+	return &GetFeedHandler{getFeedUsecase: getFeedUsecase, publicBaseURL: publicBaseURL}
 }
 
 type feedParams struct {
@@ -115,6 +116,7 @@ func (h *GetFeedHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 				Tags:          toTagViewModels(out.Tags),
 				TargetFrameID: partials.FeedItemListID,
 			},
+			PublicBaseURL: h.publicBaseURL,
 		}
 		_ = pages.Feed(vm).Render(ctx, rw)
 	}

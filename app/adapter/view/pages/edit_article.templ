@@ -18,17 +18,18 @@ type Status struct {
 }
 
 type EditArticleViewModel struct {
-	Slug      string
-	Title     string
-	Body      string
-	Statuses  []Status
-	TagInput  components.TagInputViewModel
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	Slug          string
+	Title         string
+	Body          string
+	Statuses      []Status
+	TagInput      components.TagInputViewModel
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	PublicBaseURL string
 }
 
 templ EditArticle(vm EditArticleViewModel) {
-	@layout.Base("Edit Article", "max-w-none", []string{js.TagInputController.Path, js.ArticleEditorController.Path, js.EditArticleController.Path}, js.CodeMirrorImportMap()) {
+	@layout.Base("Edit Article", "max-w-none", vm.PublicBaseURL, []string{js.TagInputController.Path, js.ArticleEditorController.Path, js.EditArticleController.Path}, js.CodeMirrorImportMap()) {
 		<form
 			method="post"
 			action={ templ.SafeURL("/articles/" + vm.Slug) }

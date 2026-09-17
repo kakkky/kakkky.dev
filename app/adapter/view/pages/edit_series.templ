@@ -9,12 +9,13 @@ import (
 )
 
 type EditSeriesViewModel struct {
-	Slug        string
-	Title       string
-	Description string
-	Statuses    []Status
-	TagInput    components.TagInputViewModel
-	Articles    []components.EditSeriesArticleItemViewModel
+	Slug          string
+	Title         string
+	Description   string
+	Statuses      []Status
+	TagInput      components.TagInputViewModel
+	Articles      []components.EditSeriesArticleItemViewModel
+	PublicBaseURL string
 }
 
 const seriesUpdateFormID = "series-update-form"
@@ -22,7 +23,7 @@ const seriesUpdateFormID = "series-update-form"
 var editSeriesArticlesCtrl = js.EditSeriesArticlesController.Name
 
 templ EditSeries(vm EditSeriesViewModel) {
-	@layout.Base("Edit Series", "max-w-none", []string{js.TagInputController.Path, js.EditSeriesArticlesController.Path}) {
+	@layout.Base("Edit Series", "max-w-none", vm.PublicBaseURL, []string{js.TagInputController.Path, js.EditSeriesArticlesController.Path}) {
 		<form
 			id={ seriesUpdateFormID }
 			method="post"

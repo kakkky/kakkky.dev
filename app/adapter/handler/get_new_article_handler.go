@@ -9,11 +9,13 @@ import (
 
 type GetNewArticleHandler struct {
 	listTagsUsecase *usecase.ListTagsUsecase
+	publicBaseURL   string
 }
 
-func NewGetNewArticleHandler(listTagsUsecase *usecase.ListTagsUsecase) *GetNewArticleHandler {
+func NewGetNewArticleHandler(listTagsUsecase *usecase.ListTagsUsecase, publicBaseURL string) *GetNewArticleHandler {
 	return &GetNewArticleHandler{
 		listTagsUsecase: listTagsUsecase,
+		publicBaseURL:   publicBaseURL,
 	}
 }
 
@@ -27,6 +29,7 @@ func (h *GetNewArticleHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request
 	}
 
 	_ = pages.NewArticle(pages.NewArticleViewModel{
-		ExistingTags: toTagViewModels(out.Tags),
+		ExistingTags:  toTagViewModels(out.Tags),
+		PublicBaseURL: h.publicBaseURL,
 	}).Render(ctx, rw)
 }

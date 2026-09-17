@@ -8,7 +8,7 @@ package layout
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-func Header() templ.Component {
+func Header(publicBaseURL string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -29,7 +29,46 @@ func Header() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<header class=\"xl:sticky xl:top-0 z-10 border-b border-gray-200 bg-white/80 backdrop-blur\"><div class=\"mx-auto max-w-4xl px-6 h-14 flex items-center justify-between\"><a href=\"/feed\" class=\"flex items-center gap-2\"><span class=\"inline-flex h-7 w-7 items-center justify-center rounded-md bg-gray-900 text-white text-xs font-bold\">k</span> <span class=\"text-sm font-semibold tracking-tight\">kakkky.dev</span></a><nav class=\"flex items-center gap-6 text-sm text-gray-700\"><a href=\"/feed\" class=\"hover:text-gray-900\">Feed</a> <span class=\"h-4 w-px bg-gray-200\" aria-hidden=\"true\"></span> <a href=\"/rss.xml\" aria-label=\"RSS\" class=\"text-gray-500 hover:text-gray-900\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 11a9 9 0 0 1 9 9\"></path> <path d=\"M4 4a16 16 0 0 1 16 16\"></path> <circle cx=\"5\" cy=\"19\" r=\"1\"></circle></svg></a></nav></div></header>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<header class=\"xl:sticky xl:top-0 z-10 border-b border-gray-200 bg-white/80 backdrop-blur\"><div class=\"mx-auto max-w-4xl px-6 h-14 flex items-center justify-between\"><a href=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var2 templ.SafeURL
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(publicBaseURL + "/feed"))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/layout/header.templ`, Line: 6, Col: 51}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" class=\"flex items-center gap-2\"><span class=\"inline-flex h-7 w-7 items-center justify-center rounded-md bg-gray-900 text-white text-xs font-bold\">k</span> <span class=\"text-sm font-semibold tracking-tight\">kakkky.dev</span></a><nav class=\"flex items-center gap-6 text-sm text-gray-700\"><a href=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var3 templ.SafeURL
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(publicBaseURL + "/feed"))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/layout/header.templ`, Line: 11, Col: 52}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\" class=\"hover:text-gray-900\">Feed</a> <span class=\"h-4 w-px bg-gray-200\" aria-hidden=\"true\"></span> <a href=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var4 templ.SafeURL
+		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(publicBaseURL + "/rss.xml"))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/layout/header.templ`, Line: 13, Col: 55}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\" aria-label=\"RSS\" class=\"text-gray-500 hover:text-gray-900\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 11a9 9 0 0 1 9 9\"></path> <path d=\"M4 4a16 16 0 0 1 16 16\"></path> <circle cx=\"5\" cy=\"19\" r=\"1\"></circle></svg></a></nav></div></header>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

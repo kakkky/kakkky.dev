@@ -17,12 +17,13 @@ import (
 )
 
 type EditSeriesViewModel struct {
-	Slug        string
-	Title       string
-	Description string
-	Statuses    []Status
-	TagInput    components.TagInputViewModel
-	Articles    []components.EditSeriesArticleItemViewModel
+	Slug          string
+	Title         string
+	Description   string
+	Statuses      []Status
+	TagInput      components.TagInputViewModel
+	Articles      []components.EditSeriesArticleItemViewModel
+	PublicBaseURL string
 }
 
 const seriesUpdateFormID = "series-update-form"
@@ -69,7 +70,7 @@ func EditSeries(vm EditSeriesViewModel) templ.Component {
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.ResolveAttributeValue(seriesUpdateFormID)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_series.templ`, Line: 27, Col: 26}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_series.templ`, Line: 28, Col: 26}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var3)
 			if templ_7745c5c3_Err != nil {
@@ -82,7 +83,7 @@ func EditSeries(vm EditSeriesViewModel) templ.Component {
 			var templ_7745c5c3_Var4 templ.SafeURL
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL("/series/" + vm.Slug))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_series.templ`, Line: 29, Col: 47}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_series.templ`, Line: 30, Col: 47}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -95,7 +96,7 @@ func EditSeries(vm EditSeriesViewModel) templ.Component {
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.ResolveAttributeValue(vm.Title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_series.templ`, Line: 40, Col: 23}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_series.templ`, Line: 41, Col: 23}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var5)
 			if templ_7745c5c3_Err != nil {
@@ -113,7 +114,7 @@ func EditSeries(vm EditSeriesViewModel) templ.Component {
 				var templ_7745c5c3_Var6 string
 				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.ResolveAttributeValue(s.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_series.templ`, Line: 54, Col: 30}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_series.templ`, Line: 55, Col: 30}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var6)
 				if templ_7745c5c3_Err != nil {
@@ -136,7 +137,7 @@ func EditSeries(vm EditSeriesViewModel) templ.Component {
 				var templ_7745c5c3_Var7 string
 				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(seriesStatusLabel(s.Name))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_series.templ`, Line: 54, Col: 87}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_series.templ`, Line: 55, Col: 87}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 				if templ_7745c5c3_Err != nil {
@@ -162,7 +163,7 @@ func EditSeries(vm EditSeriesViewModel) templ.Component {
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(vm.Description)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_series.templ`, Line: 77, Col: 23}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_series.templ`, Line: 78, Col: 23}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -192,7 +193,7 @@ func EditSeries(vm EditSeriesViewModel) templ.Component {
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.ResolveAttributeValue(components.EditSeriesArticlesListID)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_series.templ`, Line: 93, Col: 47}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/edit_series.templ`, Line: 94, Col: 47}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var9)
 			if templ_7745c5c3_Err != nil {
@@ -254,7 +255,7 @@ func EditSeries(vm EditSeriesViewModel) templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = layout.Base("Edit Series", "max-w-none", []string{js.TagInputController.Path, js.EditSeriesArticlesController.Path}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = layout.Base("Edit Series", "max-w-none", vm.PublicBaseURL, []string{js.TagInputController.Path, js.EditSeriesArticlesController.Path}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

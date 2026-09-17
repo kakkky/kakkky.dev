@@ -12,15 +12,18 @@ import (
 type GetEditSeriesHandler struct {
 	getSeriesForAdminUsecase *usecase.GetSeriesForAdminUsecase
 	listTagsUsecase          *usecase.ListTagsUsecase
+	publicBaseURL            string
 }
 
 func NewGetEditSeriesHandler(
 	getSeriesForAdminUsecase *usecase.GetSeriesForAdminUsecase,
 	listTagsUsecase *usecase.ListTagsUsecase,
+	publicBaseURL string,
 ) *GetEditSeriesHandler {
 	return &GetEditSeriesHandler{
 		getSeriesForAdminUsecase: getSeriesForAdminUsecase,
 		listTagsUsecase:          listTagsUsecase,
+		publicBaseURL:            publicBaseURL,
 	}
 }
 
@@ -85,6 +88,7 @@ func (h *GetEditSeriesHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request
 			ExistingTags: existingTags,
 			SelectedTags: selectedTags,
 		},
-		Articles: articles,
+		Articles:      articles,
+		PublicBaseURL: h.publicBaseURL,
 	}).Render(ctx, rw)
 }

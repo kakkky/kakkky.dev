@@ -31,15 +31,15 @@ func (h *Handler) PublicRoutes() []Route {
 	return []Route{
 		{
 			Pattern: "GET /feed",
-			Handler: NewGetFeedHandler(h.usecase.NewGetFeedUsecase()),
+			Handler: NewGetFeedHandler(h.usecase.NewGetFeedUsecase(), h.cfg.PublicBaseURL),
 		},
 		{
 			Pattern: "GET /articles/{slug}",
-			Handler: NewGetArticleHandler(h.usecase.NewGetArticleUsecase()),
+			Handler: NewGetArticleHandler(h.usecase.NewGetArticleUsecase(), h.cfg.PublicBaseURL),
 		},
 		{
 			Pattern: "GET /series/{slug}",
-			Handler: NewGetSeriesHandler(h.usecase.NewGetSeriesUsecase()),
+			Handler: NewGetSeriesHandler(h.usecase.NewGetSeriesUsecase(), h.cfg.PublicBaseURL),
 		},
 		{
 			Pattern: "GET /link-preview",
@@ -62,6 +62,7 @@ func (h *Handler) AdminRoutes() []Route {
 			Pattern: "GET /articles/new",
 			Handler: NewGetNewArticleHandler(
 				h.usecase.NewListTagsUsecase(),
+				h.cfg.PublicBaseURL,
 			),
 		},
 		{
@@ -75,6 +76,7 @@ func (h *Handler) AdminRoutes() []Route {
 			Handler: NewGetEditArticleHandler(
 				h.usecase.NewGetArticleForAdminUsecase(),
 				h.usecase.NewListTagsUsecase(),
+				h.cfg.PublicBaseURL,
 			),
 		},
 		{
@@ -91,6 +93,7 @@ func (h *Handler) AdminRoutes() []Route {
 			Pattern: "GET /series/new",
 			Handler: NewGetNewSeriesHandler(
 				h.usecase.NewListTagsUsecase(),
+				h.cfg.PublicBaseURL,
 			),
 		},
 		{
@@ -104,6 +107,7 @@ func (h *Handler) AdminRoutes() []Route {
 			Handler: NewGetEditSeriesHandler(
 				h.usecase.NewGetSeriesForAdminUsecase(),
 				h.usecase.NewListTagsUsecase(),
+				h.cfg.PublicBaseURL,
 			),
 		},
 		{

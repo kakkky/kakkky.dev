@@ -12,15 +12,18 @@ import (
 type GetEditArticleHandler struct {
 	getArticleForAdminUsecase *usecase.GetArticleForAdminUsecase
 	listTagsUsecase           *usecase.ListTagsUsecase
+	publicBaseURL             string
 }
 
 func NewGetEditArticleHandler(
 	getArticleForAdminUsecase *usecase.GetArticleForAdminUsecase,
 	listTagsUsecase *usecase.ListTagsUsecase,
+	publicBaseURL string,
 ) *GetEditArticleHandler {
 	return &GetEditArticleHandler{
 		getArticleForAdminUsecase: getArticleForAdminUsecase,
 		listTagsUsecase:           listTagsUsecase,
+		publicBaseURL:             publicBaseURL,
 	}
 }
 
@@ -75,7 +78,8 @@ func (h *GetEditArticleHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reques
 			ExistingTags: existingTags,
 			SelectedTags: selectedTags,
 		},
-		CreatedAt: articleOut.Article.CreatedAt,
-		UpdatedAt: articleOut.Article.UpdatedAt,
+		CreatedAt:     articleOut.Article.CreatedAt,
+		UpdatedAt:     articleOut.Article.UpdatedAt,
+		PublicBaseURL: h.publicBaseURL,
 	}).Render(ctx, rw)
 }

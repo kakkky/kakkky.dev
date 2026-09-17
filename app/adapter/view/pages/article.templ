@@ -12,12 +12,13 @@ import (
 )
 
 type ArticleViewModel struct {
-	Title       string
-	PublishedAt time.Time
-	Tags        []string
-	Body        string
-	Outline    []*view.OutlineNode
-	InSeriesRef    *SeriesRefViewModel
+	Title         string
+	PublishedAt   time.Time
+	Tags          []string
+	Body          string
+	Outline       []*view.OutlineNode
+	InSeriesRef   *SeriesRefViewModel
+	PublicBaseURL string
 }
 
 type SeriesRefViewModel struct {
@@ -36,7 +37,7 @@ type SeriesNeighborArticleRefViewModel struct {
 }
 
 templ Article(vm ArticleViewModel) {
-	@layout.Base(vm.Title, "max-w-7xl", []string{js.OutlineDialogController.Path}) {
+	@layout.Base(vm.Title, "max-w-7xl", vm.PublicBaseURL, []string{js.OutlineDialogController.Path}) {
 		// モバイル表示の場合目次ヘッダーを表示する
 		<div class="contents xl:hidden">
 			@components.ArticleOutlineHeader(components.ArticleOutlineHeaderViewModel{

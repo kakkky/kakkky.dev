@@ -13,7 +13,7 @@ import "github.com/kakkky/hotwire-go/turbo"
 import "github.com/kakkky/kakkky.dev/adapter/view"
 import "fmt"
 
-func Base(subTitle, contentMaxW string, controllers []string, extraHead ...templ.Component) templ.Component {
+func Base(subTitle, contentMaxW, publicBaseURL string, controllers []string, extraHead ...templ.Component) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -69,7 +69,7 @@ func Base(subTitle, contentMaxW string, controllers []string, extraHead ...templ
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = Header().Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = Header(publicBaseURL).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
