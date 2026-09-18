@@ -11,6 +11,14 @@ type Config struct {
 	CFAccessTeamDomain string `envconfig:"CF_ACCESS_TEAM_DOMAIN"`
 	CFAccessAudience   string `envconfig:"CF_ACCESS_AUD"`
 	AdminEmail         string `envconfig:"ADMIN_EMAIL"`
+
+	S3Endpoint        string `envconfig:"S3_ENDPOINT" required:"true"`
+	S3Region          string `envconfig:"S3_REGION" default:"auto"`
+	S3Bucket          string `envconfig:"S3_BUCKET" required:"true"`
+	S3AccessKeyID     string `envconfig:"S3_ACCESS_KEY_ID" required:"true"`
+	S3SecretAccessKey string `envconfig:"S3_SECRET_ACCESS_KEY" required:"true"`
+	S3UsePathStyle    bool   `envconfig:"S3_USE_PATH_STYLE" default:"false"`
+	ImageBaseURL      string `envconfig:"IMAGE_BASE_URL" required:"true"`
 }
 
 func NewConfig() (*Config, error) {

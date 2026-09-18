@@ -340,7 +340,7 @@ func TestGetArticleUsecase_Exec(t *testing.T) {
 
 			tt.mock(ar, tr, sr)
 
-			ga := NewUseCase(repo, qs).NewGetArticleUsecase()
+			ga := NewUseCase(repo, qs, nil).NewGetArticleUsecase()
 			got, err := ga.Exec(ctx, tt.input)
 
 			if tt.wantErr != nil {

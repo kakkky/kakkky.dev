@@ -13,6 +13,9 @@ import { markdown } from "@codemirror/lang-markdown"
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language"
 import { tags as t } from "@lezer/highlight"
 
+const IMAGE_UPLOAD_ENDPOINT = "/images"
+const UPLOAD_PLACEHOLDER_PREFIX = "![Uploading"
+
 // heading の視覚階層は basicSetup の defaultHighlightStyle (色付け) では
 // 表現されないので、上に size / weight を重ねる。Lezer tag → style の対応で、
 // CodeMirror が syntax tree を歩いて該当 token に自動生成 class を当ててくれる。
@@ -70,6 +73,11 @@ export default class extends Controller {
             this.bodyTarget.value = v.state.doc.toString()
           }
         }),
+        // clipboard から image を paste した際に POST /images へ upload し、
+        // 返ってきた URL を markdown 記法で挿入する。
+        EditorView.domEventHandlers({
+          paste: (event, view) => this.#onPaste(event, view),
+        }),
       ],
     })
 
@@ -99,6 +107,65 @@ export default class extends Controller {
     this.view.focus()
     this.view.dispatch({
       selection: { anchor: this.view.state.doc.length },
+    })
+  }
+
+  #onPaste(event, view) {
+    const file = this.#pickImageFile(event.clipboardData)
+    if (!file) return
+
+    event.preventDefault()
+
+    // 同時に複数貼られたときの衝突を避けるため upload ごとに一意の placeholder を作る。
+    const token = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+    const placeholder = `${UPLOAD_PLACEHOLDER_PREFIX} ${token}...]()`
+
+    const insertPos = view.state.selection.main.to
+    view.dispatch({
+      changes: { from: insertPos, insert: placeholder },
+      selection: { anchor: insertPos + placeholder.length },
+    })
+
+    this.#uploadImage(file)
+      .then((url) => this.#replacePlaceholder(placeholder, `![](${url})`))
+      .catch((err) => {
+        console.error("image upload failed", err)
+        this.#replacePlaceholder(placeholder, "")
+      })
+  }
+
+  #pickImageFile(clipboardData) {
+    if (!clipboardData) return null
+    for (const item of clipboardData.items) {
+      if (item.kind === "file" && item.type.startsWith("image/")) {
+        return item.getAsFile()
+      }
+    }
+    return null
+  }
+
+  async #uploadImage(file) {
+    const form = new FormData()
+    form.append("file", file)
+
+    const resp = await fetch(IMAGE_UPLOAD_ENDPOINT, { method: "POST", body: form })
+    if (!resp.ok) {
+      throw new Error(`upload failed: ${resp.status}`)
+    }
+    const data = await resp.json()
+    if (!data.url) {
+      throw new Error("no url in response")
+    }
+    return data.url
+  }
+
+  #replacePlaceholder(placeholder, replacement) {
+    if (!this.view) return
+    const doc = this.view.state.doc.toString()
+    const idx = doc.indexOf(placeholder)
+    if (idx < 0) return
+    this.view.dispatch({
+      changes: { from: idx, to: idx + placeholder.length, insert: replacement },
     })
   }
 }

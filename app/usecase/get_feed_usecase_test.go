@@ -196,7 +196,7 @@ func TestGetFeedUsecase_Exec(t *testing.T) {
 
 			tt.mock(fqs, tr)
 
-			gf := NewUseCase(repo, qs).NewGetFeedUsecase()
+			gf := NewUseCase(repo, qs, nil).NewGetFeedUsecase()
 			got, err := gf.Exec(ctx, tt.input)
 
 			if tt.wantErr != nil {

@@ -70,7 +70,7 @@ func TestGetArticleForAdminUsecase_Exec(t *testing.T) {
 
 			tt.mock(ar, tr, sr)
 
-			uc := NewUseCase(repo, qs).NewGetArticleForAdminUsecase()
+			uc := NewUseCase(repo, qs, nil).NewGetArticleForAdminUsecase()
 			got, err := uc.Exec(ctx, tt.input)
 
 			if tt.wantErr != nil {
