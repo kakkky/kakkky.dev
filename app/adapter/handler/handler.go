@@ -90,6 +90,12 @@ func (h *Handler) AdminRoutes() []Route {
 			Handler: NewPostArticleEditorHandler(),
 		},
 		{
+			Pattern: "POST /images",
+			Handler: NewPostImagesHandler(
+				h.usecase.NewUploadImageUsecase(),
+			),
+		},
+		{
 			Pattern: "GET /series/new",
 			Handler: NewGetNewSeriesHandler(
 				h.usecase.NewListTagsUsecase(),

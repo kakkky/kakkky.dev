@@ -106,7 +106,7 @@ func TestListSeriesUsecase_Exec(t *testing.T) {
 
 			tt.mock(sr)
 
-			gs := NewUseCase(repo, qs).NewListSeriesUsecase()
+			gs := NewUseCase(repo, qs, nil).NewListSeriesUsecase()
 			got, err := gs.Exec(ctx, tt.input)
 
 			if tt.wantErr != nil {

@@ -79,7 +79,7 @@ func TestGetSeriesForAdminUsecase_Exec(t *testing.T) {
 
 			tt.mock(sr, ar, tr)
 
-			uc := NewUseCase(repo, qs).NewGetSeriesForAdminUsecase()
+			uc := NewUseCase(repo, qs, nil).NewGetSeriesForAdminUsecase()
 			got, err := uc.Exec(ctx, tt.input)
 
 			if tt.wantErr != nil {
