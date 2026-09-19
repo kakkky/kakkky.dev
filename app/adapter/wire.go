@@ -17,6 +17,7 @@ import (
 
 var Set = wire.NewSet(
 	client.NewOGPFetcher,
+	client.NewClient,
 	handler.NewHandler,
 	middleware.NewMiddleware,
 	repository.NewRepository,
@@ -24,4 +25,5 @@ var Set = wire.NewSet(
 	usecase.NewUseCase,
 	wire.Bind(new(domain.Repository), new(*repository.Repository)),
 	wire.Bind(new(domain.QueryService), new(*query.QueryService)),
+	wire.Bind(new(domain.Client), new(*client.Client)),
 )
