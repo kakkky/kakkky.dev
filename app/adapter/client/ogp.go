@@ -12,6 +12,8 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+
+	"github.com/kakkky/kakkky.dev/domain"
 )
 
 const (
@@ -26,7 +28,7 @@ type OGPFetcher struct {
 	client *http.Client
 }
 
-func NewOGPFetcher() *OGPFetcher {
+func (c *Client) NewOGPFetcher() domain.OGPFetcher {
 	// Dialer.Control は TCP接続の 直前に呼ばれる hook
 	// SSRF対策として、IP アドレスを見て内部リソース (loopback / private / link-local) への接続を弾く。
 	dialer := &net.Dialer{
@@ -77,23 +79,16 @@ func NewOGPFetcher() *OGPFetcher {
 	}
 }
 
-type OGPData struct {
-	Host        string
-	Title       string
-	Description string
-	Image       string
-}
-
-func (f *OGPFetcher) Fetch(ctx context.Context, rawURL string) (OGPData, error) {
+func (f *OGPFetcher) Fetch(ctx context.Context, rawURL string) (domain.OGPData, error) {
 	u, err := url.Parse(rawURL)
 
 	if err != nil || (u.Scheme != "http" && u.Scheme != "https") {
-		return OGPData{}, errors.New("invalid url")
+		return domain.OGPData{}, errors.New("invalid url")
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
 	if err != nil {
-		return OGPData{}, err
+		return domain.OGPData{}, err
 	}
 
 	req.Header.Set("User-Agent", userAgent)
@@ -102,18 +97,18 @@ func (f *OGPFetcher) Fetch(ctx context.Context, rawURL string) (OGPData, error) 
 
 	resp, err := f.client.Do(req)
 	if err != nil {
-		return OGPData{}, err
+		return domain.OGPData{}, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		return OGPData{}, errors.New("bad status")
+		return domain.OGPData{}, errors.New("bad status")
 	}
 
 	// 巨大 HTML による OOM 攻撃防止。<head>は先頭にあるため切り詰めても問題ない。
 	doc, err := goquery.NewDocumentFromReader(io.LimitReader(resp.Body, maxBodySize))
 	if err != nil {
-		return OGPData{}, err
+		return domain.OGPData{}, err
 	}
 
 	data := extractOGP(doc)
@@ -122,8 +117,8 @@ func (f *OGPFetcher) Fetch(ctx context.Context, rawURL string) (OGPData, error) 
 	return data, nil
 }
 
-func extractOGP(doc *goquery.Document) OGPData {
-	var d OGPData
+func extractOGP(doc *goquery.Document) domain.OGPData {
+	var d domain.OGPData
 
 	d.Title = doc.Find(`meta[property="og:title"]`).AttrOr("content", "")
 	if d.Title == "" {

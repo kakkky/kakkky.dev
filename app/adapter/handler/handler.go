@@ -9,16 +9,16 @@ import (
 )
 
 type Handler struct {
-	cfg        *config.Config
-	usecase    *usecase.UseCase
-	ogpFetcher *client.OGPFetcher // GetLinkPreviewHandler 専用
+	cfg     *config.Config
+	usecase *usecase.UseCase
+	client  *client.Client
 }
 
-func NewHandler(cfg *config.Config, usecase *usecase.UseCase, ogpFetcher *client.OGPFetcher) *Handler {
+func NewHandler(cfg *config.Config, usecase *usecase.UseCase, client *client.Client) *Handler {
 	return &Handler{
-		cfg:        cfg,
-		usecase:    usecase,
-		ogpFetcher: ogpFetcher,
+		cfg:     cfg,
+		usecase: usecase,
+		client:  client,
 	}
 }
 
@@ -43,7 +43,7 @@ func (h *Handler) PublicRoutes() []Route {
 		},
 		{
 			Pattern: "GET /link-preview",
-			Handler: NewGetLinkPreviewHandler(h.ogpFetcher),
+			Handler: NewGetLinkPreviewHandler(h.client.NewOGPFetcher()),
 		},
 	}
 }

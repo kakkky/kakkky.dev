@@ -7,19 +7,19 @@ import (
 
 	"github.com/kakkky/hotwire-go/turbo"
 
-	"github.com/kakkky/kakkky.dev/adapter/client"
 	"github.com/kakkky/kakkky.dev/adapter/view/components"
 	"github.com/kakkky/kakkky.dev/adapter/view/partials"
+	"github.com/kakkky/kakkky.dev/domain"
 )
 
 const linkPreviewCacheTTL = 6 * time.Hour
 
 type GetLinkPreviewHandler struct {
-	ogpFetcher *client.OGPFetcher
+	ogpFetcher domain.OGPFetcher
 	cache      *linkPreviewCache
 }
 
-func NewGetLinkPreviewHandler(ogpFetcher *client.OGPFetcher) *GetLinkPreviewHandler {
+func NewGetLinkPreviewHandler(ogpFetcher domain.OGPFetcher) *GetLinkPreviewHandler {
 	return &GetLinkPreviewHandler{
 		ogpFetcher: ogpFetcher,
 		cache:      newLinkPreviewCache(),
@@ -63,7 +63,7 @@ type linkPreviewCache struct {
 }
 
 type linkPreviewCacheEntry struct {
-	data client.OGPData
+	data domain.OGPData
 	exp  time.Time
 }
 
@@ -71,17 +71,17 @@ func newLinkPreviewCache() *linkPreviewCache {
 	return &linkPreviewCache{entries: make(map[string]linkPreviewCacheEntry)}
 }
 
-func (c *linkPreviewCache) get(k string) (client.OGPData, bool) {
+func (c *linkPreviewCache) get(k string) (domain.OGPData, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	e, ok := c.entries[k]
 	if !ok || time.Now().After(e.exp) {
-		return client.OGPData{}, false
+		return domain.OGPData{}, false
 	}
 	return e.data, true
 }
 
-func (c *linkPreviewCache) set(k string, d client.OGPData) {
+func (c *linkPreviewCache) set(k string, d domain.OGPData) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.entries[k] = linkPreviewCacheEntry{data: d, exp: time.Now().Add(linkPreviewCacheTTL)}

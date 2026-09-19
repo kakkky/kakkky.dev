@@ -16,7 +16,6 @@ import (
 )
 
 var Set = wire.NewSet(
-	client.NewOGPFetcher,
 	client.NewClient,
 	handler.NewHandler,
 	middleware.NewMiddleware,
