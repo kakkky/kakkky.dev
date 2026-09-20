@@ -1,6 +1,6 @@
 module github.com/kakkky/kakkky.dev
 
-go 1.25.1
+go 1.27.1
 
 require (
 	github.com/PuerkitoBio/goquery v1.12.0
