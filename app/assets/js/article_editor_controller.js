@@ -13,6 +13,9 @@ import { markdown } from "@codemirror/lang-markdown"
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language"
 import { tags as t } from "@lezer/highlight"
 
+const IMAGE_UPLOAD_ENDPOINT = "/images"
+const uploadPlaceholder = (uploadId) => `![Uploading ${uploadId}...]()`
+
 // heading の視覚階層は basicSetup の defaultHighlightStyle (色付け) では
 // 表現されないので、上に size / weight を重ねる。Lezer tag → style の対応で、
 // CodeMirror が syntax tree を歩いて該当 token に自動生成 class を当ててくれる。
@@ -70,6 +73,11 @@ export default class extends Controller {
             this.bodyTarget.value = v.state.doc.toString()
           }
         }),
+        // clipboard から image を paste した際に POST /images へ upload し、
+        // 返ってきた URL を markdown 記法で挿入する。
+        EditorView.domEventHandlers({
+          paste: (event, view) => this.#onPaste(event, view),
+        }),
       ],
     })
 
@@ -99,6 +107,49 @@ export default class extends Controller {
     this.view.focus()
     this.view.dispatch({
       selection: { anchor: this.view.state.doc.length },
+    })
+  }
+
+  #onPaste(event, view) {
+    const item = [...(event.clipboardData?.items ?? [])].find(
+      (i) => i.kind === "file" && i.type.startsWith("image/"),
+    )
+    const file = item?.getAsFile()
+    if (!file) return
+
+    event.preventDefault()
+
+    // 同時に複数貼られたときの衝突を避けるため upload ごとに一意の placeholder を作る。
+    const placeholder = uploadPlaceholder(crypto.randomUUID())
+    const pos = view.state.selection.main.to
+    view.dispatch({
+      changes: { from: pos, insert: placeholder },
+      selection: { anchor: pos + placeholder.length },
+    })
+
+    void (async () => {
+      try {
+        const form = new FormData()
+        form.append("file", file)
+        const resp = await fetch(IMAGE_UPLOAD_ENDPOINT, { method: "POST", body: form })
+        if (!resp.ok) throw new Error(`upload failed: ${resp.status}`)
+        const data = await resp.json()
+        if (!data.url) throw new Error("no url in response")
+        this.#replacePlaceholder(placeholder, `![](${data.url})`)
+      } catch (err) {
+        console.error("image upload failed", err)
+        this.#replacePlaceholder(placeholder, "")
+      }
+    })()
+  }
+
+  #replacePlaceholder(placeholder, replacement) {
+    if (!this.view) return
+    const doc = this.view.state.doc.toString()
+    const idx = doc.indexOf(placeholder)
+    if (idx < 0) return
+    this.view.dispatch({
+      changes: { from: idx, to: idx + placeholder.length, insert: replacement },
     })
   }
 }
