@@ -13,7 +13,7 @@ type Client interface {
 }
 
 type S3Client interface {
-	Upload(ctx context.Context, prefix, contentType string, body io.Reader) (string, error)
+	Upload(ctx context.Context, contentType string, body io.Reader) (string, error)
 }
 
 type OGPFetcher interface {

@@ -49,13 +49,13 @@ func (c *Client) NewS3Client() domain.S3Client {
 	}
 }
 
-func (c *S3Client) Upload(ctx context.Context, prefix, contentType string, body io.Reader) (string, error) {
+func (c *S3Client) Upload(ctx context.Context, contentType string, body io.Reader) (string, error) {
 	ext, ok := s3ExtByContentType[contentType]
 	if !ok {
 		return "", domain.ErrInvalidArgument.With("png / jpeg / webp / gif のみ アップロード できます")
 	}
 
-	key := fmt.Sprintf("%s/%s.%s", strings.Trim(prefix, "/"), uuid.NewString(), ext)
+	key := fmt.Sprintf("%s.%s", uuid.NewString(), ext)
 
 	_, err := c.client.PutObject(ctx, &s3.PutObjectInput{
 		Bucket:      aws.String(c.bucket),

@@ -8,10 +8,7 @@ import (
 	"github.com/kakkky/kakkky.dev/domain"
 )
 
-const (
-	uploadImageMaxSize   = 5 * 1024 * 1024
-	uploadImageKeyPrefix = "articles"
-)
+const uploadImageMaxSize = 5 * 1024 * 1024
 
 type UploadImageUsecase struct {
 	s3Client domain.S3Client
@@ -41,7 +38,7 @@ func (us *UploadImageUsecase) Exec(ctx context.Context, in UploadImageUsecaseInp
 		)
 	}
 
-	url, err := us.s3Client.Upload(ctx, uploadImageKeyPrefix, in.ContentType, in.Body)
+	url, err := us.s3Client.Upload(ctx, in.ContentType, in.Body)
 	if err != nil {
 		return UploadImageUsecaseOutput{}, err
 	}
