@@ -29,5 +29,5 @@ func (m *Middleware) AdminWraps() []func(http.Handler) http.Handler {
 }
 
 func (m *Middleware) MuxWraps(mux *http.ServeMux) http.Handler {
-	return NotFound(mux)
+	return AccessLog(NotFound(mux))
 }
