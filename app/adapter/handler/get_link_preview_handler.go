@@ -2,27 +2,21 @@ package handler
 
 import (
 	"net/http"
-	"sync"
-	"time"
 
 	"github.com/kakkky/hotwire-go/turbo"
 
 	"github.com/kakkky/kakkky.dev/adapter/view/components"
 	"github.com/kakkky/kakkky.dev/adapter/view/partials"
-	"github.com/kakkky/kakkky.dev/domain"
+	"github.com/kakkky/kakkky.dev/usecase"
 )
 
-const linkPreviewCacheTTL = 6 * time.Hour
-
 type GetLinkPreviewHandler struct {
-	ogpFetcher domain.OGPFetcher
-	cache      *linkPreviewCache
+	getLinkPreviewUsecase *usecase.GetLinkPreviewUsecase
 }
 
-func NewGetLinkPreviewHandler(ogpFetcher domain.OGPFetcher) *GetLinkPreviewHandler {
+func NewGetLinkPreviewHandler(getLinkPreviewUsecase *usecase.GetLinkPreviewUsecase) *GetLinkPreviewHandler {
 	return &GetLinkPreviewHandler{
-		ogpFetcher: ogpFetcher,
-		cache:      newLinkPreviewCache(),
+		getLinkPreviewUsecase: getLinkPreviewUsecase,
 	}
 }
 
@@ -38,51 +32,13 @@ func (h *GetLinkPreviewHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reques
 
 	vm := components.LinkPreviewCardViewModel{URL: rawURL}
 
-	// cache 優先。miss なら fetch して cache に保存。
-	d, ok := h.cache.get(rawURL)
-	if !ok {
-		if fetched, err := h.ogpFetcher.Fetch(ctx, rawURL); err == nil {
-			h.cache.set(rawURL, fetched)
-			d, ok = fetched, true
-		}
-	}
-	if ok {
-		vm.Host = d.Host
-		vm.Title = d.Title
-		vm.Description = d.Description
-		vm.Image = d.Image
+	// fetch エラーは握りつぶし、空 vm で card を描画する
+	if out, err := h.getLinkPreviewUsecase.Exec(ctx, usecase.GetLinkPreviewUsecaseInput{URL: rawURL}); err == nil {
+		vm.Host = out.Data.Host
+		vm.Title = out.Data.Title
+		vm.Description = out.Data.Description
+		vm.Image = out.Data.Image
 	}
 
 	_ = partials.LinkPreviewFrame(frameID, vm).Render(ctx, rw)
-}
-
-// link preview の結果は in-memory でキャッシュしておく
-type linkPreviewCache struct {
-	mu      sync.RWMutex
-	entries map[string]linkPreviewCacheEntry
-}
-
-type linkPreviewCacheEntry struct {
-	data domain.OGPData
-	exp  time.Time
-}
-
-func newLinkPreviewCache() *linkPreviewCache {
-	return &linkPreviewCache{entries: make(map[string]linkPreviewCacheEntry)}
-}
-
-func (c *linkPreviewCache) get(k string) (domain.OGPData, bool) {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	e, ok := c.entries[k]
-	if !ok || time.Now().After(e.exp) {
-		return domain.OGPData{}, false
-	}
-	return e.data, true
-}
-
-func (c *linkPreviewCache) set(k string, d domain.OGPData) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	c.entries[k] = linkPreviewCacheEntry{data: d, exp: time.Now().Add(linkPreviewCacheTTL)}
 }
