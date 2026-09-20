@@ -15,7 +15,9 @@ func NewDB(ctx context.Context, cfg *config.Config) (db *sqlx.DB, cleanup func()
 	if err != nil {
 		return nil, nil, fmt.Errorf("sqlx.ConnectContext: %w", err)
 	}
-	slog.Info("connected to database")
+	slog.Info("connected to database", slog.Group("db",
+		slog.String("driver", "pgx"),
+	))
 	return db,
 		func() { _ = db.Close() },
 		nil

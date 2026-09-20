@@ -42,7 +42,9 @@ func (s *HTTPServer) Run(ctx context.Context) error {
 
 	return scope.Run(ctx, func(sc *scope.Scope) error {
 		sc.Go(func(ctx context.Context) error {
-			slog.Info("http server is running", "addr", s.srv.Addr)
+			slog.Info("http server is running", slog.Group("http",
+				slog.String("addr", s.srv.Addr),
+			))
 			if err := s.srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 				return err
 			}
@@ -54,7 +56,9 @@ func (s *HTTPServer) Run(ctx context.Context) error {
 			shutdownCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 			defer cancel()
 			if err := s.srv.Shutdown(shutdownCtx); err != nil {
-				slog.Error("http server shutdown error", "error", err)
+				slog.Error("http server shutdown error", slog.Group("http",
+					slog.Any("err", err),
+				))
 				return err
 			}
 			slog.Info("http server was shut down gracefully")

@@ -13,9 +13,8 @@ import (
 	"github.com/kakkky/kakkky.dev/driver"
 )
 
-func InitServer(ctx context.Context) (*Server, func(), error) {
+func InitServer(ctx context.Context, cfg *config.Config) (*Server, func(), error) {
 	wire.Build(
-		config.Set,
 		driver.Set,
 		adapter.Set,
 		NewServer,

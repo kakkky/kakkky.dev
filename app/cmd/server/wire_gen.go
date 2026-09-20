@@ -21,23 +21,19 @@ import (
 
 // Injectors from wire.go:
 
-func InitServer(ctx context.Context) (*Server, func(), error) {
-	configConfig, err := config.NewConfig()
-	if err != nil {
-		return nil, nil, err
-	}
-	sqlxDB, cleanup, err := db.NewDB(ctx, configConfig)
+func InitServer(ctx context.Context, cfg *config.Config) (*Server, func(), error) {
+	sqlxDB, cleanup, err := db.NewDB(ctx, cfg)
 	if err != nil {
 		return nil, nil, err
 	}
 	repositoryRepository := repository.NewRepository(sqlxDB)
 	queryService := query.NewQueryService(sqlxDB)
-	clientClient := client.NewClient(configConfig)
+	clientClient := client.NewClient(cfg)
 	useCase := usecase.NewUseCase(repositoryRepository, queryService, clientClient)
-	handlerHandler := handler.NewHandler(configConfig, useCase)
-	middlewareMiddleware := middleware.NewMiddleware(configConfig)
-	httpHandler := httpserver.NewMux(configConfig, handlerHandler, middlewareMiddleware)
-	httpServer := httpserver.NewHTTPServer(configConfig, httpHandler)
+	handlerHandler := handler.NewHandler(cfg, useCase)
+	middlewareMiddleware := middleware.NewMiddleware(cfg)
+	httpHandler := httpserver.NewMux(cfg, handlerHandler, middlewareMiddleware)
+	httpServer := httpserver.NewHTTPServer(cfg, httpHandler)
 	server := NewServer(httpServer)
 	return server, func() {
 		cleanup()
