@@ -19,6 +19,8 @@ type Config struct {
 	S3SecretAccessKey string `envconfig:"S3_SECRET_ACCESS_KEY" required:"true"`
 	S3UsePathStyle    bool   `envconfig:"S3_USE_PATH_STYLE" default:"false"`
 	ImageBaseURL      string `envconfig:"IMAGE_BASE_URL" required:"true"`
+
+	SentryDSN string `envconfig:"SENTRY_DSN"`
 }
 
 func NewConfig() (*Config, error) {
