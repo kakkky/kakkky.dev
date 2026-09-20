@@ -1,7 +1,13 @@
 package client
 
-type Client struct{}
+import (
+	"github.com/kakkky/kakkky.dev/config"
+)
 
-func NewClient() *Client {
-	return &Client{}
+type Client struct {
+	cfg *config.Config
+}
+
+func NewClient(cfg *config.Config) *Client {
+	return &Client{cfg: cfg}
 }
