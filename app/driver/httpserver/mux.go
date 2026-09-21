@@ -17,6 +17,9 @@ func NewMux(cfg *config.Config, h *handler.Handler, mw *middleware.Middleware) h
 	}
 
 	root := http.NewServeMux()
+	for _, route := range h.StaticRoutes() {
+		root.Handle(route.Pattern, route.Handler)
+	}
 	root.Handle("/", newPublicHandler(h, mw))
 	root.Handle(fmt.Sprintf("%s/", adminURL.Hostname()), newAdminHandler(h, mw))
 
@@ -25,47 +28,28 @@ func NewMux(cfg *config.Config, h *handler.Handler, mw *middleware.Middleware) h
 
 func newPublicHandler(h *handler.Handler, mw *middleware.Middleware) http.Handler {
 	mux := http.NewServeMux()
-	registerStaticRoutes(mux, h)
-	registerPublicRoutes(mux, h, mw)
-	return mw.MuxWraps(mux)
+	for _, route := range h.PublicRoutes() {
+		mux.Handle(route.Pattern, route.Handler)
+	}
+
+	var handler http.Handler = mux
+	wraps := mw.PublicWraps()
+	for i := len(wraps) - 1; i >= 0; i-- {
+		handler = wraps[i](handler)
+	}
+	return handler
 }
 
 func newAdminHandler(h *handler.Handler, mw *middleware.Middleware) http.Handler {
 	mux := http.NewServeMux()
-	registerStaticRoutes(mux, h)
-	registerAdminRoutes(mux, h, mw)
-	return mw.MuxWraps(mux)
-}
-
-func registerStaticRoutes(mux *http.ServeMux, h *handler.Handler) {
-	for _, route := range h.StaticRoutes() {
+	for _, route := range h.AdminRoutes() {
 		mux.Handle(route.Pattern, route.Handler)
 	}
-}
 
-func registerPublicRoutes(mux *http.ServeMux, h *handler.Handler, mw *middleware.Middleware) {
-	globalWraps := mw.GlobalWraps()
-	for _, route := range h.PublicRoutes() {
-		handler := route.Handler
-		for i := len(globalWraps) - 1; i >= 0; i-- {
-			handler = globalWraps[i](handler)
-		}
-		mux.Handle(route.Pattern, handler)
+	var handler http.Handler = mux
+	wraps := mw.AdminWraps()
+	for i := len(wraps) - 1; i >= 0; i-- {
+		handler = wraps[i](handler)
 	}
-}
-
-func registerAdminRoutes(mux *http.ServeMux, h *handler.Handler, mw *middleware.Middleware) {
-	adminWraps := mw.AdminWraps()
-	globalWraps := mw.GlobalWraps()
-
-	for _, route := range h.AdminRoutes() {
-		handler := route.Handler
-		for i := len(adminWraps) - 1; i >= 0; i-- {
-			handler = adminWraps[i](handler)
-		}
-		for i := len(globalWraps) - 1; i >= 0; i-- {
-			handler = globalWraps[i](handler)
-		}
-		mux.Handle(route.Pattern, handler)
-	}
+	return handler
 }

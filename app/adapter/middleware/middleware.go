@@ -16,18 +16,19 @@ func NewMiddleware(cfg *config.Config) *Middleware {
 	}
 }
 
-func (m *Middleware) GlobalWraps() []func(http.Handler) http.Handler {
+func (m *Middleware) PublicWraps() []func(http.Handler) http.Handler {
 	return []func(http.Handler) http.Handler{
+		AccessLog,
 		ContentTypeHTML,
+		NotFound,
 	}
 }
 
 func (m *Middleware) AdminWraps() []func(http.Handler) http.Handler {
 	return []func(http.Handler) http.Handler{
+		AccessLog,
+		ContentTypeHTML,
 		CloudflareAccess(m.cfg),
+		NotFound,
 	}
-}
-
-func (m *Middleware) MuxWraps(mux *http.ServeMux) http.Handler {
-	return AccessLog(NotFound(mux))
 }
