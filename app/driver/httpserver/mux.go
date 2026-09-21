@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/kakkky/kakkky.dev/adapter/handler"
 	"github.com/kakkky/kakkky.dev/adapter/middleware"
@@ -11,14 +12,21 @@ import (
 )
 
 func NewMux(cfg *config.Config, h *handler.Handler, mw *middleware.Middleware) http.Handler {
+	publicURL, err := url.Parse(cfg.PublicBaseURL)
+	if err != nil {
+		panic(fmt.Sprintf("invalid public base URL: %v", err))
+	}
 	adminURL, err := url.Parse(cfg.AdminBaseURL)
 	if err != nil {
 		panic(fmt.Sprintf("invalid admin base URL: %v", err))
 	}
 
 	root := http.NewServeMux()
-	for _, route := range h.StaticRoutes() {
-		root.Handle(route.Pattern, route.Handler)
+	for _, host := range []string{publicURL.Hostname(), adminURL.Hostname()} {
+		for _, route := range h.StaticRoutes() {
+			method, path, _ := strings.Cut(route.Pattern, " ")
+			root.Handle(fmt.Sprintf("%s %s%s", method, host, path), route.Handler)
+		}
 	}
 	root.Handle("/", newPublicHandler(h, mw))
 	root.Handle(fmt.Sprintf("%s/", adminURL.Hostname()), newAdminHandler(h, mw))
