@@ -2,8 +2,8 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"github.com/kakkky/kakkky.dev/errors"
 
 	"github.com/kakkky/kakkky.dev/domain"
 )

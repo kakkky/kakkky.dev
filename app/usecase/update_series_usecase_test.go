@@ -2,7 +2,7 @@ package usecase
 
 import (
 	"context"
-	"errors"
+	"github.com/kakkky/kakkky.dev/errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -275,7 +275,8 @@ func TestUpdateSeriesUsecase_Exec(t *testing.T) {
 				Title:  "New",
 				Status: domain.SeriesStatusDraft,
 			},
-			mock:    func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, ar *mock.MockArticleRepository, tr *mock.MockTagRepository) {},
+			mock: func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, ar *mock.MockArticleRepository, tr *mock.MockTagRepository) {
+			},
 			wantErr: domain.ErrInvalidArgument,
 		},
 		{
@@ -286,7 +287,8 @@ func TestUpdateSeriesUsecase_Exec(t *testing.T) {
 				Status:      domain.SeriesStatusDraft,
 				NewTagNames: []string{"DDD", "DDD"},
 			},
-			mock:    func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, ar *mock.MockArticleRepository, tr *mock.MockTagRepository) {},
+			mock: func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, ar *mock.MockArticleRepository, tr *mock.MockTagRepository) {
+			},
 			wantErr: domain.ErrInvalidArgument,
 		},
 		{
@@ -297,7 +299,8 @@ func TestUpdateSeriesUsecase_Exec(t *testing.T) {
 				Status:      domain.SeriesStatusDraft,
 				NewTagNames: []string{""},
 			},
-			mock:    func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, ar *mock.MockArticleRepository, tr *mock.MockTagRepository) {},
+			mock: func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, ar *mock.MockArticleRepository, tr *mock.MockTagRepository) {
+			},
 			wantErr: domain.ErrInvalidArgument,
 		},
 		{
@@ -308,7 +311,8 @@ func TestUpdateSeriesUsecase_Exec(t *testing.T) {
 				Status:           domain.SeriesStatusDraft,
 				NewArticleTitles: []string{""},
 			},
-			mock:    func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, ar *mock.MockArticleRepository, tr *mock.MockTagRepository) {},
+			mock: func(repo, txRepo *mock.MockRepository, sr *mock.MockSeriesRepository, ar *mock.MockArticleRepository, tr *mock.MockTagRepository) {
+			},
 			wantErr: domain.ErrInvalidArgument,
 		},
 		{

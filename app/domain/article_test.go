@@ -1,7 +1,7 @@
 package domain_test
 
 import (
-	"errors"
+	"github.com/kakkky/kakkky.dev/errors"
 	"strings"
 	"testing"
 	"time"
@@ -135,19 +135,19 @@ func TestArticleUpdate(t *testing.T) {
 
 	// publishedAtCheck: PublishedAt 検証をカスタマイズする。nil の場合は wantPublishedAt と Equal 比較。
 	tests := []struct {
-		name               string
-		initial            *domain.Article
-		title              string
-		body               string
-		status             domain.ArticleStatus
-		tagIDs             []domain.TagID
-		wantTitle          string
-		wantBody           string
-		wantStatus         domain.ArticleStatus
-		wantPublishedAt    time.Time
-		publishedAtCheck   func(t *testing.T, got time.Time)
-		wantTagIDs         []domain.TagID
-		wantErr            error
+		name             string
+		initial          *domain.Article
+		title            string
+		body             string
+		status           domain.ArticleStatus
+		tagIDs           []domain.TagID
+		wantTitle        string
+		wantBody         string
+		wantStatus       domain.ArticleStatus
+		wantPublishedAt  time.Time
+		publishedAtCheck func(t *testing.T, got time.Time)
+		wantTagIDs       []domain.TagID
+		wantErr          error
 	}{
 		{
 			name: "success: draft→draft update fields, published_at stays zero",

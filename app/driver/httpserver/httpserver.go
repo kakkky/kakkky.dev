@@ -2,7 +2,7 @@ package httpserver
 
 import (
 	"context"
-	"errors"
+	"github.com/kakkky/kakkky.dev/errors"
 	"log/slog"
 	"net"
 	"net/http"

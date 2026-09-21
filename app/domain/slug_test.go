@@ -1,7 +1,7 @@
 package domain_test
 
 import (
-	"errors"
+	"github.com/kakkky/kakkky.dev/errors"
 	"regexp"
 	"strings"
 	"testing"

@@ -2,7 +2,7 @@ package client
 
 import (
 	"context"
-	"errors"
+	"github.com/kakkky/kakkky.dev/errors"
 	"io"
 	"net"
 	"net/http"

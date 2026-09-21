@@ -2,7 +2,7 @@ package usecase
 
 import (
 	"context"
-	"errors"
+	"github.com/kakkky/kakkky.dev/errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

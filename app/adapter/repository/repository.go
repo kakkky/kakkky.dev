@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
+	"github.com/kakkky/kakkky.dev/errors"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgconn"
