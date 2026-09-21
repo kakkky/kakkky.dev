@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/kakkky/kakkky.dev/domain"
+	"github.com/kakkky/kakkky.dev/errors"
 	"github.com/kakkky/kakkky.dev/usecase"
 )
 
@@ -28,13 +29,13 @@ func (h *PostImagesHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	if err := r.ParseMultipartForm(postImagesMaxMemory); err != nil {
-		RenderError(rw, r, domain.ErrInvalidArgument.Wrap(err, "画像 の フォーム を 解釈 できません"))
+		errors.Set(r.Context(), domain.ErrInvalidArgument.Wrap(err, "画像 の フォーム を 解釈 できません"))
 		return
 	}
 
 	file, header, err := r.FormFile("file")
 	if err != nil {
-		RenderError(rw, r, domain.ErrInvalidArgument.Wrap(err, "画像 ファイル が 見つかりません"))
+		errors.Set(r.Context(), domain.ErrInvalidArgument.Wrap(err, "画像 ファイル が 見つかりません"))
 		return
 	}
 	defer file.Close()
@@ -47,13 +48,13 @@ func (h *PostImagesHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		Body:        file,
 	})
 	if err != nil {
-		RenderError(rw, r, err)
+		errors.Set(r.Context(), err)
 		return
 	}
 
 	body, err := json.Marshal(postImagesResponse{URL: out.URL})
 	if err != nil {
-		RenderError(rw, r, domain.ErrInternal.Wrap(err, "レスポンス の 生成 に 失敗 しました"))
+		errors.Set(r.Context(), domain.ErrInternal.Wrap(err, "レスポンス の 生成 に 失敗 しました"))
 		return
 	}
 	rw.Header().Set("Content-Type", "application/json; charset=utf-8")

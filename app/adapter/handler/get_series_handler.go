@@ -5,6 +5,7 @@ import (
 
 	"github.com/kakkky/kakkky.dev/adapter/view/pages"
 	"github.com/kakkky/kakkky.dev/domain"
+	"github.com/kakkky/kakkky.dev/errors"
 	"github.com/kakkky/kakkky.dev/usecase"
 )
 
@@ -23,7 +24,7 @@ func (h *GetSeriesHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	out, err := h.getSeriesUsecase.Exec(ctx, usecase.GetSeriesUsecaseInput{Slug: slug})
 	if err != nil {
-		RenderError(rw, r, err)
+		errors.Set(r.Context(), err)
 		return
 	}
 

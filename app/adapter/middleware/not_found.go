@@ -3,8 +3,8 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/kakkky/kakkky.dev/adapter/handler"
 	"github.com/kakkky/kakkky.dev/domain"
+	"github.com/kakkky/kakkky.dev/errors"
 )
 
 func NotFound(next http.Handler) http.Handler {
@@ -14,7 +14,7 @@ func NotFound(next http.Handler) http.Handler {
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if _, pattern := mux.Handler(r); pattern == "" {
-			handler.RenderError(w, r, domain.ErrNotFound)
+			errors.Set(r.Context(), domain.ErrNotFound)
 			return
 		}
 		mux.ServeHTTP(w, r)

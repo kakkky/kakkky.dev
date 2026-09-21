@@ -8,9 +8,9 @@ import (
 
 	"github.com/coreos/go-oidc/v3/oidc"
 
-	"github.com/kakkky/kakkky.dev/adapter/handler"
 	"github.com/kakkky/kakkky.dev/config"
 	"github.com/kakkky/kakkky.dev/domain"
+	"github.com/kakkky/kakkky.dev/errors"
 )
 
 func CloudflareAccess(cfg *config.Config) func(http.Handler) http.Handler {
@@ -31,19 +31,19 @@ func CloudflareAccess(cfg *config.Config) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			token := r.Header.Get("Cf-Access-Jwt-Assertion")
 			if token == "" {
-				handler.RenderError(w, r, domain.ErrNotFound)
+				errors.Set(r.Context(), domain.ErrNotFound)
 				return
 			}
 			idToken, err := verifier.Verify(r.Context(), token)
 			if err != nil {
-				handler.RenderError(w, r, domain.ErrNotFound)
+				errors.Set(r.Context(), domain.ErrNotFound)
 				return
 			}
 			var claims struct {
 				Email string `json:"email"`
 			}
 			if err := idToken.Claims(&claims); err != nil || claims.Email != email {
-				handler.RenderError(w, r, domain.ErrNotFound)
+				errors.Set(r.Context(), domain.ErrNotFound)
 				return
 			}
 			next.ServeHTTP(w, r)

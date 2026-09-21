@@ -6,6 +6,7 @@ import (
 	"github.com/kakkky/kakkky.dev/adapter/view"
 	"github.com/kakkky/kakkky.dev/adapter/view/partials"
 	"github.com/kakkky/kakkky.dev/domain"
+	"github.com/kakkky/kakkky.dev/errors"
 )
 
 type PostArticleEditorHandler struct{}
@@ -18,7 +19,7 @@ func (h *PostArticleEditorHandler) ServeHTTP(rw http.ResponseWriter, r *http.Req
 	ctx := r.Context()
 
 	if err := r.ParseForm(); err != nil {
-		RenderError(rw, r, domain.ErrInvalidArgument.Wrap(err, "フォーム を 解釈 できません"))
+		errors.Set(r.Context(), domain.ErrInvalidArgument.Wrap(err, "フォーム を 解釈 できません"))
 		return
 	}
 

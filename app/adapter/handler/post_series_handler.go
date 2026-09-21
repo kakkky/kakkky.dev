@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/kakkky/kakkky.dev/domain"
+	"github.com/kakkky/kakkky.dev/errors"
 	"github.com/kakkky/kakkky.dev/usecase"
 )
 
@@ -21,7 +22,7 @@ func (h *PostSeriesHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	if err := r.ParseForm(); err != nil {
-		RenderError(rw, r, domain.ErrInvalidArgument.Wrap(err, "フォーム を 解釈 できません"))
+		errors.Set(r.Context(), domain.ErrInvalidArgument.Wrap(err, "フォーム を 解釈 できません"))
 		return
 	}
 
@@ -45,7 +46,7 @@ func (h *PostSeriesHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		NewTagNames:    newTagNames,
 	})
 	if err != nil {
-		RenderError(rw, r, err)
+		errors.Set(r.Context(), err)
 		return
 	}
 

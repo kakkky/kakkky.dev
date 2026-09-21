@@ -20,6 +20,7 @@ func (m *Middleware) PublicWraps() []func(http.Handler) http.Handler {
 	return []func(http.Handler) http.Handler{
 		AccessLog,
 		ContentTypeHTML,
+		ErrorHandler,
 		NotFound,
 	}
 }
@@ -28,6 +29,7 @@ func (m *Middleware) AdminWraps() []func(http.Handler) http.Handler {
 	return []func(http.Handler) http.Handler{
 		AccessLog,
 		ContentTypeHTML,
+		ErrorHandler,
 		CloudflareAccess(m.cfg),
 		NotFound,
 	}

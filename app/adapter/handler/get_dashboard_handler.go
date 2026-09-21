@@ -11,6 +11,7 @@ import (
 	"github.com/kakkky/kakkky.dev/adapter/view/pages"
 	"github.com/kakkky/kakkky.dev/adapter/view/partials"
 	"github.com/kakkky/kakkky.dev/domain"
+	"github.com/kakkky/kakkky.dev/errors"
 	"github.com/kakkky/kakkky.dev/usecase"
 )
 
@@ -61,14 +62,14 @@ func (h *GetDashboardHandler) renderFullPage(rw http.ResponseWriter, r *http.Req
 		Limit: dashboardArticlesLimit,
 	})
 	if err != nil {
-		RenderError(rw, r, err)
+		errors.Set(r.Context(), err)
 		return
 	}
 	sOut, err := h.listSeriesUsecase.Exec(ctx, usecase.ListSeriesUsecaseInput{
 		Limit: dashboardSeriesLimit,
 	})
 	if err != nil {
-		RenderError(rw, r, err)
+		errors.Set(r.Context(), err)
 		return
 	}
 	vm := pages.DashboardViewModel{
@@ -82,7 +83,7 @@ func (h *GetDashboardHandler) renderArticlesPartial(rw http.ResponseWriter, r *h
 	ctx := r.Context()
 	cursor, err := parseArticlesCursor(q)
 	if err != nil {
-		RenderError(rw, r, err)
+		errors.Set(r.Context(), err)
 		return
 	}
 	out, err := h.listArticlesUsecase.Exec(ctx, usecase.ListArticlesUsecaseInput{
@@ -90,7 +91,7 @@ func (h *GetDashboardHandler) renderArticlesPartial(rw http.ResponseWriter, r *h
 		Limit:  dashboardArticlesLimit,
 	})
 	if err != nil {
-		RenderError(rw, r, err)
+		errors.Set(r.Context(), err)
 		return
 	}
 	vm := buildArticlesListViewModel(out.Articles, out.NextCursor, h.publicBaseURL)
@@ -101,7 +102,7 @@ func (h *GetDashboardHandler) renderSeriesPartial(rw http.ResponseWriter, r *htt
 	ctx := r.Context()
 	cursor, err := parseSeriesCursor(q)
 	if err != nil {
-		RenderError(rw, r, err)
+		errors.Set(r.Context(), err)
 		return
 	}
 	out, err := h.listSeriesUsecase.Exec(ctx, usecase.ListSeriesUsecaseInput{
@@ -109,7 +110,7 @@ func (h *GetDashboardHandler) renderSeriesPartial(rw http.ResponseWriter, r *htt
 		Limit:  dashboardSeriesLimit,
 	})
 	if err != nil {
-		RenderError(rw, r, err)
+		errors.Set(r.Context(), err)
 		return
 	}
 	vm := buildSeriesListViewModel(out.Series, out.NextCursor, h.publicBaseURL)

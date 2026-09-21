@@ -13,6 +13,7 @@ import (
 	"github.com/kakkky/kakkky.dev/adapter/view/pages"
 	"github.com/kakkky/kakkky.dev/adapter/view/partials"
 	"github.com/kakkky/kakkky.dev/domain"
+	"github.com/kakkky/kakkky.dev/errors"
 	"github.com/kakkky/kakkky.dev/usecase"
 )
 
@@ -46,7 +47,7 @@ func (h *GetFeedHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	params, err := parseFeedParams(r)
 	if err != nil {
-		RenderError(rw, r, err)
+		errors.Set(r.Context(), err)
 		return
 	}
 
@@ -56,7 +57,7 @@ func (h *GetFeedHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		Limit:    params.limit,
 	})
 	if err != nil {
-		RenderError(rw, r, err)
+		errors.Set(r.Context(), err)
 		return
 	}
 

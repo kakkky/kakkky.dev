@@ -1,37 +1,44 @@
-package handler
+package middleware
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/kakkky/hotwire-go/turbo"
+
 	"github.com/kakkky/kakkky.dev/adapter/view/pages"
 	"github.com/kakkky/kakkky.dev/adapter/view/partials"
 	"github.com/kakkky/kakkky.dev/domain"
+	"github.com/kakkky/kakkky.dev/errors"
+	"github.com/kakkky/kakkky.dev/sentry"
 )
 
-// NOTE: エラー画面の Header は PublicBaseURL 空で描画されるため, admin サブドメイン上で
-// フルページでエラー画面を返す場合の Feed リンクは "/feed" のままになり、正しく遷移できない問題がある。
-func RenderError(w http.ResponseWriter, r *http.Request, err error) {
-	status, msg := errorStatusAndMessage(err)
-	isTurbo := turbo.IsFrameRequest(r) || turbo.IsStreamRequest(r)
+func ErrorHandler(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := errors.NewContext(r.Context())
+		ctx = sentry.NewContext(ctx, r)
+		r = r.WithContext(ctx)
 
-	if isTurbo && !errors.Is(err, domain.ErrInternal) {
-		turbo.StreamHeader(w)
-		w.WriteHeader(turboStreamStatus(status))
-		_ = partials.Flash(partials.FlashViewModel{
-			Kind: partials.FlashKindErr,
-			Msg:  msg,
-		}).Render(r.Context(), w)
-		return
-	}
+		defer func() {
+			var panicked bool
+			if p := recover(); p != nil {
+				sentry.Recover(ctx, p)
+				errors.Set(ctx, domain.ErrInternal)
+				panicked = true
+			}
 
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(status)
-	_ = pages.Error(pages.ErrorViewModel{
-		Status: status,
-		Msg:    msg,
-	}).Render(r.Context(), w)
+			err := errors.FromContext(ctx)
+			if err == nil {
+				return
+			}
+			status, msg := errorStatusAndMessage(err)
+			if status >= 500 && !panicked {
+				sentry.Notify(ctx, err)
+			}
+			renderError(w, r, err, status, msg)
+		}()
+
+		next.ServeHTTP(w, r)
+	})
 }
 
 func errorStatusAndMessage(err error) (int, string) {
@@ -66,6 +73,29 @@ func errorStatusAndMessage(err error) (int, string) {
 		return httpStatus, domainErrMsg
 	}
 	return httpStatus, fallbackErrMsg
+}
+
+// NOTE: エラー画面の Header は PublicBaseURL 空で描画されるため, admin サブドメイン上で
+// フルページでエラー画面を返す場合の Feed リンクは "/feed" のままになり、正しく遷移できない問題がある。
+func renderError(w http.ResponseWriter, r *http.Request, err error, status int, msg string) {
+	isTurbo := turbo.IsFrameRequest(r) || turbo.IsStreamRequest(r)
+
+	if isTurbo && !errors.Is(err, domain.ErrInternal) {
+		turbo.StreamHeader(w)
+		w.WriteHeader(turboStreamStatus(status))
+		_ = partials.Flash(partials.FlashViewModel{
+			Kind: partials.FlashKindErr,
+			Msg:  msg,
+		}).Render(r.Context(), w)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(status)
+	_ = pages.Error(pages.ErrorViewModel{
+		Status: status,
+		Msg:    msg,
+	}).Render(r.Context(), w)
 }
 
 // Turbo は 200/422 の turbo-stream レスポンスのみ消化する。

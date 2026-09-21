@@ -6,6 +6,7 @@ import (
 	"github.com/kakkky/kakkky.dev/adapter/view/components"
 	"github.com/kakkky/kakkky.dev/adapter/view/pages"
 	"github.com/kakkky/kakkky.dev/domain"
+	"github.com/kakkky/kakkky.dev/errors"
 	"github.com/kakkky/kakkky.dev/usecase"
 )
 
@@ -33,13 +34,13 @@ func (h *GetEditArticleHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reques
 
 	articleOut, err := h.getArticleForAdminUsecase.Exec(ctx, usecase.GetArticleForAdminUsecaseInput{Slug: slug})
 	if err != nil {
-		RenderError(rw, r, err)
+		errors.Set(r.Context(), err)
 		return
 	}
 
 	tagsOut, err := h.listTagsUsecase.Exec(ctx)
 	if err != nil {
-		RenderError(rw, r, err)
+		errors.Set(r.Context(), err)
 		return
 	}
 
