@@ -73,8 +73,10 @@ func (h *GetDashboardHandler) renderFullPage(rw http.ResponseWriter, r *http.Req
 		return
 	}
 	vm := pages.DashboardViewModel{
-		Articles: buildArticlesListViewModel(aOut.Articles, aOut.NextCursor, h.publicBaseURL),
-		Series:   buildSeriesListViewModel(sOut.Series, sOut.NextCursor, h.publicBaseURL),
+		Articles:      buildArticlesListViewModel(aOut.Articles, aOut.SeriesByID, aOut.NextCursor, h.publicBaseURL),
+		ArticlesTotal: aOut.Total,
+		Series:        buildSeriesListViewModel(sOut.Series, sOut.NextCursor, h.publicBaseURL),
+		SeriesTotal:   sOut.Total,
 	}
 	_ = pages.Dashboard(vm).Render(ctx, rw)
 }
@@ -94,7 +96,7 @@ func (h *GetDashboardHandler) renderArticlesPartial(rw http.ResponseWriter, r *h
 		errors.Set(r.Context(), err)
 		return
 	}
-	vm := buildArticlesListViewModel(out.Articles, out.NextCursor, h.publicBaseURL)
+	vm := buildArticlesListViewModel(out.Articles, out.SeriesByID, out.NextCursor, h.publicBaseURL)
 	_ = partials.ArticlesList(vm).Render(ctx, rw)
 }
 
@@ -159,18 +161,24 @@ func parseCursorParams(q url.Values) (cursorID string, cursorAt time.Time, err e
 
 func buildArticlesListViewModel(
 	articles []domain.Article,
+	seriesByID map[domain.ArticleID]*domain.Series,
 	nextCursor usecase.ListArticlesUsecaseCursor,
 	publicBaseURL string,
 ) partials.ArticlesListViewModel {
 	items := make([]components.ArticleRowViewModel, len(articles))
 	for i, a := range articles {
-		items[i] = components.ArticleRowViewModel{
+		row := components.ArticleRowViewModel{
 			Title:     a.Title,
 			Status:    string(a.Status),
 			CreatedAt: a.CreatedAt,
 			Href:      publicBaseURL + "/articles/" + string(a.Slug),
 			EditHref:  "/articles/" + string(a.Slug) + "/edit",
 		}
+		if s, ok := seriesByID[a.ID]; ok && s != nil {
+			row.SeriesTitle = s.Title
+			row.SeriesHref = publicBaseURL + "/series/" + string(s.Slug)
+		}
+		items[i] = row
 	}
 	var nextURL string
 	if nextCursor.AfterID != "" {

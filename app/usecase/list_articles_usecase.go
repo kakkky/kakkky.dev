@@ -9,11 +9,13 @@ import (
 
 type ListArticlesUsecase struct {
 	articleRepo domain.ArticleRepository
+	seriesRepo  domain.SeriesRepository
 }
 
 func (us *UseCase) NewListArticlesUsecase() *ListArticlesUsecase {
 	return &ListArticlesUsecase{
 		articleRepo: us.repo.NewArticleRepository(),
+		seriesRepo:  us.repo.NewSeriesRepository(),
 	}
 }
 
@@ -29,7 +31,9 @@ type ListArticlesUsecaseInput struct {
 
 type ListArticlesUsecaseOutput struct {
 	Articles   []domain.Article
+	SeriesByID map[domain.ArticleID]*domain.Series
 	NextCursor ListArticlesUsecaseCursor
+	Total      int
 }
 
 func (us *ListArticlesUsecase) Exec(ctx context.Context, in ListArticlesUsecaseInput) (ListArticlesUsecaseOutput, error) {
@@ -57,5 +61,27 @@ func (us *ListArticlesUsecase) Exec(ctx context.Context, in ListArticlesUsecaseI
 			AfterCreatedAt: last.CreatedAt,
 		}
 	}
-	return ListArticlesUsecaseOutput{Articles: articles, NextCursor: next}, nil
+
+	seriesByID := map[domain.ArticleID]*domain.Series{}
+	if len(articles) > 0 {
+		ids := make([]domain.ArticleID, len(articles))
+		for i, a := range articles {
+			ids[i] = a.ID
+		}
+		seriesList, err := us.seriesRepo.FindByArticleIDs(ctx, ids...)
+		if err != nil {
+			return ListArticlesUsecaseOutput{}, err
+		}
+		for _, s := range seriesList {
+			for _, sa := range s.Articles {
+				seriesByID[sa.ArticleID] = s
+			}
+		}
+	}
+
+	total, err := us.articleRepo.Count(ctx)
+	if err != nil {
+		return ListArticlesUsecaseOutput{}, err
+	}
+	return ListArticlesUsecaseOutput{Articles: articles, SeriesByID: seriesByID, NextCursor: next, Total: total}, nil
 }

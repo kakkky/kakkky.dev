@@ -1,6 +1,8 @@
 package pages
 
 import (
+	"strconv"
+
 	"github.com/kakkky/kakkky.dev/adapter/view/components"
 	"github.com/kakkky/kakkky.dev/adapter/view/layout"
 	"github.com/kakkky/kakkky.dev/adapter/view/partials"
@@ -8,7 +10,9 @@ import (
 
 type DashboardViewModel struct {
 	Articles      partials.ArticlesListViewModel
+	ArticlesTotal int
 	Series        partials.SeriesListViewModel
+	SeriesTotal   int
 	PublicBaseURL string
 }
 
@@ -18,13 +22,13 @@ templ Dashboard(vm DashboardViewModel) {
 			@dashboardHeader()
 			<div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:flex-1 md:min-h-0">
 				<div class="md:col-span-6 rounded-lg border border-gray-200 bg-white p-4 h-80 md:h-full flex flex-col min-h-0">
-					@panelHeader("Articles")
+					@panelHeader("Articles", vm.ArticlesTotal)
 					<div class="mt-3 flex-1 min-h-0 overflow-y-auto">
 						@partials.ArticlesList(vm.Articles)
 					</div>
 				</div>
 				<div class="md:col-span-6 rounded-lg border border-gray-200 bg-white p-4 h-80 md:h-full flex flex-col min-h-0">
-					@panelHeader("Series")
+					@panelHeader("Series", vm.SeriesTotal)
 					<div class="mt-3 flex-1 min-h-0 overflow-y-auto">
 						@partials.SeriesList(vm.Series)
 					</div>
@@ -44,8 +48,9 @@ templ dashboardHeader() {
 	</div>
 }
 
-templ panelHeader(title string) {
+templ panelHeader(title string, count int) {
 	<div class="flex items-baseline justify-between">
 		<h2 class="text-sm font-semibold tracking-tight text-gray-900">{ title }</h2>
+		<span class="text-xs font-semibold tabular-nums text-gray-600">{ strconv.Itoa(count) } 件</span>
 	</div>
 }

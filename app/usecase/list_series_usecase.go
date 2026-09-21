@@ -30,6 +30,7 @@ type ListSeriesUsecaseInput struct {
 type ListSeriesUsecaseOutput struct {
 	Series     []domain.Series
 	NextCursor ListSeriesUsecaseCursor
+	Total      int
 }
 
 func (us *ListSeriesUsecase) Exec(ctx context.Context, in ListSeriesUsecaseInput) (ListSeriesUsecaseOutput, error) {
@@ -57,5 +58,10 @@ func (us *ListSeriesUsecase) Exec(ctx context.Context, in ListSeriesUsecaseInput
 			AfterCreatedAt: last.CreatedAt,
 		}
 	}
-	return ListSeriesUsecaseOutput{Series: series, NextCursor: next}, nil
+
+	total, err := us.seriesRepo.Count(ctx)
+	if err != nil {
+		return ListSeriesUsecaseOutput{}, err
+	}
+	return ListSeriesUsecaseOutput{Series: series, NextCursor: next, Total: total}, nil
 }

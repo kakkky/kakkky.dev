@@ -44,10 +44,12 @@ func TestListSeriesUsecase_Exec(t *testing.T) {
 				repo.EXPECT().
 					List(ctx, domain.SeriesID(""), time.Time{}, 3).
 					Return([]*domain.Series{&s1, &s2, &s3}, nil)
+				repo.EXPECT().Count(ctx).Return(3, nil)
 			},
 			want: ListSeriesUsecaseOutput{
 				Series:     []domain.Series{s1, s2},
 				NextCursor: ListSeriesUsecaseCursor{AfterID: s2.ID, AfterCreatedAt: s2.CreatedAt},
+				Total:      3,
 			},
 		},
 		{
@@ -57,8 +59,9 @@ func TestListSeriesUsecase_Exec(t *testing.T) {
 				repo.EXPECT().
 					List(ctx, domain.SeriesID(""), time.Time{}, 3).
 					Return([]*domain.Series{&s1, &s2}, nil)
+				repo.EXPECT().Count(ctx).Return(2, nil)
 			},
-			want: ListSeriesUsecaseOutput{Series: []domain.Series{s1, s2}},
+			want: ListSeriesUsecaseOutput{Series: []domain.Series{s1, s2}, Total: 2},
 		},
 		{
 			name:  "leaves NextCursor zero when items are fewer than the limit",
@@ -67,8 +70,9 @@ func TestListSeriesUsecase_Exec(t *testing.T) {
 				repo.EXPECT().
 					List(ctx, domain.SeriesID(""), time.Time{}, 11).
 					Return([]*domain.Series{&s1}, nil)
+				repo.EXPECT().Count(ctx).Return(1, nil)
 			},
-			want: ListSeriesUsecaseOutput{Series: []domain.Series{s1}},
+			want: ListSeriesUsecaseOutput{Series: []domain.Series{s1}, Total: 1},
 		},
 		{
 			name: "passes cursor through to repo.List",
@@ -80,8 +84,9 @@ func TestListSeriesUsecase_Exec(t *testing.T) {
 				repo.EXPECT().
 					List(ctx, id1, baseTime.Add(3*time.Hour), 11).
 					Return([]*domain.Series{&s2}, nil)
+				repo.EXPECT().Count(ctx).Return(2, nil)
 			},
-			want: ListSeriesUsecaseOutput{Series: []domain.Series{s2}},
+			want: ListSeriesUsecaseOutput{Series: []domain.Series{s2}, Total: 2},
 		},
 		{
 			name:  "propagates error from repo.List",

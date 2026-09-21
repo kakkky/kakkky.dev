@@ -30,45 +30,71 @@ func TestListArticlesUsecase_Exec(t *testing.T) {
 
 	wantErr := errors.New("boom")
 
+	sSeries := &domain.Series{
+		ID:    "cccccccc-cccc-cccc-cccc-ccccccccccc1",
+		Title: "S1",
+		Articles: []domain.SeriesArticle{
+			{ArticleID: id1, Position: 1},
+		},
+	}
+
 	tests := []struct {
 		name    string
 		input   ListArticlesUsecaseInput
-		mock    func(repo *mock.MockArticleRepository)
+		mock    func(ar *mock.MockArticleRepository, sr *mock.MockSeriesRepository)
 		want    ListArticlesUsecaseOutput
 		wantErr error
 	}{
 		{
 			name:  "truncates to limit and sets NextCursor when repo returns more than limit (limit+1 signal)",
 			input: ListArticlesUsecaseInput{Limit: 2},
-			mock: func(repo *mock.MockArticleRepository) {
-				repo.EXPECT().
+			mock: func(ar *mock.MockArticleRepository, sr *mock.MockSeriesRepository) {
+				ar.EXPECT().
 					List(ctx, domain.ArticleID(""), time.Time{}, 3).
 					Return([]*domain.Article{&a1, &a2, &a3}, nil)
+				sr.EXPECT().
+					FindByArticleIDs(ctx, a1.ID, a2.ID).
+					Return([]*domain.Series{sSeries}, nil)
+				ar.EXPECT().Count(ctx).Return(3, nil)
 			},
 			want: ListArticlesUsecaseOutput{
 				Articles:   []domain.Article{a1, a2},
+				SeriesByID: map[domain.ArticleID]*domain.Series{a1.ID: sSeries},
 				NextCursor: ListArticlesUsecaseCursor{AfterID: a2.ID, AfterCreatedAt: a2.CreatedAt},
+				Total:      3,
 			},
 		},
 		{
 			name:  "leaves NextCursor zero when items exactly match the limit",
 			input: ListArticlesUsecaseInput{Limit: 2},
-			mock: func(repo *mock.MockArticleRepository) {
-				repo.EXPECT().
+			mock: func(ar *mock.MockArticleRepository, sr *mock.MockSeriesRepository) {
+				ar.EXPECT().
 					List(ctx, domain.ArticleID(""), time.Time{}, 3).
 					Return([]*domain.Article{&a1, &a2}, nil)
+				sr.EXPECT().
+					FindByArticleIDs(ctx, a1.ID, a2.ID).
+					Return([]*domain.Series{}, nil)
+				ar.EXPECT().Count(ctx).Return(2, nil)
 			},
-			want: ListArticlesUsecaseOutput{Articles: []domain.Article{a1, a2}},
+			want: ListArticlesUsecaseOutput{
+				Articles:   []domain.Article{a1, a2},
+				SeriesByID: map[domain.ArticleID]*domain.Series{},
+				Total:      2,
+			},
 		},
 		{
-			name:  "leaves NextCursor zero when items are fewer than the limit",
+			name:  "returns empty SeriesByID and skips series lookup when there are no articles",
 			input: ListArticlesUsecaseInput{Limit: 10},
-			mock: func(repo *mock.MockArticleRepository) {
-				repo.EXPECT().
+			mock: func(ar *mock.MockArticleRepository, sr *mock.MockSeriesRepository) {
+				ar.EXPECT().
 					List(ctx, domain.ArticleID(""), time.Time{}, 11).
-					Return([]*domain.Article{&a1}, nil)
+					Return([]*domain.Article{}, nil)
+				ar.EXPECT().Count(ctx).Return(0, nil)
 			},
-			want: ListArticlesUsecaseOutput{Articles: []domain.Article{a1}},
+			want: ListArticlesUsecaseOutput{
+				Articles:   []domain.Article{},
+				SeriesByID: map[domain.ArticleID]*domain.Series{},
+			},
 		},
 		{
 			name: "passes cursor through to repo.List",
@@ -76,18 +102,26 @@ func TestListArticlesUsecase_Exec(t *testing.T) {
 				Cursor: ListArticlesUsecaseCursor{AfterID: id1, AfterCreatedAt: baseTime.Add(3 * time.Hour)},
 				Limit:  10,
 			},
-			mock: func(repo *mock.MockArticleRepository) {
-				repo.EXPECT().
+			mock: func(ar *mock.MockArticleRepository, sr *mock.MockSeriesRepository) {
+				ar.EXPECT().
 					List(ctx, id1, baseTime.Add(3*time.Hour), 11).
 					Return([]*domain.Article{&a2}, nil)
+				sr.EXPECT().
+					FindByArticleIDs(ctx, a2.ID).
+					Return([]*domain.Series{}, nil)
+				ar.EXPECT().Count(ctx).Return(2, nil)
 			},
-			want: ListArticlesUsecaseOutput{Articles: []domain.Article{a2}},
+			want: ListArticlesUsecaseOutput{
+				Articles:   []domain.Article{a2},
+				SeriesByID: map[domain.ArticleID]*domain.Series{},
+				Total:      2,
+			},
 		},
 		{
 			name:  "propagates error from repo.List",
 			input: ListArticlesUsecaseInput{Limit: 10},
-			mock: func(repo *mock.MockArticleRepository) {
-				repo.EXPECT().
+			mock: func(ar *mock.MockArticleRepository, sr *mock.MockSeriesRepository) {
+				ar.EXPECT().
 					List(ctx, domain.ArticleID(""), time.Time{}, 11).
 					Return(nil, wantErr)
 			},
@@ -100,11 +134,13 @@ func TestListArticlesUsecase_Exec(t *testing.T) {
 			ctrl := gomock.NewController(t)
 
 			ar := mock.NewMockArticleRepository(ctrl)
+			sr := mock.NewMockSeriesRepository(ctrl)
 			repo := mock.NewMockRepository(ctrl)
 			repo.EXPECT().NewArticleRepository().Return(ar)
+			repo.EXPECT().NewSeriesRepository().Return(sr)
 			qs := mock.NewMockQueryService(ctrl)
 
-			tt.mock(ar)
+			tt.mock(ar, sr)
 
 			ga := NewUseCase(repo, qs, nil).NewListArticlesUsecase()
 			got, err := ga.Exec(ctx, tt.input)
