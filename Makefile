@@ -1,4 +1,4 @@
-COMPOSE := docker compose -f app/compose.yml
+COMPOSE := docker compose --env-file .env -f app/compose.yml
 COMPOSE_EXEC := $(COMPOSE) exec app
 
 .PHONY: dev.up dev.down dev.restart dev.build dev.logs dev.sh wire.gen templ.gen \
