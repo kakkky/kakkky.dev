@@ -10,6 +10,7 @@ import (
 type Client interface {
 	NewS3Client() S3Client
 	NewOGPFetcher() OGPFetcher
+	NewGoogleAnalyticsClient() GoogleAnalyticsClient
 }
 
 type S3Client interface {
@@ -25,4 +26,9 @@ type OGPData struct {
 	Title       string
 	Description string
 	Image       string
+}
+
+type GoogleAnalyticsClient interface {
+	FetchSiteMetrics(ctx context.Context, r AnalyticsDateRange) (AnalyticsSiteMetrics, error)
+	FetchArticleMetrics(ctx context.Context, r AnalyticsDateRange) ([]AnalyticsArticleMetrics, error)
 }
