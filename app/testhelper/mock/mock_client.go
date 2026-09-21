@@ -42,6 +42,20 @@ func (m *MockClient) EXPECT() *MockClientMockRecorder {
 	return m.recorder
 }
 
+// NewGoogleAnalyticsClient mocks base method.
+func (m *MockClient) NewGoogleAnalyticsClient() domain.GoogleAnalyticsClient {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewGoogleAnalyticsClient")
+	ret0, _ := ret[0].(domain.GoogleAnalyticsClient)
+	return ret0
+}
+
+// NewGoogleAnalyticsClient indicates an expected call of NewGoogleAnalyticsClient.
+func (mr *MockClientMockRecorder) NewGoogleAnalyticsClient() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewGoogleAnalyticsClient", reflect.TypeOf((*MockClient)(nil).NewGoogleAnalyticsClient))
+}
+
 // NewOGPFetcher mocks base method.
 func (m *MockClient) NewOGPFetcher() domain.OGPFetcher {
 	m.ctrl.T.Helper()
@@ -146,4 +160,58 @@ func (m *MockOGPFetcher) Fetch(ctx context.Context, url string) (domain.OGPData,
 func (mr *MockOGPFetcherMockRecorder) Fetch(ctx, url any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Fetch", reflect.TypeOf((*MockOGPFetcher)(nil).Fetch), ctx, url)
+}
+
+// MockGoogleAnalyticsClient is a mock of GoogleAnalyticsClient interface.
+type MockGoogleAnalyticsClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockGoogleAnalyticsClientMockRecorder
+	isgomock struct{}
+}
+
+// MockGoogleAnalyticsClientMockRecorder is the mock recorder for MockGoogleAnalyticsClient.
+type MockGoogleAnalyticsClientMockRecorder struct {
+	mock *MockGoogleAnalyticsClient
+}
+
+// NewMockGoogleAnalyticsClient creates a new mock instance.
+func NewMockGoogleAnalyticsClient(ctrl *gomock.Controller) *MockGoogleAnalyticsClient {
+	mock := &MockGoogleAnalyticsClient{ctrl: ctrl}
+	mock.recorder = &MockGoogleAnalyticsClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockGoogleAnalyticsClient) EXPECT() *MockGoogleAnalyticsClientMockRecorder {
+	return m.recorder
+}
+
+// FetchArticleMetrics mocks base method.
+func (m *MockGoogleAnalyticsClient) FetchArticleMetrics(ctx context.Context, r domain.AnalyticsDateRange) ([]domain.AnalyticsArticleMetrics, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FetchArticleMetrics", ctx, r)
+	ret0, _ := ret[0].([]domain.AnalyticsArticleMetrics)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FetchArticleMetrics indicates an expected call of FetchArticleMetrics.
+func (mr *MockGoogleAnalyticsClientMockRecorder) FetchArticleMetrics(ctx, r any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchArticleMetrics", reflect.TypeOf((*MockGoogleAnalyticsClient)(nil).FetchArticleMetrics), ctx, r)
+}
+
+// FetchSiteMetrics mocks base method.
+func (m *MockGoogleAnalyticsClient) FetchSiteMetrics(ctx context.Context, r domain.AnalyticsDateRange) (domain.AnalyticsSiteMetrics, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FetchSiteMetrics", ctx, r)
+	ret0, _ := ret[0].(domain.AnalyticsSiteMetrics)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FetchSiteMetrics indicates an expected call of FetchSiteMetrics.
+func (mr *MockGoogleAnalyticsClientMockRecorder) FetchSiteMetrics(ctx, r any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchSiteMetrics", reflect.TypeOf((*MockGoogleAnalyticsClient)(nil).FetchSiteMetrics), ctx, r)
 }
