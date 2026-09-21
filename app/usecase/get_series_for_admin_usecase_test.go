@@ -16,8 +16,8 @@ func TestGetSeriesForAdminUsecase_Exec(t *testing.T) {
 	ctx := context.Background()
 
 	var (
-		seriesSlug domain.Slug     = "s1"
-		seriesID   domain.SeriesID = "cccccccc-cccc-cccc-cccc-ccccccccccc1"
+		seriesSlug domain.Slug      = "s1"
+		seriesID   domain.SeriesID  = "cccccccc-cccc-cccc-cccc-ccccccccccc1"
 		article1ID domain.ArticleID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa01"
 	)
 
