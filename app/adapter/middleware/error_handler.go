@@ -14,9 +14,7 @@ import (
 
 func ErrorHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := errors.NewContext(r.Context())
-		ctx = sentry.NewContext(ctx, r)
-		r = r.WithContext(ctx)
+		ctx := r.Context()
 
 		defer func() {
 			var panicked bool

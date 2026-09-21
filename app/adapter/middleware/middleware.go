@@ -18,6 +18,7 @@ func NewMiddleware(cfg *config.Config) *Middleware {
 
 func (m *Middleware) PublicWraps() []func(http.Handler) http.Handler {
 	return []func(http.Handler) http.Handler{
+		RequestScope,
 		AccessLog,
 		ContentTypeHTML,
 		ErrorHandler,
@@ -27,6 +28,7 @@ func (m *Middleware) PublicWraps() []func(http.Handler) http.Handler {
 
 func (m *Middleware) AdminWraps() []func(http.Handler) http.Handler {
 	return []func(http.Handler) http.Handler{
+		RequestScope,
 		AccessLog,
 		ContentTypeHTML,
 		ErrorHandler,
