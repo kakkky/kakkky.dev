@@ -256,3 +256,11 @@ LIMIT $3
 	}
 	return articles, nil
 }
+
+func (ar *ArticleRepository) Count(ctx context.Context) (int, error) {
+	var n int
+	if err := sqlx.GetContext(ctx, ar.db, &n, `SELECT COUNT(*) FROM articles`); err != nil {
+		return 0, domain.ErrInternal.Wrap(err, "count articles")
+	}
+	return n, nil
+}

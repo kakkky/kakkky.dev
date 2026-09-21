@@ -490,6 +490,45 @@ func TestArticleRepository_List(t *testing.T) {
 	}
 }
 
+func TestArticleRepository_Count(t *testing.T) {
+	ctx := t.Context()
+	baseTime := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name             string
+		existingArticles []*domain.Article
+		want             int
+	}{
+		{
+			name: "counts all articles regardless of status",
+			existingArticles: []*domain.Article{
+				{ID: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1", Slug: "a1", Title: "A1", Status: domain.ArticleStatusPublished, CreatedAt: baseTime},
+				{ID: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2", Slug: "a2", Title: "A2", Status: domain.ArticleStatusDraft, CreatedAt: baseTime},
+			},
+			want: 2,
+		},
+		{
+			name: "returns zero when there are no articles",
+			want: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Cleanup(func() {
+				testhelper.TruncateAll(t, ctx, testDB)
+			})
+
+			testhelper.Insert(t, ctx, testDB, testhelper.Fixtures{Articles: tt.existingArticles})
+
+			ar := &ArticleRepository{db: testDB}
+			got, err := ar.Count(ctx)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestArticleRepository_Delete(t *testing.T) {
 	ctx := t.Context()
 

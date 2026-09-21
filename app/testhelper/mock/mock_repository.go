@@ -122,6 +122,21 @@ func (m *MockArticleRepository) EXPECT() *MockArticleRepositoryMockRecorder {
 	return m.recorder
 }
 
+// Count mocks base method.
+func (m *MockArticleRepository) Count(ctx context.Context) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Count", ctx)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Count indicates an expected call of Count.
+func (mr *MockArticleRepositoryMockRecorder) Count(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Count", reflect.TypeOf((*MockArticleRepository)(nil).Count), ctx)
+}
+
 // Delete mocks base method.
 func (m *MockArticleRepository) Delete(ctx context.Context, id domain.ArticleID) error {
 	m.ctrl.T.Helper()
@@ -238,6 +253,21 @@ func (m *MockSeriesRepository) EXPECT() *MockSeriesRepositoryMockRecorder {
 	return m.recorder
 }
 
+// Count mocks base method.
+func (m *MockSeriesRepository) Count(ctx context.Context) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Count", ctx)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Count indicates an expected call of Count.
+func (mr *MockSeriesRepositoryMockRecorder) Count(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Count", reflect.TypeOf((*MockSeriesRepository)(nil).Count), ctx)
+}
+
 // FindByArticleID mocks base method.
 func (m *MockSeriesRepository) FindByArticleID(ctx context.Context, articleID domain.ArticleID) (*domain.Series, error) {
 	m.ctrl.T.Helper()
@@ -251,6 +281,26 @@ func (m *MockSeriesRepository) FindByArticleID(ctx context.Context, articleID do
 func (mr *MockSeriesRepositoryMockRecorder) FindByArticleID(ctx, articleID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByArticleID", reflect.TypeOf((*MockSeriesRepository)(nil).FindByArticleID), ctx, articleID)
+}
+
+// FindByArticleIDs mocks base method.
+func (m *MockSeriesRepository) FindByArticleIDs(ctx context.Context, ids ...domain.ArticleID) ([]*domain.Series, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx}
+	for _, a := range ids {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "FindByArticleIDs", varargs...)
+	ret0, _ := ret[0].([]*domain.Series)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByArticleIDs indicates an expected call of FindByArticleIDs.
+func (mr *MockSeriesRepositoryMockRecorder) FindByArticleIDs(ctx any, ids ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx}, ids...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByArticleIDs", reflect.TypeOf((*MockSeriesRepository)(nil).FindByArticleIDs), varargs...)
 }
 
 // FindBySlug mocks base method.

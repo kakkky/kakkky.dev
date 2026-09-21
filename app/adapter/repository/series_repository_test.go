@@ -547,3 +547,126 @@ func TestSeriesRepository_List(t *testing.T) {
 		})
 	}
 }
+
+func TestSeriesRepository_Count(t *testing.T) {
+	ctx := t.Context()
+	baseTime := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name           string
+		existingSeries []*domain.Series
+		want           int
+	}{
+		{
+			name: "counts all series",
+			existingSeries: []*domain.Series{
+				{ID: "cccccccc-cccc-cccc-cccc-ccccccccccc1", Slug: "s1", Title: "S1", Status: domain.SeriesStatusPublishedOngoing, CreatedAt: baseTime},
+				{ID: "cccccccc-cccc-cccc-cccc-ccccccccccc2", Slug: "s2", Title: "S2", Status: domain.SeriesStatusDraft, CreatedAt: baseTime},
+			},
+			want: 2,
+		},
+		{
+			name: "returns zero when there are no series",
+			want: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Cleanup(func() {
+				testhelper.TruncateAll(t, ctx, testDB)
+			})
+
+			testhelper.Insert(t, ctx, testDB, testhelper.Fixtures{Series: tt.existingSeries})
+
+			sr := &SeriesRepository{db: testDB}
+			got, err := sr.Count(ctx)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestSeriesRepository_FindByArticleIDs(t *testing.T) {
+	ctx := t.Context()
+
+	var (
+		article1 domain.ArticleID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+		article2 domain.ArticleID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2"
+		article3 domain.ArticleID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3"
+		series1  domain.SeriesID  = "cccccccc-cccc-cccc-cccc-ccccccccccc1"
+		series2  domain.SeriesID  = "cccccccc-cccc-cccc-cccc-ccccccccccc2"
+	)
+	baseTime := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	articles := []*domain.Article{
+		{ID: article1, Slug: "a1", Title: "A1", Status: domain.ArticleStatusPublished},
+		{ID: article2, Slug: "a2", Title: "A2", Status: domain.ArticleStatusPublished},
+		{ID: article3, Slug: "a3", Title: "A3", Status: domain.ArticleStatusPublished},
+	}
+	series := []*domain.Series{
+		{
+			ID: series1, Slug: "s1", Title: "S1", Status: domain.SeriesStatusPublishedOngoing, CreatedAt: baseTime,
+			Articles: []domain.SeriesArticle{
+				{ArticleID: article1, Position: 1},
+				{ArticleID: article2, Position: 2},
+			},
+		},
+		{
+			ID: series2, Slug: "s2", Title: "S2", Status: domain.SeriesStatusDraft, CreatedAt: baseTime,
+			Articles: []domain.SeriesArticle{
+				{ArticleID: article3, Position: 1},
+			},
+		},
+	}
+
+	tests := []struct {
+		name    string
+		ids     []domain.ArticleID
+		wantIDs []domain.SeriesID
+	}{
+		{
+			name:    "returns each matching series once (deduped across articles) ordered by created_at desc",
+			ids:     []domain.ArticleID{article1, article2, article3},
+			wantIDs: []domain.SeriesID{series1, series2},
+		},
+		{
+			name:    "returns only series that contain the requested article",
+			ids:     []domain.ArticleID{article3},
+			wantIDs: []domain.SeriesID{series2},
+		},
+		{
+			name:    "returns empty when none of the ids belong to any series",
+			ids:     []domain.ArticleID{"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa9"},
+			wantIDs: []domain.SeriesID{},
+		},
+		{
+			name:    "returns empty when ids is empty",
+			ids:     nil,
+			wantIDs: []domain.SeriesID{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Cleanup(func() {
+				testhelper.TruncateAll(t, ctx, testDB)
+			})
+
+			testhelper.Insert(t, ctx, testDB, testhelper.Fixtures{
+				Articles: articles,
+				Series:   series,
+			})
+
+			sr := &SeriesRepository{db: testDB}
+			got, err := sr.FindByArticleIDs(ctx, tt.ids...)
+			require.NoError(t, err)
+
+			gotIDs := make([]domain.SeriesID, len(got))
+			for i, s := range got {
+				gotIDs[i] = s.ID
+			}
+			assert.ElementsMatch(t, tt.wantIDs, gotIDs)
+		})
+	}
+}

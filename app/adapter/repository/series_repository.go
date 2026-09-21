@@ -88,6 +88,45 @@ WHERE s.slug = $1
 	return row.toSeries(), nil
 }
 
+func (sr *SeriesRepository) FindByArticleIDs(ctx context.Context, ids ...domain.ArticleID) ([]*domain.Series, error) {
+	if len(ids) == 0 {
+		return []*domain.Series{}, nil
+	}
+
+	strIDs := make([]string, len(ids))
+	for i, id := range ids {
+		strIDs[i] = string(id)
+	}
+
+	var rows []seriesRow
+	if err := sqlx.SelectContext(ctx, sr.db, &rows, `
+SELECT s.id::text                 AS id,
+       s.slug                     AS slug,
+       s.title                    AS title,
+       s.description              AS description,
+       s.status                   AS status,
+       s.published_at             AS published_at,
+       s.created_at               AS created_at,
+       ARRAY(SELECT tag_id::text     FROM series_tags     WHERE series_id = s.id ORDER BY tag_id)    AS tag_ids,
+       ARRAY(SELECT article_id::text FROM series_articles WHERE series_id = s.id ORDER BY position)  AS article_ids,
+       ARRAY(SELECT position         FROM series_articles WHERE series_id = s.id ORDER BY position)  AS positions
+FROM series s
+WHERE EXISTS (
+  SELECT 1 FROM series_articles sa
+  WHERE sa.series_id = s.id AND sa.article_id = ANY($1::uuid[])
+)
+ORDER BY s.created_at DESC, s.id DESC
+`, pq.Array(strIDs)); err != nil {
+		return nil, domain.ErrInternal.Wrap(err, "find series by article ids")
+	}
+
+	series := make([]*domain.Series, len(rows))
+	for i, r := range rows {
+		series[i] = r.toSeries()
+	}
+	return series, nil
+}
+
 func (sr *SeriesRepository) FindByArticleID(ctx context.Context, articleID domain.ArticleID) (*domain.Series, error) {
 	var row seriesRow
 	if err := sqlx.GetContext(ctx, sr.db, &row, `
@@ -275,4 +314,12 @@ LIMIT $3
 		series[i] = r.toSeries()
 	}
 	return series, nil
+}
+
+func (sr *SeriesRepository) Count(ctx context.Context) (int, error) {
+	var n int
+	if err := sqlx.GetContext(ctx, sr.db, &n, `SELECT COUNT(*) FROM series`); err != nil {
+		return 0, domain.ErrInternal.Wrap(err, "count series")
+	}
+	return n, nil
 }
