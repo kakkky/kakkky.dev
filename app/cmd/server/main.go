@@ -8,6 +8,7 @@ import (
 
 	"github.com/kakkky/kakkky.dev/config"
 	"github.com/kakkky/kakkky.dev/logging"
+	"github.com/kakkky/kakkky.dev/sentry"
 )
 
 func main() {
@@ -22,11 +23,12 @@ func run() (err error) {
 	if err != nil {
 		return err
 	}
-	logCleanup, err := logging.InitLogger(cfg)
+	sentryCleanup, err := sentry.Init(cfg)
 	if err != nil {
 		return err
 	}
-	defer logCleanup()
+	defer sentryCleanup()
+	logging.InitLogger()
 	defer func() {
 		if err != nil {
 			slog.Error("server failed", slog.Any("err", err))

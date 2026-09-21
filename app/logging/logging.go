@@ -4,22 +4,15 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/kakkky/kakkky.dev/config"
+	"github.com/kakkky/kakkky.dev/sentry"
 )
 
-func InitLogger(cfg *config.Config) (func(), error) {
+func InitLogger() {
 	handlers := []slog.Handler{
 		slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
 	}
-
-	sentryH, cleanup, err := newSentryHandler(cfg)
-	if err != nil {
-		return nil, err
+	if h := sentry.SlogHandler(); h != nil {
+		handlers = append(handlers, h)
 	}
-	if sentryH != nil {
-		handlers = append(handlers, sentryH)
-	}
-
 	slog.SetDefault(slog.New(slog.NewMultiHandler(handlers...)))
-	return cleanup, nil
 }
