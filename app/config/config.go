@@ -20,6 +20,10 @@ type Config struct {
 	S3UsePathStyle    bool   `envconfig:"S3_USE_PATH_STYLE" default:"false"`
 	ImageBaseURL      string `envconfig:"IMAGE_BASE_URL" required:"true"`
 
+	GAMeasurementID        string `envconfig:"GA_MEASUREMENT_ID"`
+	GAPropertyID           string `envconfig:"GA_PROPERTY_ID"`
+	GAServiceAccountKeyB64 string `envconfig:"GA_SERVICE_ACCOUNT_KEY_B64"`
+
 	SentryDSN string `envconfig:"SENTRY_DSN"`
 }
 
