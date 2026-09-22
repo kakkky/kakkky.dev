@@ -1,0 +1,69 @@
+package partials
+
+import (
+	"strconv"
+
+	"github.com/kakkky/hotwire-go/turbo"
+
+	"github.com/kakkky/kakkky.dev/adapter/view/components"
+)
+
+const ArticlesAnalyticsID = "articles-analytics"
+
+type ArticlesAnalyticsViewModel struct {
+	RangeKey string // "7d" / "30d" / "90d"
+	Items    []ArticleAnalyticsRow
+}
+
+type ArticleAnalyticsRow struct {
+	Title     string
+	Href      string
+	Users     int64
+	PageViews int64
+}
+
+templ ArticlesAnalyticsLazyFrame() {
+	@turbo.Frame(
+		ArticlesAnalyticsID,
+		turbo.AttrSrc("/dashboard?panel=articles_analytics&range="+components.AnalyticsRange7d),
+		turbo.AttrLoadingLazy(),
+	) {
+		@analyticsFrameSkeleton()
+	}
+}
+
+templ ArticlesAnalytics(vm ArticlesAnalyticsViewModel) {
+	@turbo.Frame(ArticlesAnalyticsID) {
+		<section class="rounded-lg border border-gray-200 bg-white p-4">
+			<header class="flex items-baseline justify-between mb-3">
+				<h2 class="text-sm font-semibold">Articles Analytics</h2>
+				@components.AnalyticsRangeGroup(vm.RangeKey, "articles_analytics")
+			</header>
+			<table class="w-full text-sm">
+				<thead class="text-xs text-gray-600">
+					<tr>
+						<th class="text-left">Title</th>
+						<th class="text-right">PV</th>
+						<th class="text-right">UU</th>
+					</tr>
+				</thead>
+				<tbody>
+					for _, item := range vm.Items {
+						<tr>
+							<td>
+								<a class="underline" href={ templ.URL(item.Href) }>{ item.Title }</a>
+							</td>
+							<td class="text-right tabular-nums">{ strconv.FormatInt(item.PageViews, 10) }</td>
+							<td class="text-right tabular-nums">{ strconv.FormatInt(item.Users, 10) }</td>
+						</tr>
+					}
+					if len(vm.Items) == 0 {
+						<tr>
+							<td colspan="3" class="py-4 text-center text-xs text-gray-500">no data</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</section>
+	}
+}

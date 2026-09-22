@@ -1,0 +1,29 @@
+package components
+
+// Analytics view の期間切替 UI が取りうる値。
+const (
+	AnalyticsRange7d  = "7d"
+	AnalyticsRange30d = "30d"
+	AnalyticsRange90d = "90d"
+)
+
+templ AnalyticsRangeGroup(current, panel string) {
+	<nav class="inline-flex rounded-md border border-gray-300 overflow-hidden text-xs divide-x divide-gray-300">
+		@analyticsRangeButton(current, AnalyticsRange7d, panel)
+		@analyticsRangeButton(current, AnalyticsRange30d, panel)
+		@analyticsRangeButton(current, AnalyticsRange90d, panel)
+	</nav>
+}
+
+templ analyticsRangeButton(current, target, panel string) {
+	if current == target {
+		<span class="px-3 py-1 bg-gray-900 text-white font-medium tabular-nums">{ target }</span>
+	} else {
+		<a
+			href={ templ.URL("?panel=" + panel + "&range=" + target) }
+			class="px-3 py-1 bg-white text-gray-700 hover:bg-gray-100 tabular-nums"
+		>
+			{ target }
+		</a>
+	}
+}

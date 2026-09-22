@@ -21,20 +21,26 @@ const (
 )
 
 type GetDashboardHandler struct {
-	listArticlesUsecase *usecase.ListArticlesUsecase
-	listSeriesUsecase   *usecase.ListSeriesUsecase
-	publicBaseURL       string
+	listArticlesUsecase         *usecase.ListArticlesUsecase
+	listSeriesUsecase           *usecase.ListSeriesUsecase
+	getSiteAnalyticsUsecase     *usecase.GetSiteAnalyticsUsecase
+	getArticlesAnalyticsUsecase *usecase.GetArticlesAnalyticsUsecase
+	publicBaseURL               string
 }
 
 func NewGetDashboardHandler(
 	listArticlesUsecase *usecase.ListArticlesUsecase,
 	listSeriesUsecase *usecase.ListSeriesUsecase,
+	getSiteAnalyticsUsecase *usecase.GetSiteAnalyticsUsecase,
+	getArticlesAnalyticsUsecase *usecase.GetArticlesAnalyticsUsecase,
 	publicBaseURL string,
 ) *GetDashboardHandler {
 	return &GetDashboardHandler{
-		listArticlesUsecase: listArticlesUsecase,
-		listSeriesUsecase:   listSeriesUsecase,
-		publicBaseURL:       publicBaseURL,
+		listArticlesUsecase:         listArticlesUsecase,
+		listSeriesUsecase:           listSeriesUsecase,
+		getSiteAnalyticsUsecase:     getSiteAnalyticsUsecase,
+		getArticlesAnalyticsUsecase: getArticlesAnalyticsUsecase,
+		publicBaseURL:               publicBaseURL,
 	}
 }
 
@@ -48,6 +54,12 @@ func (h *GetDashboardHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request)
 			return
 		case "series":
 			h.renderSeriesPartial(rw, r, q)
+			return
+		case "site_analytics":
+			h.renderSiteAnalyticsPartial(rw, r, q)
+			return
+		case "articles_analytics":
+			h.renderArticlesAnalyticsPartial(rw, r, q)
 			return
 		}
 	}
@@ -117,6 +129,30 @@ func (h *GetDashboardHandler) renderSeriesPartial(rw http.ResponseWriter, r *htt
 	}
 	vm := buildSeriesListViewModel(out.Series, out.NextCursor, h.publicBaseURL)
 	_ = partials.SeriesList(vm).Render(ctx, rw)
+}
+
+func (h *GetDashboardHandler) renderSiteAnalyticsPartial(rw http.ResponseWriter, r *http.Request, q url.Values) {
+	ctx := r.Context()
+	rangeKey := q.Get("range")
+	out, err := h.getSiteAnalyticsUsecase.Exec(ctx, usecase.GetSiteAnalyticsUsecaseInput{Range: rangeKeyToDateRange(rangeKey)})
+	if err != nil {
+		errors.Set(r.Context(), err)
+		return
+	}
+	vm := buildSiteAnalyticsViewModel(out.Metrics, rangeKey)
+	_ = partials.SiteAnalytics(vm).Render(ctx, rw)
+}
+
+func (h *GetDashboardHandler) renderArticlesAnalyticsPartial(rw http.ResponseWriter, r *http.Request, q url.Values) {
+	ctx := r.Context()
+	rangeKey := q.Get("range")
+	out, err := h.getArticlesAnalyticsUsecase.Exec(ctx, usecase.GetArticlesAnalyticsUsecaseInput{Range: rangeKeyToDateRange(rangeKey)})
+	if err != nil {
+		errors.Set(r.Context(), err)
+		return
+	}
+	vm := buildArticlesAnalyticsViewModel(out.Items, rangeKey, h.publicBaseURL)
+	_ = partials.ArticlesAnalytics(vm).Render(ctx, rw)
 }
 
 func parseArticlesCursor(q url.Values) (usecase.ListArticlesUsecaseCursor, error) {
@@ -216,4 +252,49 @@ func buildSeriesListViewModel(
 		nextURL = "/dashboard?" + v.Encode()
 	}
 	return partials.SeriesListViewModel{Items: items, NextCursorURL: nextURL}
+}
+
+func buildSiteAnalyticsViewModel(m domain.AnalyticsSiteMetrics, rangeKey string) partials.SiteAnalyticsViewModel {
+	refs := make([]partials.AnalyticsReferrerRow, len(m.TopReferrers))
+	for i, ref := range m.TopReferrers {
+		refs[i] = partials.AnalyticsReferrerRow{
+			Source:   ref.Source,
+			Medium:   ref.Medium,
+			Sessions: ref.Sessions,
+		}
+	}
+	return partials.SiteAnalyticsViewModel{
+		RangeKey:       rangeKey,
+		TotalUsers:     m.TotalUsers,
+		TotalPageViews: m.TotalPageViews,
+		Referrers:      refs,
+	}
+}
+
+func buildArticlesAnalyticsViewModel(items []usecase.ArticleAnalyticsItem, rangeKey string, publicBaseURL string) partials.ArticlesAnalyticsViewModel {
+	rows := make([]partials.ArticleAnalyticsRow, len(items))
+	for i, item := range items {
+		rows[i] = partials.ArticleAnalyticsRow{
+			Title:     item.Title,
+			Href:      publicBaseURL + "/articles/" + string(item.Slug),
+			Users:     item.Users,
+			PageViews: item.PageViews,
+		}
+	}
+	return partials.ArticlesAnalyticsViewModel{
+		RangeKey: rangeKey,
+		Items:    rows,
+	}
+}
+
+func rangeKeyToDateRange(k string) domain.AnalyticsDateRange {
+	now := time.Now()
+	switch k {
+	case components.AnalyticsRange30d:
+		return domain.AnalyticsDateRange{From: now.AddDate(0, 0, -30), To: now}
+	case components.AnalyticsRange90d:
+		return domain.AnalyticsDateRange{From: now.AddDate(0, 0, -90), To: now}
+	default:
+		return domain.AnalyticsDateRange{From: now.AddDate(0, 0, -7), To: now}
+	}
 }

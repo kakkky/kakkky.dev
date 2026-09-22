@@ -52,6 +52,8 @@ func (h *Handler) AdminRoutes() []Route {
 			Handler: NewGetDashboardHandler(
 				h.usecase.NewListArticlesUsecase(),
 				h.usecase.NewListSeriesUsecase(),
+				h.usecase.NewGetSiteAnalyticsUsecase(),
+				h.usecase.NewGetArticlesAnalyticsUsecase(),
 				h.cfg.PublicBaseURL,
 			),
 		},

@@ -1,0 +1,80 @@
+package partials
+
+import (
+	"strconv"
+
+	"github.com/kakkky/hotwire-go/turbo"
+
+	"github.com/kakkky/kakkky.dev/adapter/view/components"
+)
+
+const SiteAnalyticsID = "site-analytics"
+
+type SiteAnalyticsViewModel struct {
+	RangeKey       string // "7d" / "30d" / "90d"
+	TotalUsers     int64
+	TotalPageViews int64
+	Referrers      []AnalyticsReferrerRow
+}
+
+type AnalyticsReferrerRow struct {
+	Source   string
+	Medium   string
+	Sessions int64
+}
+
+templ SiteAnalyticsLazyFrame() {
+	@turbo.Frame(
+		SiteAnalyticsID,
+		turbo.AttrSrc("/dashboard?panel=site_analytics&range="+components.AnalyticsRange7d),
+		turbo.AttrLoadingLazy(),
+	) {
+		@analyticsFrameSkeleton()
+	}
+}
+
+templ SiteAnalytics(vm SiteAnalyticsViewModel) {
+	@turbo.Frame(SiteAnalyticsID) {
+		<section class="rounded-lg border border-gray-200 bg-white p-4">
+			<header class="flex items-baseline justify-between mb-3">
+				<h2 class="text-sm font-semibold">Site Analytics</h2>
+				@components.AnalyticsRangeGroup(vm.RangeKey, "site_analytics")
+			</header>
+			<div class="grid grid-cols-2 gap-3 mb-4">
+				@metricCard("PageViews", vm.TotalPageViews)
+				@metricCard("Users", vm.TotalUsers)
+			</div>
+			<h3 class="text-xs font-semibold text-gray-600 mb-1">Top Referrers</h3>
+			<table class="w-full text-sm">
+				<thead class="text-xs text-gray-600">
+					<tr>
+						<th class="text-left">Source</th>
+						<th class="text-left">Medium</th>
+						<th class="text-right">Sessions</th>
+					</tr>
+				</thead>
+				<tbody>
+					for _, ref := range vm.Referrers {
+						<tr>
+							<td>{ ref.Source }</td>
+							<td>{ ref.Medium }</td>
+							<td class="text-right tabular-nums">{ strconv.FormatInt(ref.Sessions, 10) }</td>
+						</tr>
+					}
+					if len(vm.Referrers) == 0 {
+						<tr>
+							<td colspan="3" class="py-4 text-center text-xs text-gray-500">no data</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</section>
+	}
+}
+
+templ metricCard(label string, value int64) {
+	<div class="rounded border border-gray-100 p-2">
+		<div class="text-xs text-gray-500">{ label }</div>
+		<div class="text-lg font-semibold tabular-nums">{ strconv.FormatInt(value, 10) }</div>
+	</div>
+}
