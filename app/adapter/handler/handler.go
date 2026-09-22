@@ -28,15 +28,15 @@ func (h *Handler) PublicRoutes() []Route {
 	return []Route{
 		{
 			Pattern: "GET /feed",
-			Handler: NewGetFeedHandler(h.usecase.NewGetFeedUsecase(), h.cfg.PublicBaseURL),
+			Handler: NewGetFeedHandler(h.usecase.NewGetFeedUsecase(), h.cfg.PublicBaseURL, h.cfg.GAMeasurementID),
 		},
 		{
 			Pattern: "GET /articles/{slug}",
-			Handler: NewGetArticleHandler(h.usecase.NewGetArticleUsecase(), h.cfg.PublicBaseURL),
+			Handler: NewGetArticleHandler(h.usecase.NewGetArticleUsecase(), h.cfg.PublicBaseURL, h.cfg.GAMeasurementID),
 		},
 		{
 			Pattern: "GET /series/{slug}",
-			Handler: NewGetSeriesHandler(h.usecase.NewGetSeriesUsecase(), h.cfg.PublicBaseURL),
+			Handler: NewGetSeriesHandler(h.usecase.NewGetSeriesUsecase(), h.cfg.PublicBaseURL, h.cfg.GAMeasurementID),
 		},
 		{
 			Pattern: "GET /link-preview",

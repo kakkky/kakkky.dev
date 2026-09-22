@@ -18,17 +18,18 @@ type SeriesArticleViewModel struct {
 }
 
 type SeriesViewModel struct {
-	Title         string
-	Description   string
-	Status        string
-	PublishedAt   time.Time
-	Tags          []string
-	Articles      []SeriesArticleViewModel
-	PublicBaseURL string
+	Title           string
+	Description     string
+	Status          string
+	PublishedAt     time.Time
+	Tags            []string
+	Articles        []SeriesArticleViewModel
+	PublicBaseURL   string
+	GAMeasurementID string
 }
 
 templ Series(vm SeriesViewModel) {
-	@layout.Base(vm.Title, "max-w-4xl", vm.PublicBaseURL, nil) {
+	@layout.Base(vm.Title, "max-w-4xl", vm.PublicBaseURL, nil, components.GAScript(vm.GAMeasurementID)) {
 		<section class="py-16">
 			@seriesHeader(vm)
 			<hr class="mb-8 border-gray-200"/>

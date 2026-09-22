@@ -12,10 +12,11 @@ import (
 type GetSeriesHandler struct {
 	getSeriesUsecase *usecase.GetSeriesUsecase
 	publicBaseURL    string
+	gaMeasurementID  string
 }
 
-func NewGetSeriesHandler(getSeriesUsecase *usecase.GetSeriesUsecase, publicBaseURL string) *GetSeriesHandler {
-	return &GetSeriesHandler{getSeriesUsecase: getSeriesUsecase, publicBaseURL: publicBaseURL}
+func NewGetSeriesHandler(getSeriesUsecase *usecase.GetSeriesUsecase, publicBaseURL, gaMeasurementID string) *GetSeriesHandler {
+	return &GetSeriesHandler{getSeriesUsecase: getSeriesUsecase, publicBaseURL: publicBaseURL, gaMeasurementID: gaMeasurementID}
 }
 
 func (h *GetSeriesHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
@@ -53,13 +54,14 @@ func (h *GetSeriesHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	vm := pages.SeriesViewModel{
-		Title:         out.Series.Title,
-		Description:   out.Series.Description,
-		Status:        string(out.Series.Status),
-		PublishedAt:   out.Series.PublishedAt,
-		Tags:          seriesTagNames,
-		Articles:      articleVMs,
-		PublicBaseURL: h.publicBaseURL,
+		Title:           out.Series.Title,
+		Description:     out.Series.Description,
+		Status:          string(out.Series.Status),
+		PublishedAt:     out.Series.PublishedAt,
+		Tags:            seriesTagNames,
+		Articles:        articleVMs,
+		PublicBaseURL:   h.publicBaseURL,
+		GAMeasurementID: h.gaMeasurementID,
 	}
 	_ = pages.Series(vm).Render(ctx, rw)
 }

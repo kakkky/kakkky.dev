@@ -13,12 +13,14 @@ import (
 type GetArticleHandler struct {
 	getArticleUsecase *usecase.GetArticleUsecase
 	publicBaseURL     string
+	gaMeasurementID   string
 }
 
-func NewGetArticleHandler(getArticleUsecase *usecase.GetArticleUsecase, publicBaseURL string) *GetArticleHandler {
+func NewGetArticleHandler(getArticleUsecase *usecase.GetArticleUsecase, publicBaseURL, gaMeasurementID string) *GetArticleHandler {
 	return &GetArticleHandler{
 		getArticleUsecase: getArticleUsecase,
 		publicBaseURL:     publicBaseURL,
+		gaMeasurementID:   gaMeasurementID,
 	}
 }
 
@@ -42,13 +44,14 @@ func (h *GetArticleHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	htmlBody, outline := view.ParseMarkdownArticle(out.Article.Body)
 
 	vm := pages.ArticleViewModel{
-		Title:         out.Article.Title,
-		PublishedAt:   out.Article.PublishedAt,
-		Tags:          tagNames,
-		Body:          htmlBody,
-		Outline:       outline,
-		InSeriesRef:   toArticleSeriesVM(out.InSeriesRef),
-		PublicBaseURL: h.publicBaseURL,
+		Title:           out.Article.Title,
+		PublishedAt:     out.Article.PublishedAt,
+		Tags:            tagNames,
+		Body:            htmlBody,
+		Outline:         outline,
+		InSeriesRef:     toArticleSeriesVM(out.InSeriesRef),
+		PublicBaseURL:   h.publicBaseURL,
+		GAMeasurementID: h.gaMeasurementID,
 	}
 	_ = pages.Article(vm).Render(ctx, rw)
 }

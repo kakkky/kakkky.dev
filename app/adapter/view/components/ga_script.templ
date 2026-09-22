@@ -1,0 +1,15 @@
+package components
+
+templ GAScript(measurementID string) {
+	if measurementID != "" {
+		<script async src={ "https://www.googletagmanager.com/gtag/js?id=" + measurementID }></script>
+		@gtagInit(measurementID)
+	}
+}
+
+script gtagInit(measurementID string) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', measurementID);
+}

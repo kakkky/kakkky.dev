@@ -20,13 +20,14 @@ import (
 )
 
 type ArticleViewModel struct {
-	Title         string
-	PublishedAt   time.Time
-	Tags          []string
-	Body          string
-	Outline       []*view.OutlineNode
-	InSeriesRef   *SeriesRefViewModel
-	PublicBaseURL string
+	Title           string
+	PublishedAt     time.Time
+	Tags            []string
+	Body            string
+	Outline         []*view.OutlineNode
+	InSeriesRef     *SeriesRefViewModel
+	PublicBaseURL   string
+	GAMeasurementID string
 }
 
 type SeriesRefViewModel struct {
@@ -124,7 +125,7 @@ func Article(vm ArticleViewModel) templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = layout.Base(vm.Title, "max-w-7xl", vm.PublicBaseURL, []string{js.OutlineDialogController.Path}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = layout.Base(vm.Title, "max-w-7xl", vm.PublicBaseURL, []string{js.OutlineDialogController.Path}, components.GAScript(vm.GAMeasurementID)).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -232,7 +233,7 @@ func articleSeriesNavLink(href, label string, position int, title string, alignR
 		var templ_7745c5c3_Var6 templ.SafeURL
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(href))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/article.templ`, Line: 99, Col: 28}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/article.templ`, Line: 100, Col: 28}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -266,7 +267,7 @@ func articleSeriesNavLink(href, label string, position int, title string, alignR
 		var templ_7745c5c3_Var8 string
 		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(label)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/article.templ`, Line: 104, Col: 88}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/article.templ`, Line: 105, Col: 88}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
@@ -279,7 +280,7 @@ func articleSeriesNavLink(href, label string, position int, title string, alignR
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(position))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/article.templ`, Line: 105, Col: 67}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/article.templ`, Line: 106, Col: 67}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
@@ -292,7 +293,7 @@ func articleSeriesNavLink(href, label string, position int, title string, alignR
 		var templ_7745c5c3_Var10 string
 		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/article.templ`, Line: 107, Col: 10}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/pages/article.templ`, Line: 108, Col: 10}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 		if templ_7745c5c3_Err != nil {
