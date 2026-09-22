@@ -146,7 +146,7 @@ func TestCreateArticleUsecase_Exec(t *testing.T) {
 
 			tt.mock(repo, txRepo, ar, tr)
 
-			uc := NewUseCase(repo, qs, nil).NewCreateArticleUsecase()
+			uc := NewUseCase(repo, qs, nil, nil).NewCreateArticleUsecase()
 			out, err := uc.Exec(ctx, tt.input)
 
 			if tt.wantErr != nil {

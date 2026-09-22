@@ -226,7 +226,7 @@ func TestUpdateArticleUsecase_Exec(t *testing.T) {
 
 			tt.mock(repo, txRepo, ar, tr)
 
-			uc := NewUseCase(repo, qs, nil).NewUpdateArticleUsecase()
+			uc := NewUseCase(repo, qs, nil, nil).NewUpdateArticleUsecase()
 			out, err := uc.Exec(ctx, tt.input)
 
 			if tt.wantErr != nil {

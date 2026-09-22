@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
+	"github.com/kakkky/kakkky.dev/adapter/cache"
 	"github.com/kakkky/kakkky.dev/domain"
 	"github.com/kakkky/kakkky.dev/testhelper/mock"
 )
@@ -68,7 +69,7 @@ func TestGetLinkPreviewUsecase_Exec(t *testing.T) {
 			f := mock.NewMockOGPFetcher(ctrl)
 			tt.mock(c, f)
 
-			uc := NewUseCase(nil, nil, c).NewGetLinkPreviewUsecase()
+			uc := NewUseCase(nil, nil, c, cache.NewCache()).NewGetLinkPreviewUsecase()
 
 			n := tt.execTimes
 			if n <= 0 {

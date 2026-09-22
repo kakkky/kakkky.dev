@@ -177,7 +177,7 @@ func TestGetSeriesUsecase_Exec(t *testing.T) {
 
 			tt.mock(sr, ar, tr)
 
-			gs := NewUseCase(repo, qs, nil).NewGetSeriesUsecase()
+			gs := NewUseCase(repo, qs, nil, nil).NewGetSeriesUsecase()
 			got, err := gs.Exec(ctx, tt.input)
 
 			if tt.wantErr != nil {

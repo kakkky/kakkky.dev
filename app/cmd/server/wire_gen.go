@@ -8,6 +8,7 @@ package main
 
 import (
 	"context"
+	"github.com/kakkky/kakkky.dev/adapter/cache"
 	"github.com/kakkky/kakkky.dev/adapter/client"
 	"github.com/kakkky/kakkky.dev/adapter/handler"
 	"github.com/kakkky/kakkky.dev/adapter/middleware"
@@ -29,7 +30,8 @@ func InitServer(ctx context.Context, cfg *config.Config) (*Server, func(), error
 	repositoryRepository := repository.NewRepository(sqlxDB)
 	queryService := query.NewQueryService(sqlxDB)
 	clientClient := client.NewClient(cfg)
-	useCase := usecase.NewUseCase(repositoryRepository, queryService, clientClient)
+	cacheCache := cache.NewCache()
+	useCase := usecase.NewUseCase(repositoryRepository, queryService, clientClient, cacheCache)
 	handlerHandler := handler.NewHandler(cfg, useCase)
 	middlewareMiddleware := middleware.NewMiddleware(cfg)
 	httpHandler := httpserver.NewMux(cfg, handlerHandler, middlewareMiddleware)

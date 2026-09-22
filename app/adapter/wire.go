@@ -6,6 +6,7 @@ package adapter
 import (
 	"github.com/google/wire"
 
+	"github.com/kakkky/kakkky.dev/adapter/cache"
 	"github.com/kakkky/kakkky.dev/adapter/client"
 	"github.com/kakkky/kakkky.dev/adapter/handler"
 	"github.com/kakkky/kakkky.dev/adapter/middleware"
@@ -16,6 +17,7 @@ import (
 )
 
 var Set = wire.NewSet(
+	cache.NewCache,
 	client.NewClient,
 	handler.NewHandler,
 	middleware.NewMiddleware,
@@ -25,4 +27,5 @@ var Set = wire.NewSet(
 	wire.Bind(new(domain.Repository), new(*repository.Repository)),
 	wire.Bind(new(domain.QueryService), new(*query.QueryService)),
 	wire.Bind(new(domain.Client), new(*client.Client)),
+	wire.Bind(new(domain.Cache), new(*cache.Cache)),
 )

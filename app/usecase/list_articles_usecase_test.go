@@ -142,7 +142,7 @@ func TestListArticlesUsecase_Exec(t *testing.T) {
 
 			tt.mock(ar, sr)
 
-			ga := NewUseCase(repo, qs, nil).NewListArticlesUsecase()
+			ga := NewUseCase(repo, qs, nil, nil).NewListArticlesUsecase()
 			got, err := ga.Exec(ctx, tt.input)
 
 			if tt.wantErr != nil {

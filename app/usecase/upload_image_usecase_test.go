@@ -87,7 +87,7 @@ func TestUploadImageUsecase_Exec(t *testing.T) {
 			s := mock.NewMockS3Client(ctrl)
 			tt.mock(c, s)
 
-			uc := NewUseCase(nil, nil, c).NewUploadImageUsecase()
+			uc := NewUseCase(nil, nil, c, nil).NewUploadImageUsecase()
 			out, err := uc.Exec(ctx, tt.input)
 
 			if tt.wantErr != nil {
