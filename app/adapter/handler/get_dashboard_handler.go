@@ -7,6 +7,7 @@ import (
 
 	"github.com/kakkky/hotwire-go/turbo"
 
+	"github.com/kakkky/kakkky.dev/adapter/view"
 	"github.com/kakkky/kakkky.dev/adapter/view/components"
 	"github.com/kakkky/kakkky.dev/adapter/view/pages"
 	"github.com/kakkky/kakkky.dev/adapter/view/partials"
@@ -16,8 +17,9 @@ import (
 )
 
 const (
-	dashboardArticlesLimit = 10
-	dashboardSeriesLimit   = 10
+	dashboardArticlesLimit          = 10
+	dashboardSeriesLimit            = 10
+	dashboardArticlesAnalyticsLimit = 5
 )
 
 type GetDashboardHandler struct {
@@ -146,12 +148,17 @@ func (h *GetDashboardHandler) renderSiteAnalyticsPartial(rw http.ResponseWriter,
 func (h *GetDashboardHandler) renderArticlesAnalyticsPartial(rw http.ResponseWriter, r *http.Request, q url.Values) {
 	ctx := r.Context()
 	rangeKey := q.Get("range")
-	out, err := h.getArticlesAnalyticsUsecase.Exec(ctx, usecase.GetArticlesAnalyticsUsecaseInput{Range: rangeKeyToDateRange(rangeKey)})
+	dateRange := rangeKeyToDateRange(rangeKey)
+	out, err := h.getArticlesAnalyticsUsecase.Exec(ctx, usecase.GetArticlesAnalyticsUsecaseInput{Range: dateRange})
 	if err != nil {
 		errors.Set(r.Context(), err)
 		return
 	}
-	vm := buildArticlesAnalyticsViewModel(out.Items, rangeKey, h.publicBaseURL)
+	items := out.Items
+	if len(items) > dashboardArticlesAnalyticsLimit {
+		items = items[:dashboardArticlesAnalyticsLimit]
+	}
+	vm := buildArticlesAnalyticsViewModel(items, rangeKey, h.publicBaseURL, dateRange)
 	_ = partials.ArticlesAnalytics(vm).Render(ctx, rw)
 }
 
@@ -267,24 +274,47 @@ func buildSiteAnalyticsViewModel(m domain.AnalyticsSiteMetrics, rangeKey string)
 		RangeKey:       rangeKey,
 		TotalUsers:     m.TotalUsers,
 		TotalPageViews: m.TotalPageViews,
+		LineChartHTML:  view.RenderDailyLineChart(m.ByDate),
 		Referrers:      refs,
 	}
 }
 
-func buildArticlesAnalyticsViewModel(items []usecase.ArticleAnalyticsItem, rangeKey string, publicBaseURL string) partials.ArticlesAnalyticsViewModel {
+func buildArticlesAnalyticsViewModel(items []usecase.ArticleAnalyticsItem, rangeKey string, publicBaseURL string, dateRange domain.AnalyticsDateRange) partials.ArticlesAnalyticsViewModel {
 	rows := make([]partials.ArticleAnalyticsRow, len(items))
 	for i, item := range items {
 		rows[i] = partials.ArticleAnalyticsRow{
-			Title:     item.Title,
-			Href:      publicBaseURL + "/articles/" + string(item.Slug),
-			Users:     item.Users,
-			PageViews: item.PageViews,
+			Title:         item.Title,
+			Href:          publicBaseURL + "/articles/" + string(item.Slug),
+			Users:         item.Users,
+			PageViews:     item.PageViews,
+			SparklineHTML: view.RenderSparkline(fillDailyPoints(item.ByDate, dateRange)),
 		}
 	}
 	return partials.ArticlesAnalyticsViewModel{
 		RangeKey: rangeKey,
 		Items:    rows,
 	}
+}
+
+// fillDailyPoints は sparkline 用に指定期間内の全日付を欠損なく揃える。
+// GA は traffic のあった日しか返さないので、記事ごとに ByDate の長さや先頭日付が変わる。
+// そのままだと sparkline の同じ x 位置に異なる日付が並び、横並びの記事間で日付が揃わない。
+func fillDailyPoints(points []domain.AnalyticsDailyPoint, r domain.AnalyticsDateRange) []domain.AnalyticsDailyPoint {
+	byDate := make(map[string]domain.AnalyticsDailyPoint, len(points))
+	for _, p := range points {
+		byDate[p.Date.Format("2006-01-02")] = p
+	}
+	from := time.Date(r.From.Year(), r.From.Month(), r.From.Day(), 0, 0, 0, 0, r.From.Location())
+	to := time.Date(r.To.Year(), r.To.Month(), r.To.Day(), 0, 0, 0, 0, r.To.Location())
+	var out []domain.AnalyticsDailyPoint
+	for d := from; !d.After(to); d = d.AddDate(0, 0, 1) {
+		if p, ok := byDate[d.Format("2006-01-02")]; ok {
+			out = append(out, p)
+			continue
+		}
+		out = append(out, domain.AnalyticsDailyPoint{Date: d})
+	}
+	return out
 }
 
 func rangeKeyToDateRange(k string) domain.AnalyticsDateRange {

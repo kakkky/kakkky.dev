@@ -12,6 +12,7 @@ require (
 	github.com/coreos/go-oidc/v3 v3.21.0
 	github.com/getsentry/sentry-go v0.49.0
 	github.com/getsentry/sentry-go/slog v0.49.0
+	github.com/go-echarts/go-echarts/v2 v2.7.2
 	github.com/gojp/kana v0.1.0
 	github.com/google/uuid v1.6.0
 	github.com/google/wire v0.7.0
@@ -29,6 +30,9 @@ require (
 	github.com/yuin/goldmark v1.8.5
 	github.com/yuin/goldmark-highlighting/v2 v2.0.0-20230729083705-37449abec8cc
 	go.uber.org/mock v0.6.0
+	google.golang.org/api v0.298.0
+	google.golang.org/genproto v0.0.0-20260918162117-cecb64721679
+	google.golang.org/grpc v1.83.2
 )
 
 require (
@@ -112,11 +116,8 @@ require (
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/text v0.41.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
-	google.golang.org/api v0.298.0 // indirect
-	google.golang.org/genproto v0.0.0-20260918162117-cecb64721679 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260917231906-eeb232e0883d // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260917231906-eeb232e0883d // indirect
-	google.golang.org/grpc v1.83.2 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
