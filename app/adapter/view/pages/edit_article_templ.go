@@ -229,7 +229,7 @@ func EditArticle(vm EditArticleViewModel) templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = layout.Base("Edit Article", "max-w-none", vm.PublicBaseURL, []string{js.TagInputController.Path, js.ArticleEditorController.Path, js.EditArticleController.Path}, js.CodeMirrorImportMap()).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = layout.Base("Edit Article", "max-w-none", vm.PublicBaseURL, []string{js.TagInputController.Path, js.ArticleEditorController.Path, js.EditArticleController.Path}, js.ImportMap(js.CodeMirrorImports)).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
