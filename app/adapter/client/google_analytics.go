@@ -203,8 +203,8 @@ func parseSiteMetrics(resp *pb.BatchRunReportsResponse) domain.AnalyticsSiteMetr
 	m.TopReferrers = make([]domain.AnalyticsReferrerCount, 0, len(referrers.Rows))
 	for _, row := range referrers.Rows {
 		m.TopReferrers = append(m.TopReferrers, domain.AnalyticsReferrerCount{
-			Source:   row.DimensionValues[0].GetValue(),
-			Medium:   row.DimensionValues[1].GetValue(),
+			Source:   trimGAParens(row.DimensionValues[0].GetValue()),
+			Medium:   trimGAParens(row.DimensionValues[1].GetValue()),
 			Sessions: parseInt64(row.MetricValues[0].GetValue()),
 		})
 	}
@@ -266,8 +266,8 @@ func parseArticleMetrics(resp *pb.BatchRunReportsResponse) []domain.AnalyticsArt
 		path := row.DimensionValues[2].GetValue()
 		am := getOrCreate(path)
 		am.TopReferrers = append(am.TopReferrers, domain.AnalyticsReferrerCount{
-			Source:   row.DimensionValues[0].GetValue(),
-			Medium:   row.DimensionValues[1].GetValue(),
+			Source:   trimGAParens(row.DimensionValues[0].GetValue()),
+			Medium:   trimGAParens(row.DimensionValues[1].GetValue()),
 			Sessions: parseInt64(row.MetricValues[0].GetValue()),
 		})
 	}
@@ -288,4 +288,13 @@ func parseArticleMetrics(resp *pb.BatchRunReportsResponse) []domain.AnalyticsArt
 func parseInt64(s string) int64 {
 	n, _ := strconv.ParseInt(s, 10, 64)
 	return n
+}
+
+// trimGAParens は GA4 が Source / Medium の特別値を "(direct)" / "(none)" /
+// "(not set)" のように括弧付きで返すため、括弧を除去する
+func trimGAParens(s string) string {
+	if len(s) >= 2 && s[0] == '(' && s[len(s)-1] == ')' {
+		return s[1 : len(s)-1]
+	}
+	return s
 }
