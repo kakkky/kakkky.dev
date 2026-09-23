@@ -20,16 +20,25 @@ import (
 )
 
 // mockAnalyticsServer は in-memory gRPC server 用の pb.BetaAnalyticsDataServer 実装。
-// BatchRunReports のみ差し替え、他のメソッドは Unimplemented にフォールバック。
+// BatchRunReports / RunReport のみ差し替え、他のメソッドは Unimplemented にフォールバック。
 type mockAnalyticsServer struct {
 	pb.UnimplementedBetaAnalyticsDataServer
-	mock   func() (*pb.BatchRunReportsResponse, error)
-	gotReq *pb.BatchRunReportsRequest
+
+	batchMock   func() (*pb.BatchRunReportsResponse, error)
+	gotBatchReq *pb.BatchRunReportsRequest
+
+	runMock   func() (*pb.RunReportResponse, error)
+	gotRunReq *pb.RunReportRequest
 }
 
 func (m *mockAnalyticsServer) BatchRunReports(_ context.Context, req *pb.BatchRunReportsRequest) (*pb.BatchRunReportsResponse, error) {
-	m.gotReq = req
-	return m.mock()
+	m.gotBatchReq = req
+	return m.batchMock()
+}
+
+func (m *mockAnalyticsServer) RunReport(_ context.Context, req *pb.RunReportRequest) (*pb.RunReportResponse, error) {
+	m.gotRunReq = req
+	return m.runMock()
 }
 
 func newMockGAClient(t *testing.T, propertyID string, mock *mockAnalyticsServer) *GoogleAnalyticsClient {
@@ -80,16 +89,6 @@ func TestGoogleAnalyticsClient_FetchSiteMetrics(t *testing.T) {
 						}}},
 						{Rows: []*pb.Row{{
 							DimensionValues: []*pb.DimensionValue{
-								{OneValue: &pb.DimensionValue_Value{Value: "0"}},
-								{OneValue: &pb.DimensionValue_Value{Value: "3"}},
-							},
-							MetricValues: []*pb.MetricValue{
-								{OneValue: &pb.MetricValue_Value{Value: "1"}},
-								{OneValue: &pb.MetricValue_Value{Value: "2"}},
-							},
-						}}},
-						{Rows: []*pb.Row{{
-							DimensionValues: []*pb.DimensionValue{
 								{OneValue: &pb.DimensionValue_Value{Value: "google"}},
 								{OneValue: &pb.DimensionValue_Value{Value: "organic"}},
 							},
@@ -106,9 +105,6 @@ func TestGoogleAnalyticsClient_FetchSiteMetrics(t *testing.T) {
 				ByDate: []domain.AnalyticsDailyPoint{
 					{Date: time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC), Users: 3, PageViews: 9},
 				},
-				ByHour: []domain.AnalyticsHourlyPoint{
-					{Weekday: time.Sunday, Hour: 3, Users: 1, PageViews: 2},
-				},
 				TopReferrers: []domain.AnalyticsReferrerCount{
 					{Source: "google", Medium: "organic", Sessions: 42},
 				},
@@ -123,7 +119,7 @@ func TestGoogleAnalyticsClient_FetchSiteMetrics(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mock := &mockAnalyticsServer{mock: tt.mock}
+			mock := &mockAnalyticsServer{batchMock: tt.mock}
 			c := newMockGAClient(t, "properties/1234567", mock)
 
 			r := domain.AnalyticsDateRange{
@@ -141,12 +137,12 @@ func TestGoogleAnalyticsClient_FetchSiteMetrics(t *testing.T) {
 			assert.Equal(t, tt.wantMetrics, got)
 
 			// request 構造の検証
-			require.NotNil(t, mock.gotReq)
-			assert.Equal(t, "properties/1234567", mock.gotReq.Property)
-			require.Len(t, mock.gotReq.Requests, 3)
+			require.NotNil(t, mock.gotBatchReq)
+			assert.Equal(t, "properties/1234567", mock.gotBatchReq.Property)
+			require.Len(t, mock.gotBatchReq.Requests, 2)
 
 			// req[0]: date x (activeUsers, screenPageViews) + date asc
-			req0 := mock.gotReq.Requests[0]
+			req0 := mock.gotBatchReq.Requests[0]
 			require.Len(t, req0.Dimensions, 1)
 			assert.Equal(t, "date", req0.Dimensions[0].Name)
 			require.Len(t, req0.Metrics, 2)
@@ -156,26 +152,20 @@ func TestGoogleAnalyticsClient_FetchSiteMetrics(t *testing.T) {
 			assert.False(t, req0.OrderBys[0].Desc)
 			assert.Equal(t, "date", req0.OrderBys[0].GetDimension().DimensionName)
 
-			// req[1]: dayOfWeek x hour
-			req1 := mock.gotReq.Requests[1]
+			// req[1]: source x medium, sessions desc, Limit 10
+			req1 := mock.gotBatchReq.Requests[1]
 			require.Len(t, req1.Dimensions, 2)
-			assert.Equal(t, "dayOfWeek", req1.Dimensions[0].Name)
-			assert.Equal(t, "hour", req1.Dimensions[1].Name)
-
-			// req[2]: source x medium, sessions desc, Limit 10
-			req2 := mock.gotReq.Requests[2]
-			require.Len(t, req2.Dimensions, 2)
-			assert.Equal(t, "sessionSource", req2.Dimensions[0].Name)
-			assert.Equal(t, "sessionMedium", req2.Dimensions[1].Name)
-			require.Len(t, req2.Metrics, 1)
-			assert.Equal(t, "sessions", req2.Metrics[0].Name)
-			assert.Equal(t, int64(10), req2.Limit)
-			require.Len(t, req2.OrderBys, 1)
-			assert.True(t, req2.OrderBys[0].Desc)
-			assert.Equal(t, "sessions", req2.OrderBys[0].GetMetric().MetricName)
+			assert.Equal(t, "sessionSource", req1.Dimensions[0].Name)
+			assert.Equal(t, "sessionMedium", req1.Dimensions[1].Name)
+			require.Len(t, req1.Metrics, 1)
+			assert.Equal(t, "sessions", req1.Metrics[0].Name)
+			assert.Equal(t, int64(10), req1.Limit)
+			require.Len(t, req1.OrderBys, 1)
+			assert.True(t, req1.OrderBys[0].Desc)
+			assert.Equal(t, "sessions", req1.OrderBys[0].GetMetric().MetricName)
 
 			// DateRanges は全 request で同一
-			for _, rq := range mock.gotReq.Requests {
+			for _, rq := range mock.gotBatchReq.Requests {
 				require.Len(t, rq.DateRanges, 1)
 				assert.Equal(t, "2026-09-01", rq.DateRanges[0].StartDate)
 				assert.Equal(t, "2026-09-30", rq.DateRanges[0].EndDate)
@@ -187,47 +177,24 @@ func TestGoogleAnalyticsClient_FetchSiteMetrics(t *testing.T) {
 func TestGoogleAnalyticsClient_FetchArticleMetrics(t *testing.T) {
 	tests := []struct {
 		name        string
-		mock        func() (*pb.BatchRunReportsResponse, error)
+		mock        func() (*pb.RunReportResponse, error)
 		wantErr     bool
 		wantMetrics []domain.AnalyticsArticleMetrics
 	}{
 		{
-			name: "success: pagePathFilter is set on all requests and pagePath dimension is appended",
-			mock: func() (*pb.BatchRunReportsResponse, error) {
-				return &pb.BatchRunReportsResponse{
-					Reports: []*pb.RunReportResponse{
-						{Rows: []*pb.Row{{
-							DimensionValues: []*pb.DimensionValue{
-								{OneValue: &pb.DimensionValue_Value{Value: "20260901"}},
-								{OneValue: &pb.DimensionValue_Value{Value: "/articles/foo"}},
-							},
-							MetricValues: []*pb.MetricValue{
-								{OneValue: &pb.MetricValue_Value{Value: "2"}},
-								{OneValue: &pb.MetricValue_Value{Value: "5"}},
-							},
-						}}},
-						{Rows: []*pb.Row{{
-							DimensionValues: []*pb.DimensionValue{
-								{OneValue: &pb.DimensionValue_Value{Value: "0"}},
-								{OneValue: &pb.DimensionValue_Value{Value: "9"}},
-								{OneValue: &pb.DimensionValue_Value{Value: "/articles/foo"}},
-							},
-							MetricValues: []*pb.MetricValue{
-								{OneValue: &pb.MetricValue_Value{Value: "1"}},
-								{OneValue: &pb.MetricValue_Value{Value: "2"}},
-							},
-						}}},
-						{Rows: []*pb.Row{{
-							DimensionValues: []*pb.DimensionValue{
-								{OneValue: &pb.DimensionValue_Value{Value: "google"}},
-								{OneValue: &pb.DimensionValue_Value{Value: "organic"}},
-								{OneValue: &pb.DimensionValue_Value{Value: "/articles/foo"}},
-							},
-							MetricValues: []*pb.MetricValue{
-								{OneValue: &pb.MetricValue_Value{Value: "3"}},
-							},
-						}}},
-					},
+			name: "success: pagePathFilter is set and pagePath dimension is appended",
+			mock: func() (*pb.RunReportResponse, error) {
+				return &pb.RunReportResponse{
+					Rows: []*pb.Row{{
+						DimensionValues: []*pb.DimensionValue{
+							{OneValue: &pb.DimensionValue_Value{Value: "20260901"}},
+							{OneValue: &pb.DimensionValue_Value{Value: "/articles/foo"}},
+						},
+						MetricValues: []*pb.MetricValue{
+							{OneValue: &pb.MetricValue_Value{Value: "2"}},
+							{OneValue: &pb.MetricValue_Value{Value: "5"}},
+						},
+					}},
 				}, nil
 			},
 			wantMetrics: []domain.AnalyticsArticleMetrics{
@@ -238,25 +205,19 @@ func TestGoogleAnalyticsClient_FetchArticleMetrics(t *testing.T) {
 					ByDate: []domain.AnalyticsDailyPoint{
 						{Date: time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC), Users: 2, PageViews: 5},
 					},
-					ByHour: []domain.AnalyticsHourlyPoint{
-						{Weekday: time.Sunday, Hour: 9, Users: 1, PageViews: 2},
-					},
-					TopReferrers: []domain.AnalyticsReferrerCount{
-						{Source: "google", Medium: "organic", Sessions: 3},
-					},
 				},
 			},
 		},
 		{
 			name:    "error: gRPC error is wrapped as domain.ErrInternal",
-			mock:    func() (*pb.BatchRunReportsResponse, error) { return nil, errors.New("boom") },
+			mock:    func() (*pb.RunReportResponse, error) { return nil, errors.New("boom") },
 			wantErr: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mock := &mockAnalyticsServer{mock: tt.mock}
+			mock := &mockAnalyticsServer{runMock: tt.mock}
 			c := newMockGAClient(t, "properties/1234567", mock)
 
 			r := domain.AnalyticsDateRange{
@@ -273,36 +234,34 @@ func TestGoogleAnalyticsClient_FetchArticleMetrics(t *testing.T) {
 			require.NoError(t, err)
 			assert.Equal(t, tt.wantMetrics, got)
 
-			// 全 request に pagePath BEGINS_WITH "/articles/" filter が付いている
-			require.Len(t, mock.gotReq.Requests, 3)
-			for _, rq := range mock.gotReq.Requests {
-				require.NotNil(t, rq.DimensionFilter)
-				f := rq.DimensionFilter.GetFilter()
-				require.NotNil(t, f)
-				assert.Equal(t, "pagePath", f.FieldName)
-				sf := f.GetStringFilter()
-				require.NotNil(t, sf)
-				assert.Equal(t, pb.Filter_StringFilter_BEGINS_WITH, sf.MatchType)
-				assert.Equal(t, "/articles/", sf.Value)
-			}
+			// request 構造の検証
+			require.NotNil(t, mock.gotRunReq)
+			assert.Equal(t, "properties/1234567", mock.gotRunReq.Property)
 
-			// 各 request の Dimensions 末尾に pagePath が含まれる
-			req0 := mock.gotReq.Requests[0]
-			require.Len(t, req0.Dimensions, 2)
-			assert.Equal(t, "date", req0.Dimensions[0].Name)
-			assert.Equal(t, "pagePath", req0.Dimensions[1].Name)
+			// Dimensions: date, pagePath
+			require.Len(t, mock.gotRunReq.Dimensions, 2)
+			assert.Equal(t, "date", mock.gotRunReq.Dimensions[0].Name)
+			assert.Equal(t, "pagePath", mock.gotRunReq.Dimensions[1].Name)
 
-			req1 := mock.gotReq.Requests[1]
-			require.Len(t, req1.Dimensions, 3)
-			assert.Equal(t, "dayOfWeek", req1.Dimensions[0].Name)
-			assert.Equal(t, "hour", req1.Dimensions[1].Name)
-			assert.Equal(t, "pagePath", req1.Dimensions[2].Name)
+			// Metrics: activeUsers, screenPageViews
+			require.Len(t, mock.gotRunReq.Metrics, 2)
+			assert.Equal(t, "activeUsers", mock.gotRunReq.Metrics[0].Name)
+			assert.Equal(t, "screenPageViews", mock.gotRunReq.Metrics[1].Name)
 
-			req2 := mock.gotReq.Requests[2]
-			require.Len(t, req2.Dimensions, 3)
-			assert.Equal(t, "sessionSource", req2.Dimensions[0].Name)
-			assert.Equal(t, "sessionMedium", req2.Dimensions[1].Name)
-			assert.Equal(t, "pagePath", req2.Dimensions[2].Name)
+			// pagePath BEGINS_WITH "/articles/" filter
+			require.NotNil(t, mock.gotRunReq.DimensionFilter)
+			f := mock.gotRunReq.DimensionFilter.GetFilter()
+			require.NotNil(t, f)
+			assert.Equal(t, "pagePath", f.FieldName)
+			sf := f.GetStringFilter()
+			require.NotNil(t, sf)
+			assert.Equal(t, pb.Filter_StringFilter_BEGINS_WITH, sf.MatchType)
+			assert.Equal(t, "/articles/", sf.Value)
+
+			// DateRange
+			require.Len(t, mock.gotRunReq.DateRanges, 1)
+			assert.Equal(t, "2026-09-01", mock.gotRunReq.DateRanges[0].StartDate)
+			assert.Equal(t, "2026-09-30", mock.gotRunReq.DateRanges[0].EndDate)
 		})
 	}
 }

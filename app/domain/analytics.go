@@ -11,28 +11,18 @@ type AnalyticsSiteMetrics struct {
 	TotalUsers     int64
 	TotalPageViews int64
 	ByDate         []AnalyticsDailyPoint
-	ByHour         []AnalyticsHourlyPoint
 	TopReferrers   []AnalyticsReferrerCount
 }
 
 type AnalyticsArticleMetrics struct {
-	Slug         Slug
-	Users        int64
-	PageViews    int64
-	ByDate       []AnalyticsDailyPoint
-	ByHour       []AnalyticsHourlyPoint
-	TopReferrers []AnalyticsReferrerCount
+	Slug      Slug
+	Users     int64
+	PageViews int64
+	ByDate    []AnalyticsDailyPoint
 }
 
 type AnalyticsDailyPoint struct {
 	Date      time.Time
-	Users     int64
-	PageViews int64
-}
-
-type AnalyticsHourlyPoint struct {
-	Weekday   time.Weekday
-	Hour      int
 	Users     int64
 	PageViews int64
 }
