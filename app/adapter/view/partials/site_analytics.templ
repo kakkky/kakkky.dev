@@ -31,7 +31,7 @@ templ SiteAnalyticsLazyFrame() {
 		turbo.AttrSrc("/dashboard?panel=site_analytics&range="+components.AnalyticsRange7d),
 		turbo.AttrLoadingLazy(),
 	) {
-		@analyticsFrameSkeleton()
+		@components.LoadingSkeleton()
 	}
 }
 

@@ -30,7 +30,7 @@ templ ArticlesAnalyticsLazyFrame() {
 		turbo.AttrSrc("/dashboard?panel=articles_analytics&range="+components.AnalyticsRange7d),
 		turbo.AttrLoadingLazy(),
 	) {
-		@analyticsFrameSkeleton()
+		@components.LoadingSkeleton()
 	}
 }
 
