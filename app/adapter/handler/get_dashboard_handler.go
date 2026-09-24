@@ -7,6 +7,7 @@ import (
 
 	"github.com/kakkky/hotwire-go/turbo"
 
+	"github.com/kakkky/kakkky.dev/adapter/view"
 	"github.com/kakkky/kakkky.dev/adapter/view/components"
 	"github.com/kakkky/kakkky.dev/adapter/view/pages"
 	"github.com/kakkky/kakkky.dev/adapter/view/partials"
@@ -134,24 +135,26 @@ func (h *GetDashboardHandler) renderSeriesPartial(rw http.ResponseWriter, r *htt
 func (h *GetDashboardHandler) renderSiteAnalyticsPartial(rw http.ResponseWriter, r *http.Request, q url.Values) {
 	ctx := r.Context()
 	rangeKey := q.Get("range")
-	out, err := h.getSiteAnalyticsUsecase.Exec(ctx, usecase.GetSiteAnalyticsUsecaseInput{Range: rangeKeyToDateRange(rangeKey)})
+	dateRange := rangeKeyToDateRange(rangeKey)
+	out, err := h.getSiteAnalyticsUsecase.Exec(ctx, usecase.GetSiteAnalyticsUsecaseInput{Range: dateRange})
 	if err != nil {
 		errors.Set(r.Context(), err)
 		return
 	}
-	vm := buildSiteAnalyticsViewModel(out.Metrics, rangeKey)
+	vm := buildSiteAnalyticsViewModel(out.Metrics, rangeKey, dateRange)
 	_ = partials.SiteAnalytics(vm).Render(ctx, rw)
 }
 
 func (h *GetDashboardHandler) renderArticlesAnalyticsPartial(rw http.ResponseWriter, r *http.Request, q url.Values) {
 	ctx := r.Context()
 	rangeKey := q.Get("range")
-	out, err := h.getArticlesAnalyticsUsecase.Exec(ctx, usecase.GetArticlesAnalyticsUsecaseInput{Range: rangeKeyToDateRange(rangeKey)})
+	dateRange := rangeKeyToDateRange(rangeKey)
+	out, err := h.getArticlesAnalyticsUsecase.Exec(ctx, usecase.GetArticlesAnalyticsUsecaseInput{Range: dateRange})
 	if err != nil {
 		errors.Set(r.Context(), err)
 		return
 	}
-	vm := buildArticlesAnalyticsViewModel(out.Items, rangeKey, h.publicBaseURL)
+	vm := buildArticlesAnalyticsViewModel(out.Items, rangeKey, h.publicBaseURL, dateRange)
 	_ = partials.ArticlesAnalytics(vm).Render(ctx, rw)
 }
 
@@ -254,7 +257,7 @@ func buildSeriesListViewModel(
 	return partials.SeriesListViewModel{Items: items, NextCursorURL: nextURL}
 }
 
-func buildSiteAnalyticsViewModel(m domain.AnalyticsSiteMetrics, rangeKey string) partials.SiteAnalyticsViewModel {
+func buildSiteAnalyticsViewModel(m domain.AnalyticsSiteMetrics, rangeKey string, dateRange domain.AnalyticsDateRange) partials.SiteAnalyticsViewModel {
 	refs := make([]partials.AnalyticsReferrerRow, len(m.TopReferrers))
 	for i, ref := range m.TopReferrers {
 		refs[i] = partials.AnalyticsReferrerRow{
@@ -263,28 +266,68 @@ func buildSiteAnalyticsViewModel(m domain.AnalyticsSiteMetrics, rangeKey string)
 			Sessions: ref.Sessions,
 		}
 	}
+	labels, pv, uu := toLineChartSeries(m.ByDate, dateRange)
 	return partials.SiteAnalyticsViewModel{
 		RangeKey:       rangeKey,
 		TotalUsers:     m.TotalUsers,
 		TotalPageViews: m.TotalPageViews,
-		Referrers:      refs,
+		LineChartHTML: view.RenderLineChart(view.LineChartOpts{
+			Height:      "200px",
+			XAxisLabels: labels,
+			Series: []view.LineChartSeries{
+				{Name: "PageViews", Data: pv},
+				{Name: "Users", Data: uu},
+			},
+			ShowLegend: true,
+			ShowXAxis:  true,
+			ShowYAxis:  true,
+			Grid:       view.LineChartGrid{Left: "35", Right: "30", Top: "30", Bottom: "25"},
+		}),
+		Referrers: refs,
 	}
 }
 
-func buildArticlesAnalyticsViewModel(items []usecase.ArticleAnalyticsItem, rangeKey string, publicBaseURL string) partials.ArticlesAnalyticsViewModel {
+func buildArticlesAnalyticsViewModel(items []usecase.ArticleAnalyticsItem, rangeKey string, publicBaseURL string, dateRange domain.AnalyticsDateRange) partials.ArticlesAnalyticsViewModel {
 	rows := make([]partials.ArticleAnalyticsRow, len(items))
 	for i, item := range items {
+		labels, pv, uu := toLineChartSeries(item.ByDate, dateRange)
 		rows[i] = partials.ArticleAnalyticsRow{
 			Title:     item.Title,
 			Href:      publicBaseURL + "/articles/" + string(item.Slug),
 			Users:     item.Users,
 			PageViews: item.PageViews,
+			TrendLineHTML: view.RenderLineChart(view.LineChartOpts{
+				Height:      "64px",
+				XAxisLabels: labels,
+				Series: []view.LineChartSeries{
+					{Name: "PV", Data: pv},
+					{Name: "UU", Data: uu},
+				},
+				Grid: view.LineChartGrid{Left: "8", Right: "8", Top: "6", Bottom: "6"},
+			}),
 		}
 	}
 	return partials.ArticlesAnalyticsViewModel{
 		RangeKey: rangeKey,
 		Items:    rows,
 	}
+}
+
+// toLineChartSeries は指定期間の日次 metrics を 0-fill しつつ、echarts に渡す labels / PV / UU の 3 配列に整形する。
+func toLineChartSeries(points []domain.AnalyticsDailyPoint, r domain.AnalyticsDateRange) (labels []string, pageViews []int64, users []int64) {
+	byDate := make(map[string]domain.AnalyticsDailyPoint, len(points))
+	for _, p := range points {
+		byDate[p.Date.Format("2006-01-02")] = p
+	}
+	from := time.Date(r.From.Year(), r.From.Month(), r.From.Day(), 0, 0, 0, 0, r.From.Location())
+	to := time.Date(r.To.Year(), r.To.Month(), r.To.Day(), 0, 0, 0, 0, r.To.Location())
+	for d := from; !d.After(to); d = d.AddDate(0, 0, 1) {
+		p := byDate[d.Format("2006-01-02")] // 欠損日は zero value = {PageViews: 0, Users: 0}
+		labels = append(labels, d.Format("01/02"))
+		pageViews = append(pageViews, p.PageViews)
+		users = append(users, p.Users)
+	}
+	return
 }
 
 func rangeKeyToDateRange(k string) domain.AnalyticsDateRange {

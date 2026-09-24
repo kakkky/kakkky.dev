@@ -9,6 +9,7 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
+	"html/template"
 	"strconv"
 
 	"github.com/kakkky/hotwire-go/turbo"
@@ -24,10 +25,11 @@ type ArticlesAnalyticsViewModel struct {
 }
 
 type ArticleAnalyticsRow struct {
-	Title     string
-	Href      string
-	Users     int64
-	PageViews int64
+	Title         string
+	Href          string
+	Users         int64
+	PageViews     int64
+	TrendLineHTML template.HTML
 }
 
 func ArticlesAnalyticsLazyFrame() templ.Component {
@@ -114,7 +116,7 @@ func ArticlesAnalytics(vm ArticlesAnalyticsViewModel) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"rounded-lg border border-gray-200 bg-white p-4\"><header class=\"flex items-baseline justify-between mb-3\"><h2 class=\"text-sm font-semibold\">Articles Analytics</h2>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"rounded-lg border border-gray-200 bg-white p-4 flex flex-col h-80 md:h-[32rem] min-h-0\"><header class=\"flex items-baseline justify-between mb-3\"><h2 class=\"text-sm font-semibold\">Articles Analytics</h2>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -122,19 +124,19 @@ func ArticlesAnalytics(vm ArticlesAnalyticsViewModel) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</header><table class=\"w-full text-sm\"><thead class=\"text-xs text-gray-600\"><tr><th class=\"text-left\">Title</th><th class=\"text-right\">PV</th><th class=\"text-right\">UU</th></tr></thead> <tbody>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</header><div class=\"flex-1 min-h-0 overflow-y-auto\"><table class=\"w-full text-sm table-fixed\"><thead class=\"text-xs text-gray-600 sticky top-0 bg-white\"><tr class=\"border-b border-gray-200\"><th class=\"text-left py-2\">Title</th><th class=\"text-right py-2 w-12\">PV</th><th class=\"text-right py-2 w-12\">UU</th><th class=\"text-left py-2 pl-4 w-64\">推移</th></tr></thead> <tbody class=\"divide-y divide-gray-100\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			for _, item := range vm.Items {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<tr><td><a class=\"underline\" href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<tr><td class=\"py-2 truncate\"><a class=\"underline\" href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var5 templ.SafeURL
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL(item.Href))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/partials/articles_analytics.templ`, Line: 54, Col: 56}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/partials/articles_analytics.templ`, Line: 58, Col: 57}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
@@ -147,50 +149,58 @@ func ArticlesAnalytics(vm ArticlesAnalyticsViewModel) templ.Component {
 				var templ_7745c5c3_Var6 string
 				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(item.Title)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/partials/articles_analytics.templ`, Line: 54, Col: 71}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/partials/articles_analytics.templ`, Line: 58, Col: 72}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</a></td><td class=\"text-right tabular-nums\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</a></td><td class=\"py-2 text-right tabular-nums\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var7 string
 				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.FormatInt(item.PageViews, 10))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/partials/articles_analytics.templ`, Line: 56, Col: 82}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/partials/articles_analytics.templ`, Line: 60, Col: 88}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</td><td class=\"text-right tabular-nums\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</td><td class=\"py-2 text-right tabular-nums\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var8 string
 				templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.FormatInt(item.Users, 10))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/partials/articles_analytics.templ`, Line: 57, Col: 78}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `adapter/view/partials/articles_analytics.templ`, Line: 61, Col: 84}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</td></tr>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</td><td class=\"py-2 pl-4\">")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templ.Raw(item.TrendLineHTML).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</td></tr>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
 			if len(vm.Items) == 0 {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<tr><td colspan=\"3\" class=\"py-4 text-center text-xs text-gray-500\">no data</td></tr>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<tr><td colspan=\"4\" class=\"py-4 text-center text-xs text-gray-500\">no data</td></tr>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</tbody></table></section>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</tbody></table></div></section>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

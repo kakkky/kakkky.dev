@@ -1,6 +1,7 @@
 package partials
 
 import (
+	"html/template"
 	"strconv"
 
 	"github.com/kakkky/hotwire-go/turbo"
@@ -16,10 +17,11 @@ type ArticlesAnalyticsViewModel struct {
 }
 
 type ArticleAnalyticsRow struct {
-	Title     string
-	Href      string
-	Users     int64
-	PageViews int64
+	Title         string
+	Href          string
+	Users         int64
+	PageViews     int64
+	TrendLineHTML template.HTML
 }
 
 templ ArticlesAnalyticsLazyFrame() {
@@ -34,36 +36,42 @@ templ ArticlesAnalyticsLazyFrame() {
 
 templ ArticlesAnalytics(vm ArticlesAnalyticsViewModel) {
 	@turbo.Frame(ArticlesAnalyticsID) {
-		<section class="rounded-lg border border-gray-200 bg-white p-4">
+		<section class="rounded-lg border border-gray-200 bg-white p-4 flex flex-col h-80 md:h-[32rem] min-h-0">
 			<header class="flex items-baseline justify-between mb-3">
 				<h2 class="text-sm font-semibold">Articles Analytics</h2>
 				@components.AnalyticsRangeGroup(vm.RangeKey, "articles_analytics")
 			</header>
-			<table class="w-full text-sm">
-				<thead class="text-xs text-gray-600">
-					<tr>
-						<th class="text-left">Title</th>
-						<th class="text-right">PV</th>
-						<th class="text-right">UU</th>
-					</tr>
-				</thead>
-				<tbody>
-					for _, item := range vm.Items {
-						<tr>
-							<td>
-								<a class="underline" href={ templ.URL(item.Href) }>{ item.Title }</a>
-							</td>
-							<td class="text-right tabular-nums">{ strconv.FormatInt(item.PageViews, 10) }</td>
-							<td class="text-right tabular-nums">{ strconv.FormatInt(item.Users, 10) }</td>
+			<div class="flex-1 min-h-0 overflow-y-auto">
+				<table class="w-full text-sm table-fixed">
+					<thead class="text-xs text-gray-600 sticky top-0 bg-white">
+						<tr class="border-b border-gray-200">
+							<th class="text-left py-2">Title</th>
+							<th class="text-right py-2 w-12">PV</th>
+							<th class="text-right py-2 w-12">UU</th>
+							<th class="text-left py-2 pl-4 w-64">推移</th>
 						</tr>
-					}
-					if len(vm.Items) == 0 {
-						<tr>
-							<td colspan="3" class="py-4 text-center text-xs text-gray-500">no data</td>
-						</tr>
-					}
-				</tbody>
-			</table>
+					</thead>
+					<tbody class="divide-y divide-gray-100">
+						for _, item := range vm.Items {
+							<tr>
+								<td class="py-2 truncate">
+									<a class="underline" href={ templ.URL(item.Href) }>{ item.Title }</a>
+								</td>
+								<td class="py-2 text-right tabular-nums">{ strconv.FormatInt(item.PageViews, 10) }</td>
+								<td class="py-2 text-right tabular-nums">{ strconv.FormatInt(item.Users, 10) }</td>
+								<td class="py-2 pl-4">
+									@templ.Raw(item.TrendLineHTML)
+								</td>
+							</tr>
+						}
+						if len(vm.Items) == 0 {
+							<tr>
+								<td colspan="4" class="py-4 text-center text-xs text-gray-500">no data</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
 		</section>
 	}
 }
