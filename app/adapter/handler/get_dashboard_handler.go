@@ -90,6 +90,7 @@ func (h *GetDashboardHandler) renderFullPage(rw http.ResponseWriter, r *http.Req
 		ArticlesTotal: aOut.Total,
 		Series:        buildSeriesListViewModel(sOut.Series, sOut.NextCursor, h.publicBaseURL),
 		SeriesTotal:   sOut.Total,
+		PublicBaseURL: h.publicBaseURL,
 	}
 	_ = pages.Dashboard(vm).Render(ctx, rw)
 }
