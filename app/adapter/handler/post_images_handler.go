@@ -38,7 +38,7 @@ func (h *PostImagesHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		errors.Set(r.Context(), domain.ErrInvalidArgument.Wrap(err, "画像 ファイル が 見つかりません"))
 		return
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	contentType := header.Header.Get("Content-Type")
 

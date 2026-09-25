@@ -71,7 +71,7 @@ func TestOGPFetcher_Fetch(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.Header().Set("Content-Type", "text/html")
-				fmt.Fprint(w, tt.html)
+				_, _ = fmt.Fprint(w, tt.html)
 			}))
 			t.Cleanup(srv.Close)
 

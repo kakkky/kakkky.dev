@@ -50,26 +50,26 @@ var directiveSpecs = map[string]directiveSpec{
 			default:
 				bg, iconColor, icon = "bg-blue-100", "text-blue-600", `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" class="w-7 h-7 flex-shrink-0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>`
 			}
-			fmt.Fprintf(w,
+			_, _ = fmt.Fprintf(w,
 				`<div class="my-4 rounded-lg p-4 %s flex gap-3 items-start">`+
 					`<span class="%s">%s</span>`+
 					`<div class="min-w-0 flex-1 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">`+"\n",
 				bg, iconColor, icon)
 		},
 		close: func(w util.BufWriter) {
-			w.WriteString("</div></div>\n")
+			_, _ = w.WriteString("</div></div>\n")
 		},
 	},
 	"toggle": {
 		open: func(w util.BufWriter, args string) {
-			fmt.Fprintf(w,
+			_, _ = fmt.Fprintf(w,
 				`<details class="group my-4 rounded-md border border-gray-200 bg-gray-50 open:bg-white">`+
 					`<summary class="cursor-pointer px-3 py-2 text-sm text-gray-600 [list-style:revert] group-open:border-b group-open:border-gray-200">%s</summary>`+
 					`<div class="px-4 py-3 bg-gray-50 rounded-b-md [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">`+"\n",
 				html.EscapeString(args))
 		},
 		close: func(w util.BufWriter) {
-			w.WriteString("</div></details>\n")
+			_, _ = w.WriteString("</div></details>\n")
 		},
 	},
 }

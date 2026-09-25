@@ -99,7 +99,7 @@ func (f *OGPFetcher) Fetch(ctx context.Context, rawURL string) (domain.OGPData, 
 	if err != nil {
 		return domain.OGPData{}, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode >= 400 {
 		return domain.OGPData{}, errors.New("bad status")
