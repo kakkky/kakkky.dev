@@ -87,7 +87,7 @@ func renderlinkPreview(w util.BufWriter, _ []byte, node ast.Node, entering bool)
 	n := node.(*linkPreviewNode)
 
 	escURL := html.EscapeString(n.URL)
-	fmt.Fprintf(w,
+	_, _ = fmt.Fprintf(w,
 		`<turbo-frame id="%s" src="/link-preview?url=%s" loading="lazy" class="block my-4">`+
 			`<a href="%s" target="_blank" rel="noopener noreferrer"`+
 			` class="block h-24 rounded-lg border border-gray-200 bg-gray-50 animate-pulse">`+
