@@ -72,4 +72,3 @@ func TestRenderLineChart(t *testing.T) {
 		})
 	}
 }
-
