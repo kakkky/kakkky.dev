@@ -89,6 +89,10 @@ func (h *Handler) AdminRoutes() []Route {
 			Handler: NewPostArticleEditorHandler(),
 		},
 		{
+			Pattern: "GET /link-preview",
+			Handler: NewGetLinkPreviewHandler(h.usecase.NewGetLinkPreviewUsecase()),
+		},
+		{
 			Pattern: "POST /images",
 			Handler: NewPostImagesHandler(
 				h.usecase.NewUploadImageUsecase(),
