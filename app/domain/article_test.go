@@ -11,6 +11,7 @@ import (
 )
 
 func TestNewArticle(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name    string
 		title   string
@@ -109,6 +110,7 @@ func TestNewArticle(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			got, err := domain.NewArticle(
 				domain.Slug("valid-slug"),
 				tt.title,
@@ -131,6 +133,7 @@ func TestNewArticle(t *testing.T) {
 }
 
 func TestArticleUpdate(t *testing.T) {
+	t.Parallel()
 	oldPublishedAt := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	// publishedAtCheck: PublishedAt 検証をカスタマイズする。nil の場合は wantPublishedAt と Equal 比較。
@@ -300,6 +303,7 @@ func TestArticleUpdate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			err := tt.initial.Update(tt.title, tt.body, tt.status, tt.tagIDs)
 			if tt.wantErr != nil {
 				assert.Error(t, err)

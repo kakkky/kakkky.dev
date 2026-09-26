@@ -15,6 +15,7 @@ import (
 )
 
 func TestGetArticleUsecase_Exec(t *testing.T) {
+	t.Parallel()
 	ctx := context.Background()
 	baseTime := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 
@@ -326,6 +327,7 @@ func TestGetArticleUsecase_Exec(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			ctrl := gomock.NewController(t)
 
 			ar := mock.NewMockArticleRepository(ctrl)

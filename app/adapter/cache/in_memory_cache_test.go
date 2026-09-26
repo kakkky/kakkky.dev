@@ -10,6 +10,7 @@ import (
 )
 
 func TestInMemoryCache(t *testing.T) {
+	t.Parallel()
 	const key = "k"
 	now := time.Now()
 
@@ -69,6 +70,7 @@ func TestInMemoryCache(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			c := NewCache().NewInMemoryCacheClient()
 			tt.existing(c)
 

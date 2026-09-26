@@ -7,6 +7,7 @@ import (
 )
 
 func TestParseMarkdownArticle(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name        string
 		src         string
@@ -218,6 +219,7 @@ func TestParseMarkdownArticle(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			html, outline := ParseMarkdownArticle(tt.src)
 			for _, s := range tt.wantHTML {
 				assert.Contains(t, html, s)

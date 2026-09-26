@@ -21,8 +21,8 @@ on:
       - 'app/.air.toml'
 
 jobs:
-  test:
-    name: Test
+  vet:
+    name: Vet
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -37,16 +37,51 @@ jobs:
           cache-dependency-path: app/go.sum
 
       - name: Run go vet
-        run: go vet ./...
+        run: |
+          go vet ./...
+          go vet -tags=integration ./...
+
+  test:
+    name: Test (${{ matrix.suite }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [unit, integration]
+    defaults:
+      run:
+        working-directory: ./app
+    env:
+      # testcontainers-go の Ryuk コンテナ (garbage collector) を無効化
+      # GitHub Actions runner はそもそも使い捨てなので Ryuk 不要
+      TESTCONTAINERS_RYUK_DISABLED: "true"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: app/go.mod
+          cache-dependency-path: app/go.sum
+
+      - name: Resolve build tag for suite
+        id: tag
+        run: |
+          case "${{ matrix.suite }}" in
+            unit)        echo "tags=" >> "$GITHUB_OUTPUT" ;;
+            integration) echo "tags=-tags=integration" >> "$GITHUB_OUTPUT" ;;
+            *) echo "unknown suite: ${{ matrix.suite }}" >&2; exit 1 ;;
+          esac
 
       - name: Run tests
-        run: go test -race -coverprofile=coverage.txt -covermode=atomic -count=1 ./...
+        run: go test ${{ steps.tag.outputs.tags }} -race -coverprofile=coverage.txt -covermode=atomic -count=1 ./...
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./app/coverage.txt
+          flags: ${{ matrix.suite }}
           fail_ci_if_error: true
 
   lint:
@@ -69,6 +104,7 @@ jobs:
         with:
           version: v2.14.0
           working-directory: app
+          args: --build-tags=integration
 
       - name: Check gofmt
         run: |
