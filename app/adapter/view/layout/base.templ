@@ -12,6 +12,7 @@ templ Base(subTitle, contentMaxW, publicBaseURL string, controllers []string, ex
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1"/>
 			<title>{ pageTitle(subTitle) }</title>
+			<link rel="icon" type="image/png" href="/assets/images/logo.png"/>
 			<link rel="stylesheet" href="/assets/main.css"/>
 			@turbo.ScriptImport()
 			@stimulus.ScriptLoad(controllers...)

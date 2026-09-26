@@ -89,6 +89,10 @@ func (h *Handler) AdminRoutes() []Route {
 			Handler: NewPostArticleEditorHandler(),
 		},
 		{
+			Pattern: "GET /link-preview",
+			Handler: NewGetLinkPreviewHandler(h.usecase.NewGetLinkPreviewUsecase()),
+		},
+		{
 			Pattern: "POST /images",
 			Handler: NewPostImagesHandler(
 				h.usecase.NewUploadImageUsecase(),
@@ -130,6 +134,10 @@ func (h *Handler) StaticRoutes() []Route {
 		{
 			Pattern: "GET /assets/",
 			Handler: http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/dist"))),
+		},
+		{
+			Pattern: "GET /assets/images/",
+			Handler: http.StripPrefix("/assets/images/", http.FileServer(http.Dir("./assets/images"))),
 		},
 	}
 }
