@@ -11,6 +11,7 @@ import (
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer"
+	renderhtml "github.com/yuin/goldmark/renderer/html"
 	"github.com/yuin/goldmark/text"
 	"github.com/yuin/goldmark/util"
 )
@@ -60,6 +61,9 @@ func (linkPreviewTransformer) Transform(doc *ast.Document, reader text.Reader, _
 		auto, ok := paragraph.FirstChild().(*ast.AutoLink)
 		if !ok {
 			return ast.WalkContinue, nil
+		}
+		if renderhtml.IsDangerousURL(auto.URL(src)) {
+			return ast.WalkSkipChildren, nil
 		}
 		autos = append(autos, auto)
 		return ast.WalkSkipChildren, nil

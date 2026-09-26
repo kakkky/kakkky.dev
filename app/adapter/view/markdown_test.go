@@ -228,3 +228,98 @@ func TestParseMarkdownArticle(t *testing.T) {
 		})
 	}
 }
+
+func TestParseMarkdownArticle_XSS(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name        string
+		src         string
+		contains    []string
+		notContains []string
+	}{
+		{
+			name:        "raw <script> block is stripped",
+			src:         "<script>alert(1)</script>\n",
+			notContains: []string{"<script", "alert(1)"},
+		},
+		{
+			name:        "inline <script> is stripped, surrounding text remains",
+			src:         "hello <script>alert(1)</script> world\n",
+			contains:    []string{"<p>hello ", " world</p>"},
+			notContains: []string{"<script"},
+		},
+		{
+			name:        "raw <img onerror> is stripped",
+			src:         "<img src=x onerror=alert(1)>\n",
+			notContains: []string{"<img", "onerror"},
+		},
+		{
+			name:        "raw <a href=data:...> is stripped",
+			src:         `<a href="data:text/html,<script>alert(1)</script>">click</a>` + "\n",
+			contains:    []string{"click"},
+			notContains: []string{"<a href", "data:text/html", "<script"},
+		},
+		{
+			name:        "markdown link with javascript: href is neutralized to empty href",
+			src:         "[link](javascript:alert(1))\n",
+			contains:    []string{`href=""`, ">link</a>"},
+			notContains: []string{"javascript:"},
+		},
+		{
+			name:        "markdown link with data:text/html href is neutralized to empty href",
+			src:         "[link](data:text/html,<script>alert(1)</script>)\n",
+			contains:    []string{`href=""`, ">link</a>"},
+			notContains: []string{"data:text/html", "<script"},
+		},
+		{
+			name:        "markdown link with vbscript: href is neutralized to empty href",
+			src:         "[link](vbscript:msgbox(1))\n",
+			contains:    []string{`href=""`},
+			notContains: []string{"vbscript:"},
+		},
+		{
+			name:        "autolink with javascript: is not promoted to linkPreview and href is dropped",
+			src:         "<javascript:alert(1)>\n",
+			notContains: []string{`href="javascript:`, "turbo-frame"},
+		},
+		{
+			name:        "autolink with data:text/html is not promoted to linkPreview",
+			src:         "<data:text/html,alert(1)>\n",
+			notContains: []string{`href="data:`, "turbo-frame"},
+		},
+		{
+			name:        "image with javascript: src is neutralized",
+			src:         "![x](javascript:alert(1))\n",
+			notContains: []string{`src="javascript:`, "javascript:alert"},
+		},
+		{
+			name: "directive toggle title escapes attribute-breakout attempt",
+			src: `:::toggle " onclick="alert(1)` + "\n" +
+				"body\n" +
+				":::\n",
+			contains:    []string{"&#34;"}, // 記号 " が属性値内で無害化されている
+			notContains: []string{`" onclick="`, `onclick="alert`},
+		},
+		{
+			name: "directive toggle title escapes tag-breakout attempt",
+			src: ":::toggle </summary><script>alert(1)</script>\n" +
+				"body\n" +
+				":::\n",
+			contains:    []string{"&lt;/summary&gt;", "&lt;script&gt;"},
+			notContains: []string{"</summary><script", "<script>alert"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			html, _ := ParseMarkdownArticle(tt.src)
+			for _, s := range tt.contains {
+				assert.Contains(t, html, s)
+			}
+			for _, s := range tt.notContains {
+				assert.NotContains(t, html, s)
+			}
+		})
+	}
+}
