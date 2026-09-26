@@ -124,7 +124,7 @@ func ArticlesAnalytics(vm ArticlesAnalyticsViewModel) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</header><div class=\"flex-1 min-h-0 overflow-y-auto\"><table class=\"w-full text-sm table-fixed\"><thead class=\"text-xs text-gray-600 sticky top-0 bg-white\"><tr class=\"border-b border-gray-200\"><th class=\"text-left py-2\">Title</th><th class=\"text-right py-2 w-12\">PV</th><th class=\"text-right py-2 w-12\">UU</th><th class=\"text-left py-2 pl-4 w-64\">推移</th></tr></thead> <tbody class=\"divide-y divide-gray-100\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</header><div class=\"flex-1 min-h-0 overflow-y-auto\"><table class=\"w-full text-sm table-fixed\"><thead class=\"text-xs text-gray-600 sticky top-0 bg-white z-10\"><tr class=\"border-b border-gray-200\"><th class=\"text-left py-2\">Title</th><th class=\"text-right py-2 w-12\">PV</th><th class=\"text-right py-2 w-12\">UU</th><th class=\"text-left py-2 pl-4 w-64\">推移</th></tr></thead> <tbody class=\"divide-y divide-gray-100\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
