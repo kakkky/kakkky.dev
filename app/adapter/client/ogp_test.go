@@ -15,6 +15,7 @@ import (
 )
 
 func TestOGPFetcher_Fetch(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name string
 		html string
@@ -69,6 +70,7 @@ func TestOGPFetcher_Fetch(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.Header().Set("Content-Type", "text/html")
 				_, _ = fmt.Fprint(w, tt.html)
@@ -91,6 +93,7 @@ func TestOGPFetcher_Fetch(t *testing.T) {
 }
 
 func TestOGPFetcher_Fetch_BlocksLoopback(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write([]byte(`<html></html>`))
 	}))

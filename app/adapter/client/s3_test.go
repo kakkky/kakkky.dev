@@ -1,3 +1,5 @@
+//go:build integration
+
 package client
 
 import (
@@ -15,6 +17,7 @@ import (
 )
 
 func TestS3Client_Upload(t *testing.T) {
+	t.Parallel()
 	ctx := context.Background()
 
 	const bucket = "test-bucket"
@@ -74,6 +77,7 @@ func TestS3Client_Upload(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			url, err := c.Upload(ctx, tt.contentType, strings.NewReader(tt.body))
 
 			if tt.wantErr != nil {

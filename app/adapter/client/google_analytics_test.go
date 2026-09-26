@@ -67,6 +67,7 @@ func newMockGAClient(t *testing.T, propertyID string, mock *mockAnalyticsServer)
 }
 
 func TestGoogleAnalyticsClient_FetchSiteMetrics(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name        string
 		mock        func() (*pb.BatchRunReportsResponse, error)
@@ -119,6 +120,7 @@ func TestGoogleAnalyticsClient_FetchSiteMetrics(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			mock := &mockAnalyticsServer{batchMock: tt.mock}
 			c := newMockGAClient(t, "properties/1234567", mock)
 
@@ -175,6 +177,7 @@ func TestGoogleAnalyticsClient_FetchSiteMetrics(t *testing.T) {
 }
 
 func TestGoogleAnalyticsClient_FetchArticleMetrics(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name        string
 		mock        func() (*pb.RunReportResponse, error)
@@ -217,6 +220,7 @@ func TestGoogleAnalyticsClient_FetchArticleMetrics(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			mock := &mockAnalyticsServer{runMock: tt.mock}
 			c := newMockGAClient(t, "properties/1234567", mock)
 

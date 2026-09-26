@@ -11,6 +11,7 @@ import (
 )
 
 func TestNewSeries(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name        string
 		title       string
@@ -92,6 +93,7 @@ func TestNewSeries(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			got, err := domain.NewSeries(
 				domain.Slug("valid-slug"),
 				tt.title,
@@ -112,6 +114,7 @@ func TestNewSeries(t *testing.T) {
 }
 
 func TestSeriesUpdate(t *testing.T) {
+	t.Parallel()
 	baseTime := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	tests := []struct {
@@ -221,6 +224,7 @@ func TestSeriesUpdate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			s, err := domain.NewSeries(
 				domain.Slug("valid-slug"),
 				"original",
@@ -260,6 +264,7 @@ func TestSeriesUpdate(t *testing.T) {
 }
 
 func TestSeriesAddArticle(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name         string
 		original     []domain.SeriesArticle
@@ -314,6 +319,7 @@ func TestSeriesAddArticle(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			s, err := domain.NewSeries(
 				domain.Slug("valid-slug"),
 				"タイトル",
@@ -337,6 +343,7 @@ func TestSeriesAddArticle(t *testing.T) {
 }
 
 func TestSeriesRemoveArticle(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name         string
 		original     []domain.SeriesArticle
@@ -380,6 +387,7 @@ func TestSeriesRemoveArticle(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			s, err := domain.NewSeries(
 				domain.Slug("valid-slug"),
 				"タイトル",
@@ -404,6 +412,7 @@ func TestSeriesRemoveArticle(t *testing.T) {
 }
 
 func TestSeriesReorderArticles(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name         string
 		original     []domain.SeriesArticle
@@ -497,6 +506,7 @@ func TestSeriesReorderArticles(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			s, err := domain.NewSeries(
 				domain.Slug("valid-slug"),
 				"タイトル",
@@ -521,6 +531,7 @@ func TestSeriesReorderArticles(t *testing.T) {
 }
 
 func TestSeriesAddTags(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name       string
 		original   []domain.TagID
@@ -588,6 +599,7 @@ func TestSeriesAddTags(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			s, err := domain.NewSeries(
 				domain.Slug("valid-slug"),
 				"タイトル",

@@ -12,6 +12,7 @@ import (
 )
 
 func TestNewSlug(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name    string
 		input   string
@@ -96,6 +97,7 @@ func TestNewSlug(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			got, err := domain.NewSlug(tt.input)
 			if tt.wantErr == nil {
 				assert.NoError(t, err)
@@ -110,6 +112,7 @@ func TestNewSlug(t *testing.T) {
 }
 
 func TestGenerateSlug(t *testing.T) {
+	t.Parallel()
 	fallbackRe := regexp.MustCompile(`^d-[0-9a-f]{6}$`)
 	tests := []struct {
 		name        string
@@ -206,6 +209,7 @@ func TestGenerateSlug(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			got, err := domain.GenerateSlug(tt.input)
 			require.NoError(t, err)
 			if tt.wantMatches != nil {

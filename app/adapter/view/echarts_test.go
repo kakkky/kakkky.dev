@@ -8,6 +8,7 @@ import (
 )
 
 func TestRenderLineChart(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name        string
 		opts        LineChartOpts
@@ -61,6 +62,7 @@ func TestRenderLineChart(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			got := string(RenderLineChart(tt.opts))
 			require.NotEmpty(t, got)
 			// Tailwind の container / item コンポーネント class と衝突しないよう strip されている
